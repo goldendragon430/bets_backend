@@ -27,8 +27,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
         }
 
         const getNFTTransferEvent = async (nftAddress: string) => {
-            // let latestBlockNumber = await rpcProvider.getBlockNumber() - 10;
-            let latestBlockNumber = 11171719;
+            let latestBlockNumber = await rpcProvider.getBlockNumber() - 10;
 
             try {
                 const res = await redisClient.get('nftTransferBlock');
@@ -42,64 +41,39 @@ mongoose.connect(process.env.DB_CONFIG as string)
                 console.error('redis server error: ', e);
             }
 
-            try {
-                const blockNumber = await rpcProvider.getBlockNumber();
-                console.log(nftAddress);
-                const nftContract = new ethers.Contract(nftAddress, ERC721ContractABI, rpcProvider);
-                const events = await nftContract.queryFilter(
-                    nftContract.filters.Transfer()
-                );
-                console.log(events);
-                if (events.length > 0) {
-                    for (const ev of events) {
-                        if (ev.args) {
-                            const from = ev.args.from;
-                            const to = ev.args.to;
-                            const tokenId = ev.args.tokenId;
+            cron.schedule('* * * * *', async () => {
+                try {
+                    const blockNumber = await rpcProvider.getBlockNumber();
 
-                            await nftTransferFunc(nftAddress, from, to, tokenId, ev);
+                    const nftContract = new ethers.Contract(nftAddress, ERC721ContractABI, rpcProvider);
+                    const events = await nftContract.queryFilter(
+                        nftContract.filters.Transfer(),
+                        latestBlockNumber,
+                        blockNumber
+                    );
+
+                    if (events.length > 0) {
+                        for (const ev of events) {
+                            if (ev.args) {
+                                const from = ev.args.from;
+                                const to = ev.args.to;
+                                const tokenId = ev.args.tokenId;
+
+                                await nftTransferFunc(nftAddress, from, to, tokenId, ev);
+                            }
                         }
                     }
-                }
 
-                latestBlockNumber = blockNumber;
-                await redisClient.set('nftTransferBlock', blockNumber);
-            }
-            catch (e) {
-                console.log('getNFTTransferEvent error: ', e);
-            }
-            // cron.schedule('* * * * *', async () => {
-            //     try {
-            //         const blockNumber = await rpcProvider.getBlockNumber();
-            //         console.log(nftAddress);
-            //         const nftContract = new ethers.Contract(nftAddress, ERC721ContractABI, rpcProvider);
-            //         const events = await nftContract.queryFilter(
-            //             nftContract.filters.Transfer()
-            //         );
-            //         console.log(events);
-            //         if (events.length > 0) {
-            //             for (const ev of events) {
-            //                 if (ev.args) {
-            //                     const from = ev.args.from;
-            //                     const to = ev.args.to;
-            //                     const tokenId = ev.args.id;
-            //
-            //                     await nftTransferFunc(from, to, tokenId, ev);
-            //                 }
-            //             }
-            //         }
-            //
-            //         latestBlockNumber = blockNumber;
-            //         await redisClient.set('nftTransferBlock', blockNumber);
-            //     }
-            //     catch (e) {
-            //         console.log('getNFTTransferEvent error: ', e);
-            //     }
-            // });
+                    latestBlockNumber = blockNumber;
+                    await redisClient.set('nftTransferBlock', blockNumber);
+                }
+                catch (e) {
+                    console.log('getNFTTransferEvent error: ', e);
+                }
+            });
         };
 
         const activeBattle = await battle.getActiveBattle();
-        console.log(activeBattle);
         if (activeBattle) {
             const projectL = await project.getProject(activeBattle.projectL);
             const projectR = await project.getProject(activeBattle.projectR);

@@ -8,7 +8,7 @@ import * as cors from 'cors';
 import rateLimiter from './middlewares/rateLimit';
 import { unCoughtErrorHandler } from './handlers/errorHandler';
 import Routes from './routes';
-import { installBSCTestEvents, installRopstenEvents } from './services/events';
+import { installBetEvents } from './services/events';
 import redisHandle from './utils/redis';
 
 // app.enable('trust proxy') // only if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
@@ -40,8 +40,7 @@ export default class Server {
         app.use(unCoughtErrorHandler);
         app.use(multer({dest: './uploads/'}).any());
 
-        // installBSCTestEvents()
-        // installRopstenEvents()
+        installBetEvents();
     }
 
     public initRedis(): void {

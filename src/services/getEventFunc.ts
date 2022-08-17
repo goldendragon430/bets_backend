@@ -4,7 +4,7 @@ import { ActivityType } from '../utils/enums';
 export const nftTransferFunc = async (contractAddress, from, to, tokenId, event) => {
     try {
         const activity = nftActivity.getNFTActivity(event.transactionHash);
-        if (activity === null) {
+        if (!activity) {
             return;
         }
         await nftActivity.addNFTActivity(contractAddress, ActivityType.Transfer, from, to, tokenId, event.transactionHash, event.blockNumber);

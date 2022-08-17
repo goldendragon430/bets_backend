@@ -9,7 +9,6 @@ class FeaturedBattleRepository {
 
     getActiveBattle = async () => {
         const now = new Date();
-        console.log(now);
         return featuredBattle.findOne({
             startDate: { $lte: now },
             endDate: { $gte: now },

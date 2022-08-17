@@ -1,21 +1,14 @@
-
-// import * as Test from "../abis/Test.json"
 import { ethers } from 'ethers';
+import * as dotenv from 'dotenv';
+import { CONTRACT, node_url } from '../config';
+dotenv.config();
+import * as BetContractAbi from '../abis/BetABI.json';
 
-export const installBSCTestEvents = () => {
-    // const wsProvider = new ethers.providers.WebSocketProvider(process.env.BSCTEST_RPC as string)
-    // let contract = new ethers.Contract(Test.bsctest, Test.abi, wsProvider)
-    //
-    // contract.on("updated", (from, to, value, event) => {
-    //     console.log(from)
-    // })
-};
+export const installBetEvents = () => {
+    const wsProvider = new ethers.providers.WebSocketProvider(node_url.providerUrl);
+    const contract = new ethers.Contract(CONTRACT.BET_CONTRACT, BetContractAbi, wsProvider);
 
-export const installRopstenEvents = () => {
-    // const wsProvider = new ethers.providers.WebSocketProvider(process.env.ROPSTEN_RPC as string)
-    // let contract = new ethers.Contract(Test.ropsten, Test.abi, wsProvider)
-    //
-    // contract.on("updated", (from, to, value, event) => {
-    //     console.log(from)
-    // })
+    contract.on('NFTStaked', (collectionAddress, user, tokenIds) => {
+        console.log(collectionAddress, user, tokenIds);
+    });
 };
