@@ -16,9 +16,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
         const getNFTTransferEvent = async (nftAddress: string) => {
             try {
                 const nftContract = new ethers.Contract(nftAddress, ERC721ContractABI, rpcProvider);
-                const events = await nftContract.queryFilter(
-                    nftContract.filters.Transfer()
-                );
+                const events = await nftContract.queryFilter(nftContract.filters.Transfer());
 
                 if (events.length > 0) {
                     for (const ev of events) {
@@ -31,6 +29,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
                         }
                     }
                 }
+                console.log(`${events.length} events found on ${nftAddress}`);
             }
             catch (e) {
                 console.log('getNFTTransferEvent error: ', e);

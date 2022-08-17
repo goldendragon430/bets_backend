@@ -8,6 +8,8 @@ export const nftTransferFunc = async (contractAddress, from, to, tokenId, event)
             return;
         }
         await nftActivity.addNFTActivity(contractAddress, ActivityType.Transfer, from, to, tokenId, event.transactionHash, event.blockNumber);
+
+        // Check if current NFT is staked or not from BET contract
     } catch (e) {
         console.error('NFT Transfer Event Err: ', e);
     }

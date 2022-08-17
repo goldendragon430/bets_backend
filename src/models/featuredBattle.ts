@@ -20,6 +20,8 @@ const featuredBattleSchema = new Schema({
 featuredBattleSchema.method('toJSON', function() {
     const { __v, _id, ...object } = this.toObject();
     object.id = _id;
+    object.createdAt = undefined;
+    object.updatedAt = undefined;
     return object;
 });
 

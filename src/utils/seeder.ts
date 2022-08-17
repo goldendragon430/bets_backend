@@ -14,8 +14,6 @@ const dbConnect = async () => {
 const insertProjects = async () => {
     await Project.create([
         {
-            '__v': 0,
-            '_id': '62e3a0dbd204fdaee8f19ca7',
             'collectionSize': 19425,
             'contract': '0x036D48B9d40758EaA075482fFfa58D1cE3F90bD0',
             'headerImage': 'https://lh3.googleusercontent.com/5c-HcdLMinTg3LvEwXYZYC-u5nN22Pn5ivTPYA4pVEsWJHU1rCobhUlHSFjZgCHPGSmcGMQGCrDCQU8BfSfygmL7Uol9MRQZt6-gqA=s2500',
@@ -27,8 +25,6 @@ const insertProjects = async () => {
             'twitterID': 'https://twitter.com/yugalabs',
         },
         {
-            '__v': 0,
-            '_id': '62e3a110d204fdaee8f19ca9',
             'collectionSize': 10000,
             'contract': '0x5E8569023518E3B88304df25329a4DA4f59F1124',
             'headerImage': 'https://lh3.googleusercontent.com/O0XkiR_Z2--OPa_RA6FhXrR16yBOgIJqSLdHTGA0-LAhyzjSYcb3WEPaCYZHeh19JIUEAUazofVKXcY2qOylWCdoeBN6IfGZLJ3I4A=s2500',
@@ -43,14 +39,14 @@ const insertProjects = async () => {
 };
 
 const insertFeaturedBattles = async () => {
+    const projectL = await Project.findOne({ contract: '0x036D48B9d40758EaA075482fFfa58D1cE3F90bD0' });
+    const projectR = await Project.findOne({ contract: '0x5E8569023518E3B88304df25329a4DA4f59F1124' });
     await FeaturedBattle.create([
         {
-            '_id': '62e94a01cc2b6a3312509a3b',
-            'projectL': '62e3a0dbd204fdaee8f19ca7',
-            'projectR': '62e3a110d204fdaee8f19ca9',
-            'startDate': new Date('2022-07-01 00:00:00'),
+            'projectL': projectL,
+            'projectR': projectR,
+            'startDate': new Date('2022-08-01 00:00:00'),
             'endDate': new Date('2022-09-01 00:00:00'),
-            '__v': 0
         }]);
 };
 
@@ -59,7 +55,7 @@ async function main() {
     await insertProjects();
     await insertFeaturedBattles();
     console.log('Seeded');
-    process.exitCode = 1;
+    process.exit(1);
 }
 
 

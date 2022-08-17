@@ -11,6 +11,10 @@ class ProjectRepository {
         return project.findOne({ _id: id });
     }
 
+    getProjectById = async (id) => {
+        return project.findOne({ _id: id });
+    }
+
     addProject = async(
         name: string,
         subName: string,
