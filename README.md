@@ -3,21 +3,36 @@ https://whimsical.com/honorous-betting-QyoBgmT5gY9jKosoAKQJwT
 
 This is a backend project using mongodb, node.js for Honorous
 
-Getting Started
-First, run the development server:
+Let's get started
+## Server Deployment Order
 
-npm start
+### (Optional) Seeding Database with dummy data
 
-or
-
-yarn start
-
-Running Cron job
+```bash
+yarn seed
 ```
+
+### 1. Syncing the Database with past emitted events
+Syncing with past events. This script will fill out the database without duplication
+```bash
+yarn sync_past_events
+```
+or 
+```bash
+npm run sync_past_events
+```
+
+### 2. Making sure running the cron job to sync event in the future
+Running Cron job
+```bash
 ts-node src/cron/index.ts
 ```
 
-Syncing with past events. This script will fill out the database without duplication
-```angular2html
-ts-node src/services/past_events_sync.ts
+### 3. Running the server
+```bash
+npm start
+```
+or
+```bash
+yarn start
 ```

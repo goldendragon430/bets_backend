@@ -6,7 +6,7 @@ const Schema = mongoose.Schema;
 const nftActivitySchema = new Schema({
         activity: {
             type: String,
-            enum: [ActivityType.Transfer, ActivityType.Claimed, ActivityType.Purchased],
+            enum: [ActivityType.Transfer, ActivityType.Staked, ActivityType.Unstaked],
             default: ActivityType.Transfer
         },
         contractAddress: String,

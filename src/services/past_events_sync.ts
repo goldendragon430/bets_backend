@@ -2,8 +2,8 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import mongoose from 'mongoose';
 import { ethers } from 'ethers';
-import { rpcProvider } from '../utils';
-import { nftTransferFunc } from './getEventFunc';
+import { rpcProvider, betContract } from '../utils';
+import { nftTransferFunc, nftStakedFunc } from './getEventFunc';
 import * as ERC721ContractABI from '../abis/erc721.json';
 import battle from '../repositories/featuredBattle';
 import project from '../repositories/project';
@@ -30,23 +30,40 @@ mongoose.connect(process.env.DB_CONFIG as string)
                     }
                 }
                 console.log(`${events.length} events found on ${nftAddress}`);
-            }
-            catch (e) {
+            } catch (e) {
                 console.log('getNFTTransferEvent error: ', e);
+            }
+        };
+
+        const getNFTStakedEvent = async () => {
+            try {
+                const events = await betContract.queryFilter(betContract.filters.NFTStaked());
+
+                if (events.length > 0) {
+                    for (const ev of events) {
+                        if (ev.args) {
+                            const collectionAddress = ev.args.collectionAddress;
+                            const user = ev.args.user;
+                            const tokenIds = ev.args.tokenIds;
+
+                            await nftStakedFunc(collectionAddress, user, tokenIds, ev);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log('getNFTStakedEvent error: ', e);
             }
         };
 
         const activeBattle = await battle.getActiveBattle();
         if (activeBattle) {
-            const projectL = await project.getProject(activeBattle.projectL);
-            const projectR = await project.getProject(activeBattle.projectR);
-            if (projectL?.contract) {
-                await getNFTTransferEvent(projectL?.contract);
-            }
-            if (projectR?.contract) {
-                await getNFTTransferEvent(projectR?.contract);
-            }
+            await getNFTTransferEvent(activeBattle.projectL?.contract || '');
+            await getNFTTransferEvent(activeBattle.projectR?.contract || '');
         }
+
+        await getNFTStakedEvent();
+
+        process.exit(0);
     })
     .catch(err => {
         throw new Error(err);

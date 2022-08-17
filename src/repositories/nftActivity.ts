@@ -4,8 +4,19 @@ import { ActivityType } from '../utils/enums';
 class NFTActivityRepository {
     constructor() {}
 
-    getNFTActivities = async () => {
-        return NFTActivity.find({});
+    getStakedStatus = async (tokenIds: Array<string>) => {
+        const status: Array<{ tokenId: string, status: boolean }> = [];
+        for (const tokenId of tokenIds) {
+            const activity = await NFTActivity.findOne({
+                tokenId,
+                activityType: ActivityType.Staked
+            });
+            status.push({
+                tokenId: tokenId,
+                status: !!activity
+            });
+        }
+        return status;
     }
 
     getNFTActivity = async (txHash) => {

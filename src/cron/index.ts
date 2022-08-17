@@ -5,7 +5,7 @@ import * as cron from 'node-cron';
 import { ethers } from 'ethers';
 import redisHandle from '../utils/redis';
 import { rpcProvider, betContract } from '../utils';
-import { nftTransferFunc } from '../services/getEventFunc';
+import { nftStakedFunc, nftTransferFunc } from '../services/getEventFunc';
 import * as ERC721ContractABI from '../abis/erc721.json';
 import battle from '../repositories/featuredBattle';
 import project from '../repositories/project';
@@ -27,6 +27,9 @@ mongoose.connect(process.env.DB_CONFIG as string)
         }
 
         const getNFTTransferEvent = async (nftAddress: string) => {
+            if (!nftAddress) {
+                return;
+            }
             let latestBlockNumber = await rpcProvider.getBlockNumber() - 10;
 
             try {
@@ -41,6 +44,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
                 console.error('redis server error: ', e);
             }
 
+            // Monitoring NFT transfer events for collectionA and collectionB
             cron.schedule('* * * * *', async () => {
                 try {
                     const blockNumber = await rpcProvider.getBlockNumber();
@@ -63,6 +67,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
                             }
                         }
                     }
+                    console.log(`${events.length} NFT Transfer events found on contract ${nftAddress}`);
 
                     latestBlockNumber = blockNumber;
                     await redisClient.set('nftTransferBlock', blockNumber);
@@ -73,17 +78,58 @@ mongoose.connect(process.env.DB_CONFIG as string)
             });
         };
 
+        const getNFTStakedEvent = async () => {
+            let latestBlockNumber = await rpcProvider.getBlockNumber() - 10;
+
+            try {
+                const res = await redisClient.get('nftStakedBlock');
+
+                if (res == undefined) {
+                    await redisClient.set('nftStakedBlock', latestBlockNumber);
+                } else {
+                    latestBlockNumber = parseInt(res);
+                }
+            } catch (e) {
+                console.error('redis server error: ', e);
+            }
+
+            cron.schedule('* * * * *', async () => {
+                try {
+                    const blockNumber = await rpcProvider.getBlockNumber();
+
+                    const events = await betContract.queryFilter(
+                        betContract.filters.NFTStaked(),
+                        latestBlockNumber,
+                        blockNumber
+                    );
+
+                    if (events.length > 0) {
+                        for (const ev of events) {
+                            if (ev.args) {
+                                const collectionAddress = ev.args.collectionAddress;
+                                const user = ev.args.user;
+                                const tokenIds = ev.args.tokenIds;
+
+                                await nftStakedFunc(collectionAddress, user, tokenIds, ev);
+                            }
+                        }
+                    }
+                    console.log(`${events.length} NFT Staked events found on contract ${betContract.address}`);
+
+                    latestBlockNumber = blockNumber;
+                    await redisClient.set('nftStakedBlock', blockNumber);
+                } catch (e) {
+                    console.log('getNFTStakedEvent error: ', e);
+                }
+            });
+        };
+
         const activeBattle = await battle.getActiveBattle();
         if (activeBattle) {
-            const projectL = await project.getProject(activeBattle.projectL);
-            const projectR = await project.getProject(activeBattle.projectR);
-            if (projectL?.contract) {
-                await getNFTTransferEvent(projectL?.contract);
-            }
-            if (projectR?.contract) {
-                await getNFTTransferEvent(projectR?.contract);
-            }
+            await getNFTTransferEvent(activeBattle.projectL?.contract || '');
+            await getNFTTransferEvent(activeBattle.projectR?.contract || '');
         }
+        await getNFTStakedEvent();
     })
     .catch(err => {
         throw new Error(err);

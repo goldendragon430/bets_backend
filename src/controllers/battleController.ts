@@ -4,6 +4,7 @@ import battle from '../repositories/featuredBattle';
 import project from '../repositories/project';
 import stakedNFT from '../repositories/stakedNFT';
 import tokenTx from '../repositories/tokenTx';
+import nftActivity from '../repositories/nftActivity';
 
 export default class BattleController {
     constructor() {
@@ -44,26 +45,18 @@ export default class BattleController {
     };
 
     /**
-     * @description Get Project points Function
+     * @description Get status of NFT tokenIds
      * @param req
      * @param res
      * @param next
      */
-    getProjectPoints = async (req: Request, res: Response, next: NextFunction) => {
+    getNFTStakedStatus = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const activeBattle = await battle.getActiveBattle();
+            const { tokenIds } = req.body;
 
-            if (!activeBattle) {
-                return res.status(400).json({
-                    'success': false,
-                    'message': 'No active battle',
-                    'data': '',
-                });
-            }
+            const status = await nftActivity.getStakedStatus(tokenIds);
 
-            await stakedNFT.getStakedCountByBattle(activeBattle.id);
-
-            res.json({'success': true, 'message': '', 'data': activeBattle});
+            res.json({'success': true, 'message': '', 'data': status});
         } catch (error) {
             apiErrorHandler(error, req, res, 'Get Tx failed.');
         }
@@ -95,101 +88,6 @@ export default class BattleController {
             );
 
             res.json({'success': true, 'message': '', 'data': battleInstance});
-        } catch (error) {
-            apiErrorHandler(error, req, res, 'Add Battle failed.');
-        }
-    };
-
-    /**
-     * @description Add Battle Function
-     * @param req
-     * @param res
-     * @param next
-     */
-    joinBattle = async (req: Request, res: Response, next: NextFunction) => {
-        const { nftName, nftImage, nftAddress, wallet, network, projectId } = req.body;
-
-        try {
-            const activeBattle = await battle.getActiveBattle();
-            if (!activeBattle) {
-                return res.status(400).json({
-                    'success': false,
-                    'message': 'No active battle',
-                    'data': '',
-                });
-            }
-
-            const nft = await stakedNFT.createNFTMetadata(nftName, nftImage, nftAddress);
-
-            const projectInstance = await project.getProject(projectId);
-            const nftStakedCreated = await stakedNFT.addNFTStaked(
-                nft,
-                projectInstance,
-                activeBattle,
-                'stake',
-                1,
-                'NFT',
-                100,
-                `${network}_${wallet}`,
-                'onChain'
-            );
-
-            await stakedNFT.addNFTPoints(activeBattle, nft, `${network}_${wallet}`);
-
-            res.json({'success': true, 'message': '', 'data': nftStakedCreated});
-        } catch (error) {
-            apiErrorHandler(error, req, res, 'Add Battle failed.');
-        }
-    };
-
-    /**
-     * @description Add Battle Function
-     * @param req
-     * @param res
-     * @param next
-     */
-    boostBattle = async (req: Request, res: Response, next: NextFunction) => {
-        const { projectId, txType, multiplier, tokenType, totalPoints, chainType, claimableTime, wallet, network } = req.body;
-
-        try {
-            const activeBattle = await battle.getActiveBattle();
-            if (!activeBattle) {
-                return res.status(400).json({
-                    'success': false,
-                    'message': 'No active battle',
-                    'data': '',
-                });
-            }
-            if (txType !== 'Stake' && txType !== 'Burn') {
-                return res.status(400).json({
-                    'success': false,
-                    'message': 'Transaction Type is not valid',
-                    'data': '',
-                });
-            }
-            if (chainType !== 'on' && chainType !== 'off') {
-                return res.status(400).json({
-                    'success': false,
-                    'message': 'Chain Type is not valid',
-                    'data': '',
-                });
-            }
-
-            const projectInstance = await project.getProject(projectId);
-            const tokenTxCreated = await tokenTx.addTokenTx(
-                activeBattle,
-                projectInstance,
-                txType,
-                multiplier,
-                tokenType,
-                totalPoints,
-                chainType,
-                claimableTime,
-                `${network}_${wallet}`,
-                'onChain'
-            );
-
-            res.json({'success': true, 'message': '', 'data': tokenTxCreated});
         } catch (error) {
             apiErrorHandler(error, req, res, 'Add Battle failed.');
         }

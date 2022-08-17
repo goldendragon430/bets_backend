@@ -1,5 +1,5 @@
 export enum ActivityType {
-    Transfer = 'transfer',
-    Claimed = 'claimed',
-    Purchased = 'purchased'
+    Transfer = 'Transfer',
+    Staked = 'Staked',
+    Unstaked = 'Unstaked',
 }
