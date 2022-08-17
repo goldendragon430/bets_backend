@@ -20,6 +20,7 @@ class FeaturedBattleRepository {
         const projectL = await ProjectRepository.getProjectById(battle.projectL);
         const projectR = await ProjectRepository.getProjectById(battle.projectR);
         return Object.assign(battle.toJSON(), {
+            id: battle.id,
             projectL: projectL?.toJSON(),
             projectR: projectR?.toJSON(),
         });
