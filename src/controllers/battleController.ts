@@ -76,7 +76,7 @@ export default class BattleController {
         try {
             const { tokenIds, contractAddress } = req.body;
 
-            const status = await nftActivity.getStakedStatus(tokenIds, contractAddress);
+            const status = await nftActivity.getStakedStatus(tokenIds as Array<string>, contractAddress);
 
             res.json({'success': true, 'message': '', 'data': status});
         } catch (error) {

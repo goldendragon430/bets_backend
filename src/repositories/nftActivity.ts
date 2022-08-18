@@ -10,7 +10,7 @@ class NFTActivityRepository {
             const activity = await NFTActivity.findOne({
                 tokenId,
                 contractAddress,
-                activityType: ActivityType.Staked
+                activity: ActivityType.Staked
             });
             status.push({
                 tokenId: tokenId,
