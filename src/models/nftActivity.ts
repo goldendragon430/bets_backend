@@ -9,6 +9,7 @@ const nftActivitySchema = new Schema({
             enum: [ActivityType.Transfer, ActivityType.Staked, ActivityType.Unstaked],
             default: ActivityType.Transfer
         },
+        betContractAddress: String,
         contractAddress: String,
         from: String,
         to: String,

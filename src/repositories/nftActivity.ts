@@ -23,18 +23,22 @@ class NFTActivityRepository {
     getActiveTotalNftStakedAmount = async (battle: any) => {
         const collectionAStakedCount = await NFTActivity.count({
             contractAddress: battle.projectL?.contract,
+            betContractAddress: battle.betContractAddress,
             activity: ActivityType.Staked
         });
         const collectionBStakedCount = await NFTActivity.count({
             contractAddress: battle.projectR?.contract,
+            betContractAddress: battle.betContractAddress,
             activity: ActivityType.Staked
         });
         const collectionAUnstakedCount = await NFTActivity.count({
             contractAddress: battle.projectL?.contract,
+            betContractAddress: battle.betContractAddress,
             activity: ActivityType.Unstaked
         });
         const collectionBUnstakedCount = await NFTActivity.count({
             contractAddress: battle.projectR?.contract,
+            betContractAddress: battle.betContractAddress,
             activity: ActivityType.Unstaked
         });
 
@@ -56,9 +60,11 @@ class NFTActivityRepository {
         tokenId: string,
         transactionHash: string,
         blockNumber: number,
+        betContractAddress: string = '',
     ) => {
         const nftActivityInstance = new NFTActivity({
             contractAddress,
+            betContractAddress,
             activity,
             from,
             to,

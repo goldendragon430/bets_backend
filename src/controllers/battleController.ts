@@ -45,17 +45,39 @@ export default class BattleController {
     };
 
     /**
+     * @description Get Battles Function
+     * @param req
+     * @param res
+     * @param next
+     */
+    getBattle = async (req: Request, res: Response, next: NextFunction) => {
+        const { battleId } = req.params;
+        try {
+            const battleInstance = await battle.getBattle(battleId as string);
+
+            res.json({'success': true, 'message': '', 'data': battleInstance});
+        } catch (error) {
+            apiErrorHandler(error, req, res, 'Get Tx failed.');
+        }
+    };
+
+    /**
      * @description Get status of NFT tokenIds
      * @param req
      * @param res
      * @param next
      */
     getActiveTotalNftStakedAmount = async (req: Request, res: Response, next: NextFunction) => {
+        const { battleId } = req.params;
+
         try {
-            const activeBattle = await battle.getActiveBattle();
+            if (!battleId) {
+                return res.status(400).json({'success': false, 'message': 'BattleId is required.'});
+            }
+            const activeBattle = await battle.getBattle(battleId as string);
 
             if (!activeBattle) {
-                return res.status(400).json({'success': false, 'message': 'No active battle found.'});
+                return res.status(400).json({'success': false, 'message': 'No battle found.'});
             }
 
             const totalStakedAmount = await nftActivity.getActiveTotalNftStakedAmount(activeBattle);

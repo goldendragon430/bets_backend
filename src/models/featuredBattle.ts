@@ -10,6 +10,10 @@ const featuredBattleSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'project'
     },
+    betContractAddress: {
+        type: String,
+        required: true,
+    },
     startDate: Date,
     endDate: Date,
     winner: Schema.Types.ObjectId,

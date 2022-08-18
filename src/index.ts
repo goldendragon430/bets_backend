@@ -23,7 +23,10 @@ export default class Server {
 
     public connect(): void {
         mongoose.connect(process.env.DB_CONFIG as string)
-            .then(() => console.log('Connected to Database'))
+            .then(() => {
+                console.log('Connected to Database');
+                installBetEvents();
+            })
             .catch(err => {
                 throw new Error(err);
             });
@@ -39,8 +42,6 @@ export default class Server {
         app.use(rateLimiter()); //  apply to all requests
         app.use(unCoughtErrorHandler);
         app.use(multer({dest: './uploads/'}).any());
-
-        installBetEvents();
     }
 
     public initRedis(): void {

@@ -7,6 +7,7 @@ import { nftTransferFunc, nftStakedFunc } from './getEventFunc';
 import * as ERC721ContractABI from '../abis/erc721.json';
 import battle from '../repositories/featuredBattle';
 import project from '../repositories/project';
+import * as BetContractAbi from '../abis/BetABI.json';
 
 mongoose.set('debug', true);
 mongoose.connect(process.env.DB_CONFIG as string)
@@ -35,8 +36,9 @@ mongoose.connect(process.env.DB_CONFIG as string)
             }
         };
 
-        const getNFTStakedEvent = async () => {
+        const getNFTStakedEvent = async (betContractAddress) => {
             try {
+                const betContract = new ethers.Contract(betContractAddress, BetContractAbi, rpcProvider);
                 const events = await betContract.queryFilter(betContract.filters.NFTStaked());
 
                 if (events.length > 0) {
@@ -46,7 +48,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
                             const user = ev.args.user;
                             const tokenIds = ev.args.tokenIds;
 
-                            await nftStakedFunc(collectionAddress, user, tokenIds, ev);
+                            await nftStakedFunc(collectionAddress, user, tokenIds, ev, betContractAddress);
                         }
                     }
                 }
@@ -59,9 +61,8 @@ mongoose.connect(process.env.DB_CONFIG as string)
         if (activeBattle) {
             await getNFTTransferEvent(activeBattle.projectL?.contract || '');
             await getNFTTransferEvent(activeBattle.projectR?.contract || '');
+            await getNFTStakedEvent(activeBattle.betContractAddress);
         }
-
-        await getNFTStakedEvent();
 
         process.exit(0);
     })

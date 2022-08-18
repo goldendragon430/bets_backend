@@ -13,12 +13,12 @@ export const nftTransferFunc = async (contractAddress, from, to, tokenId, event)
     }
 };
 
-export const nftStakedFunc = async (collectionAddress: string, user: string, tokenIds: Array<number>, event) => {
+export const nftStakedFunc = async (collectionAddress: string, user: string, tokenIds: Array<number>, event, betContractAddress) => {
     try {
         const activity = await nftActivity.getNFTActivity(event.transactionHash);
         if (!activity) {
             for (const tokenId of tokenIds) {
-                await nftActivity.addNFTActivity(collectionAddress, ActivityType.Staked, user, user, tokenId.toString(), event.transactionHash, event.blockNumber);
+                await nftActivity.addNFTActivity(collectionAddress, ActivityType.Staked, user, user, tokenId.toString(), event.transactionHash, event.blockNumber, betContractAddress);
             }
         }
     } catch (e) {

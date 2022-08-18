@@ -45,6 +45,7 @@ const insertFeaturedBattles = async () => {
         {
             'projectL': projectL,
             'projectR': projectR,
+            betContractAddress: '0x3224b47Ed06c25bd2BcD54aaE4Fab90777504dBa',
             'startDate': new Date('2022-08-01 00:00:00'),
             'endDate': new Date('2022-09-01 00:00:00'),
         }]);
