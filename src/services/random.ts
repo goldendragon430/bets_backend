@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 
 async function main() {
     const signer =  new ethers.Wallet(process.env.PRIVATE_KEY as string, rpcProvider);
-    const tx = await betContract.connect(signer).stakeNftA([14]);
+    const tx = await betContract.connect(signer).stakeNftA([15]);
     console.log(tx);
     await tx.wait();
     console.log('Staked');
