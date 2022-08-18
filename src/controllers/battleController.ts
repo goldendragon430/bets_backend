@@ -52,9 +52,9 @@ export default class BattleController {
      */
     getNFTStakedStatus = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { tokenIds } = req.body;
+            const { tokenIds, contractAddress } = req.body;
 
-            const status = await nftActivity.getStakedStatus(tokenIds);
+            const status = await nftActivity.getStakedStatus(tokenIds, contractAddress);
 
             res.json({'success': true, 'message': '', 'data': status});
         } catch (error) {

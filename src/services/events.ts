@@ -5,10 +5,14 @@ dotenv.config();
 import * as BetContractAbi from '../abis/BetABI.json';
 
 export const installBetEvents = () => {
-    const wsProvider = new ethers.providers.WebSocketProvider(node_url.providerUrl);
+    const wsProvider = new ethers.providers.WebSocketProvider(node_url.rpcUrl);
     const contract = new ethers.Contract(CONTRACT.BET_CONTRACT, BetContractAbi, wsProvider);
 
     contract.on('NFTStaked', (collectionAddress, user, tokenIds) => {
-        console.log(collectionAddress, user, tokenIds);
+        console.log(collectionAddress);
+        console.log(user);
+        console.log(tokenIds);
     });
+
+    console.log('Initialized Bet Events');
 };
