@@ -5,7 +5,7 @@ export const node_url = {
 };
 
 export const CONTRACT = {
-    'BET_CONTRACT': '0xc1Aef82B0EbD8cd3e15b25fe1b2895ADa1631122'
+    'BET_CONTRACT': '0x3224b47Ed06c25bd2BcD54aaE4Fab90777504dBa'
 };
 
 export const REDIS_CONFIG = {
