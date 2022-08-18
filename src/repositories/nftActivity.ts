@@ -20,6 +20,30 @@ class NFTActivityRepository {
         return status;
     }
 
+    getActiveTotalNftStakedAmount = async (battle: any) => {
+        const collectionAStakedCount = await NFTActivity.count({
+            contractAddress: battle.projectL?.contract,
+            activity: ActivityType.Staked
+        });
+        const collectionBStakedCount = await NFTActivity.count({
+            contractAddress: battle.projectR?.contract,
+            activity: ActivityType.Staked
+        });
+        const collectionAUnstakedCount = await NFTActivity.count({
+            contractAddress: battle.projectL?.contract,
+            activity: ActivityType.Unstaked
+        });
+        const collectionBUnstakedCount = await NFTActivity.count({
+            contractAddress: battle.projectR?.contract,
+            activity: ActivityType.Unstaked
+        });
+
+        return {
+            collectionA: collectionAStakedCount - collectionAUnstakedCount,
+            collectionB: collectionBStakedCount - collectionBUnstakedCount,
+        };
+    }
+
     getNFTActivity = async (txHash) => {
         return NFTActivity.findOne({ transactionHash: txHash });
     }
