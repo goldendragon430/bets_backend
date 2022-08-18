@@ -50,6 +50,24 @@ export default class BattleController {
      * @param res
      * @param next
      */
+    getTotalNFTStakedAmount = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { tokenIds, contractAddress } = req.body;
+
+            const status = await nftActivity.getStakedStatus(tokenIds, contractAddress);
+
+            res.json({'success': true, 'message': '', 'data': status});
+        } catch (error) {
+            apiErrorHandler(error, req, res, 'Get Tx failed.');
+        }
+    };
+
+    /**
+     * @description Get status of NFT tokenIds
+     * @param req
+     * @param res
+     * @param next
+     */
     getNFTStakedStatus = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { tokenIds, contractAddress } = req.body;
