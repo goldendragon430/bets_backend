@@ -4,12 +4,13 @@ import { ActivityType } from '../utils/enums';
 class NFTActivityRepository {
     constructor() {}
 
-    getStakedStatus = async (tokenIds: Array<string>, contractAddress: string) => {
+    getStakedStatus = async (tokenIds: Array<string>, contractAddress: string, betContractAddress: string) => {
         const status: Array<{ tokenId: string, status: boolean }> = [];
         for (const tokenId of tokenIds) {
             const activity = await NFTActivity.findOne({
                 tokenId,
                 contractAddress,
+                betContractAddress,
                 activity: ActivityType.Staked
             });
             status.push({

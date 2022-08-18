@@ -3,14 +3,14 @@ dotenv.config();
 import mongoose from 'mongoose';
 import * as cron from 'node-cron';
 import { ethers } from 'ethers';
-import redisHandle from '../utils/redis';
-import { rpcProvider, betContract } from '../utils';
-import { nftStakedFunc, nftTransferFunc } from '../services/getEventFunc';
-import * as ERC721ContractABI from '../abis/erc721.json';
-import battle from '../repositories/featuredBattle';
-import project from '../repositories/project';
-import { CONTRACT } from '../config';
-import * as BetContractAbi from '../abis/BetABI.json';
+import redisHandle from '../../utils/redis';
+import { rpcProvider, betContract } from '../../utils';
+import { nftStakedFunc, nftTransferFunc } from '../../services/getEventFunc';
+import * as ERC721ContractABI from '../../abis/erc721.json';
+import battle from '../../repositories/featuredBattle';
+import project from '../../repositories/project';
+import { CONTRACT } from '../../config';
+import * as BetContractAbi from '../../abis/BetABI.json';
 
 mongoose.set('debug', true);
 mongoose.connect(process.env.DB_CONFIG as string)
@@ -127,12 +127,15 @@ mongoose.connect(process.env.DB_CONFIG as string)
             });
         };
 
-        const activeBattle = await battle.getActiveBattle();
-        if (activeBattle) {
-            await getNFTTransferEvent(activeBattle.projectL?.contract || '');
-            await getNFTTransferEvent(activeBattle.projectR?.contract || '');
-            await getNFTStakedEvent(activeBattle.betContractAddress);
-        }
+        const activeBattles = await battle.getActiveBattles();
+        activeBattles.map(async (activeBattle) => {
+            if (activeBattle) {
+                await getNFTTransferEvent(activeBattle.projectL?.contract || '');
+                await getNFTTransferEvent(activeBattle.projectR?.contract || '');
+                await getNFTStakedEvent(activeBattle.betContractAddress);
+            }
+        });
+
     })
     .catch(err => {
         throw new Error(err);

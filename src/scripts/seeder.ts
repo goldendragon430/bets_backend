@@ -45,7 +45,7 @@ const insertFeaturedBattles = async () => {
         {
             'projectL': projectL,
             'projectR': projectR,
-            betContractAddress: '0x3224b47Ed06c25bd2BcD54aaE4Fab90777504dBa',
+            betContractAddress: '0xf5Dd11a1de41D13Bd4553D36333E0134Ecee740C',
             'startDate': new Date('2022-08-01 00:00:00'),
             'endDate': new Date('2022-09-01 00:00:00'),
         }]);
@@ -53,7 +53,7 @@ const insertFeaturedBattles = async () => {
 
 async function main() {
     await dbConnect();
-    await insertProjects();
+    // await insertProjects();
     await insertFeaturedBattles();
     console.log('Seeded');
     process.exit(1);

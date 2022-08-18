@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { apiErrorHandler } from '../handlers/errorHandler';
-import battle from '../repositories/featuredBattle';
+import BattleRepository from '../repositories/featuredBattle';
 import project from '../repositories/project';
 import stakedNFT from '../repositories/stakedNFT';
 import tokenTx from '../repositories/tokenTx';
 import nftActivity from '../repositories/nftActivity';
+import { installBetEventsByAddress } from '../services/events';
 
 export default class BattleController {
     constructor() {
@@ -20,7 +21,7 @@ export default class BattleController {
         const {} = req.body;
 
         try {
-            const battles = await battle.getFeaturedBattles();
+            const battles = await BattleRepository.getFeaturedBattles();
 
             res.json({'success': true, 'message': '', 'data': battles});
         } catch (error) {
@@ -34,11 +35,11 @@ export default class BattleController {
      * @param res
      * @param next
      */
-    getActiveBattle = async (req: Request, res: Response, next: NextFunction) => {
+    getActiveBattleIds = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const activeBattle = await battle.getActiveBattle();
+            const activeBattleIds = await BattleRepository.getActiveBattleIds();
 
-            res.json({'success': true, 'message': '', 'data': activeBattle});
+            res.json({'success': true, 'message': '', 'data': activeBattleIds});
         } catch (error) {
             apiErrorHandler(error, req, res, 'Get Tx failed.');
         }
@@ -53,7 +54,7 @@ export default class BattleController {
     getBattle = async (req: Request, res: Response, next: NextFunction) => {
         const { battleId } = req.params;
         try {
-            const battleInstance = await battle.getBattle(battleId as string);
+            const battleInstance = await BattleRepository.getBattle(battleId as string);
 
             res.json({'success': true, 'message': '', 'data': battleInstance});
         } catch (error) {
@@ -74,13 +75,13 @@ export default class BattleController {
             if (!battleId) {
                 return res.status(400).json({'success': false, 'message': 'BattleId is required.'});
             }
-            const activeBattle = await battle.getBattle(battleId as string);
+            const battle = await BattleRepository.getBattle(battleId as string);
 
-            if (!activeBattle) {
+            if (!battle) {
                 return res.status(400).json({'success': false, 'message': 'No battle found.'});
             }
 
-            const totalStakedAmount = await nftActivity.getActiveTotalNftStakedAmount(activeBattle);
+            const totalStakedAmount = await nftActivity.getActiveTotalNftStakedAmount(battle);
 
             res.json({'success': true, 'message': '', 'data': totalStakedAmount});
         } catch (error) {
@@ -96,9 +97,15 @@ export default class BattleController {
      */
     getNFTStakedStatus = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { tokenIds, contractAddress } = req.body;
+            const { tokenIds, contractAddress, battleId } = req.body;
 
-            const status = await nftActivity.getStakedStatus(tokenIds as Array<string>, contractAddress);
+            const battle = await BattleRepository.getBattle(battleId);
+
+            if (!battle) {
+                return res.status(400).json({'success': false, 'message': 'No battle found.'});
+            }
+
+            const status = await nftActivity.getStakedStatus(tokenIds as Array<string>, contractAddress, battle.betContractAddress);
 
             res.json({'success': true, 'message': '', 'data': status});
         } catch (error) {
@@ -116,20 +123,24 @@ export default class BattleController {
         const {
             startDate,
             endDate,
-            project1: project1_id,
-            project2: project2_id,
+            betContractAddress,
+            projectL: projectL_id,
+            projectR: projectR_id,
         } = req.body;
 
         try {
-            const project1 = await project.getProject(project1_id);
-            const project2 = await project.getProject(project2_id);
+            const projectL = await project.getProject(projectL_id);
+            const projectR = await project.getProject(projectR_id);
 
-            const battleInstance = await battle.addFeaturedBattle(
+            const battleInstance = await BattleRepository.addFeaturedBattle(
                 startDate,
                 endDate,
-                project1,
-                project2,
+                betContractAddress,
+                projectL,
+                projectR,
             );
+
+            installBetEventsByAddress(betContractAddress);
 
             res.json({'success': true, 'message': '', 'data': battleInstance});
         } catch (error) {

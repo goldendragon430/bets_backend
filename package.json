@@ -7,9 +7,9 @@
     "compile": "npm run transpile",
     "dev": "concurrently \"npm:watch\" \"npm:serve\"",
     "serve": "nodemon server.js",
-    "cron": "ts-node src/cron/index.ts",
-    "seed": "ts-node src/utils/seeder.ts",
-    "sync_past_events": "ts-node src/services/past_events_sync.ts",
+    "cron": "ts-node src/scripts/cron/index.ts",
+    "seed": "ts-node src/scripts/seeder.ts",
+    "sync_events": "ts-node src/scripts/past_events_sync.ts",
     "watch": "tsc -w",
     "transpile": "tsc",
     "lint": "tslint -c tslint.json -p tsconfig.json"

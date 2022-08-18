@@ -1,9 +1,10 @@
 import * as dotenv from 'dotenv';
+
 dotenv.config();
 import mongoose from 'mongoose';
 import { ethers } from 'ethers';
 import { rpcProvider, betContract } from '../utils';
-import { nftTransferFunc, nftStakedFunc } from './getEventFunc';
+import { nftTransferFunc, nftStakedFunc } from '../services/getEventFunc';
 import * as ERC721ContractABI from '../abis/erc721.json';
 import battle from '../repositories/featuredBattle';
 import project from '../repositories/project';
@@ -30,7 +31,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
                         }
                     }
                 }
-                console.log(`${events.length} events found on ${nftAddress}`);
+                console.log(`${events.length} NFTTransfer events found on ${nftAddress}`);
             } catch (e) {
                 console.log('getNFTTransferEvent error: ', e);
             }
@@ -52,17 +53,22 @@ mongoose.connect(process.env.DB_CONFIG as string)
                         }
                     }
                 }
+                console.log(`${events.length} NFTStaked events found on ${betContractAddress}`);
             } catch (e) {
                 console.log('getNFTStakedEvent error: ', e);
             }
         };
 
-        const activeBattle = await battle.getActiveBattle();
-        if (activeBattle) {
-            await getNFTTransferEvent(activeBattle.projectL?.contract || '');
-            await getNFTTransferEvent(activeBattle.projectR?.contract || '');
-            await getNFTStakedEvent(activeBattle.betContractAddress);
-        }
+        const activeBattles = await battle.getActiveBattles();
+        await Promise.all(
+            activeBattles.map(async (activeBattle) => {
+                if (activeBattle) {
+                    await getNFTTransferEvent(activeBattle.projectL?.contract || '');
+                    await getNFTTransferEvent(activeBattle.projectR?.contract || '');
+                    await getNFTStakedEvent(activeBattle.betContractAddress);
+                }
+            })
+        );
 
         process.exit(0);
     })
