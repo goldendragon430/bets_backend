@@ -35,6 +35,13 @@ class FeaturedBattleRepository {
         });
     };
 
+    getBattleHistories = async () => {
+        const battles = await FeaturedBattle.find()
+        return battles.map((item) => {
+            return item.toJSON();
+        })
+    }
+
     getActiveBattles = async () => {
         const battleIds = await this.getActiveBattleIds();
         return await Promise.all(

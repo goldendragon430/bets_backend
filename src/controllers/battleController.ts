@@ -51,6 +51,22 @@ export default class BattleController {
      * @param res
      * @param next
      */
+     getBattleHistories = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const battles = await BattleRepository.getBattleHistories();
+
+            res.json({'success': true, 'message': '', 'data': battles});
+        } catch (error) {
+            apiErrorHandler(error, req, res, 'Get Battle Histories failed.');
+        }
+    };
+
+    /**
+     * @description Get Battles Function
+     * @param req
+     * @param res
+     * @param next
+     */
     getBattle = async (req: Request, res: Response, next: NextFunction) => {
         const { battleId } = req.params;
         try {
