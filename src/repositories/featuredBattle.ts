@@ -1,4 +1,5 @@
 import FeaturedBattle from '../models/featuredBattle';
+import { NetworkType } from '../utils/enums';
 import ProjectRepository from './project';
 
 class FeaturedBattleRepository {
@@ -8,6 +9,10 @@ class FeaturedBattleRepository {
     getFeaturedBattles = async () => {
         return FeaturedBattle.find({});
     };
+
+    getBattleByQuery = async (where: any) => {
+        return FeaturedBattle.findOne(where);
+    }
 
     getBattle = async (battle_id) => {
         const battle = await FeaturedBattle.findById(battle_id);
@@ -53,15 +58,17 @@ class FeaturedBattleRepository {
 
     addFeaturedBattle = async (
         startDate: string,
-        endDate: string,
+        battleLength: number,
         betContractAddress: string,
+        network: NetworkType,
         projectL: any,
         projectR: any,
     ) => {
         const battle = new FeaturedBattle({
             startDate: new Date(startDate),
-            endDate: new Date(endDate),
+            battleLength,
             betContractAddress,
+            network,
             projectL,
             projectR,
         });

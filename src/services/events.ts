@@ -18,11 +18,11 @@ export const installBetEvents = async () => {
 };
 
 export const installBetEventsByAddress = (betContractAddress) => {
-    const wsProvider = new ethers.providers.WebSocketProvider(node_url.rpcUrl);
-    const betContract = new ethers.Contract(betContractAddress, BetContractAbi, wsProvider);
+    const rpcProvider = new ethers.providers.JsonRpcProvider(node_url.rpcUrl);
+    const betContract = new ethers.Contract(betContractAddress, BetContractAbi, rpcProvider);
 
     betContract.on('NFTStaked', async (collectionAddress, user, tokenIds) => {
-        const blockNumber = await wsProvider.getBlockNumber();
+        const blockNumber = await rpcProvider.getBlockNumber();
         const events = await betContract.queryFilter(betContract.filters.NFTStaked(), blockNumber);
 
         if (events.length > 0) {

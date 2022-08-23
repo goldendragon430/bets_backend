@@ -53,10 +53,10 @@ const insertFeaturedBattles = async () => {
 
 async function main() {
     await dbConnect();
-    // await insertProjects();
+    await insertProjects();
     await insertFeaturedBattles();
     console.log('Seeded');
-    process.exit(1);
+    process.exit(0);
 }
 
 
