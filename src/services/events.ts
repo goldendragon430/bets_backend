@@ -2,7 +2,6 @@ import { ethers } from 'ethers';
 import * as dotenv from 'dotenv';
 import { node_url } from '../config';
 import * as BetContractAbi from '../abis/BetABI.json';
-import { betContract } from '../utils';
 import { nftStakedFunc } from './getEventFunc';
 import BattleRepository from '../repositories/featuredBattle';
 dotenv.config();
@@ -20,9 +19,9 @@ export const installBetEvents = async () => {
 
 export const installBetEventsByAddress = (betContractAddress) => {
     const wsProvider = new ethers.providers.WebSocketProvider(node_url.rpcUrl);
-    const contract = new ethers.Contract(betContractAddress, BetContractAbi, wsProvider);
+    const betContract = new ethers.Contract(betContractAddress, BetContractAbi, wsProvider);
 
-    contract.on('NFTStaked', async (collectionAddress, user, tokenIds) => {
+    betContract.on('NFTStaked', async (collectionAddress, user, tokenIds) => {
         const blockNumber = await wsProvider.getBlockNumber();
         const events = await betContract.queryFilter(betContract.filters.NFTStaked(), blockNumber);
 

@@ -3,11 +3,10 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import mongoose from 'mongoose';
 import { ethers } from 'ethers';
-import { rpcProvider, betContract } from '../utils';
+import { rpcProvider } from '../utils';
 import { nftTransferFunc, nftStakedFunc } from '../services/getEventFunc';
 import * as ERC721ContractABI from '../abis/erc721.json';
 import battle from '../repositories/featuredBattle';
-import project from '../repositories/project';
 import * as BetContractAbi from '../abis/BetABI.json';
 
 mongoose.set('debug', true);

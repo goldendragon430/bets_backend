@@ -4,12 +4,11 @@ import mongoose from 'mongoose';
 import * as cron from 'node-cron';
 import { ethers } from 'ethers';
 import redisHandle from '../../utils/redis';
-import { rpcProvider, betContract } from '../../utils';
+import { rpcProvider } from '../../utils';
 import { nftStakedFunc, nftTransferFunc } from '../../services/getEventFunc';
 import * as ERC721ContractABI from '../../abis/erc721.json';
 import battle from '../../repositories/featuredBattle';
 import project from '../../repositories/project';
-import { CONTRACT } from '../../config';
 import * as BetContractAbi from '../../abis/BetABI.json';
 
 mongoose.set('debug', true);
