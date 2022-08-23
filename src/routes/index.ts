@@ -13,10 +13,10 @@ export default class Routes {
     app.use('/api/v1/battles', featuredBattleRouter);
     // Third party routes
     app.use('/api/v1', thirdPartyRouter);
+    // project routes
+    app.use('/api/v1/projects', projectRouter);
     // // tokenTxs routes
     // app.use('/api/v1/tokentxs', tokenTxRouter);
-    // // project routes
-    // app.use('/api/v1/projects', projectRouter);
     // // users routes
     // app.use('/api/v1/users', usersRouter);
     // // nftStaked routes

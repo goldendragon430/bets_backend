@@ -1,17 +1,36 @@
 import * as mongoose from 'mongoose';
+import { NetworkType } from '../utils/enums';
+
 const Schema = mongoose.Schema;
 
 const projectSchema = new Schema({
-    name: String,
+    name: {
+        type: String,
+        required: true,
+    },
     subName: String,
-    contract: String,
+    network: {
+        type: String,
+        enum: [NetworkType.ETH, NetworkType.SOL, NetworkType.ADA],
+        default: NetworkType.ETH,
+    },
+    contract: {
+        type: String,
+        required: true,
+    },
     collectionSize: Number,
-    twitterID: String,
+    twitterID: {
+        type: String,
+        required: true,
+    },
+    creator: String,
     metadataFilter: String,
+    comment: String,
     logo: String,
     headerImage: String,
     openSeaLink: String,
     magicEdenLink: String,
+    discordLink: String,
 },
 { timestamps: true });
 

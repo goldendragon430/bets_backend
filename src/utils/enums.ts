@@ -3,3 +3,9 @@ export enum ActivityType {
     Staked = 'Staked',
     Unstaked = 'Unstaked',
 }
+
+export enum NetworkType {
+    ETH = 'Ethereum',
+    SOL = 'Solana',
+    ADA = 'Cardano',
+}
