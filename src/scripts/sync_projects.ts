@@ -12,29 +12,29 @@ const dbConnect = async () => {
         });
 };
 
-const googleSheetLoadfromUrl = async (sheetNameParam = "Eth Projects - Updated") => {
+const googleSheetLoadfromUrl = async (sheetNameParam = 'Eth Projects - Updated') => {
     const base = `https://docs.google.com/spreadsheets/d/1dOzbFEuQzDGw0SeHKCSyuWOYq0ogv9d7upO_KarnUK8/gviz/tq?`;
     const sheetName = sheetNameParam;
-    const query = encodeURIComponent("Select *");
+    const query = encodeURIComponent('Select *');
     const url = `${base}&sheet=${sheetName}&tq=${query}`;
 
     try {
         const { data: json } = await axios.get(url);
         const data: Array<any> = [];
-        //Remove additional text and extract only JSON:
+        // Remove additional text and extract only JSON:
         const jsonData = JSON.parse(json.substring(47).slice(0, -2));
 
-        //extract row data:
+        // extract row data:
         jsonData.table.rows.forEach((rowData) => {
-            const name = rowData.c[0] != null ? rowData.c[0].v : "";
-            const subName = rowData.c[1] != null ? rowData.c[1].v : "";
-            const collectionSize = rowData.c[3] != null ? rowData.c[3].v : "";
-            const openseaLink = rowData.c[6] != null ? rowData.c[6].v : "";
-            const twitterLink = rowData.c[7] != null ? rowData.c[7].v : "";
-            const headerImage = rowData.c[8] != null ? rowData.c[8].v : "";
-            const logoImage = rowData.c[9] != null ? rowData.c[9].v : "";
-            const contractAddress = rowData.c[10] != null ? rowData.c[10].v : "";
-            const bannerImage = rowData.c[11] != null ? rowData.c[11].v : "";
+            const name = rowData.c[0] != undefined ? rowData.c[0].v : '';
+            const subName = rowData.c[1] != undefined ? rowData.c[1].v : '';
+            const collectionSize = rowData.c[3] != undefined ? rowData.c[3].v : '';
+            const openseaLink = rowData.c[6] != undefined ? rowData.c[6].v : '';
+            const twitterLink = rowData.c[7] != undefined ? rowData.c[7].v : '';
+            const headerImage = rowData.c[8] != undefined ? rowData.c[8].v : '';
+            const logoImage = rowData.c[9] != undefined ? rowData.c[9].v : '';
+            const contractAddress = rowData.c[10] != undefined ? rowData.c[10].v : '';
+            const bannerImage = rowData.c[11] != undefined ? rowData.c[11].v : '';
 
             data.push({
                 name: name,
@@ -61,7 +61,7 @@ const insertProjects = async (datas) => {
 async function main() {
     await dbConnect();
     const dataFromSheet = await googleSheetLoadfromUrl();
-    console.log(dataFromSheet)
+    console.log(dataFromSheet);
     await insertProjects(dataFromSheet);
     console.log('Seeded projects');
     process.exit(1);

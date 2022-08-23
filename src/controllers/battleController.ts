@@ -1,10 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { apiErrorHandler } from '../handlers/errorHandler';
 import BattleRepository from '../repositories/featuredBattle';
-import project from '../repositories/project';
-import stakedNFT from '../repositories/stakedNFT';
-import tokenTx from '../repositories/tokenTx';
-import nftActivity from '../repositories/nftActivity';
+import ProjectRepository from '../repositories/project';
+import nftActivityRepository from '../repositories/nftActivity';
 import { installBetEventsByAddress } from '../services/events';
 
 export default class BattleController {
@@ -97,7 +95,7 @@ export default class BattleController {
                 return res.status(400).json({'success': false, 'message': 'No battle found.'});
             }
 
-            const totalStakedAmount = await nftActivity.getActiveTotalNftStakedAmount(battle);
+            const totalStakedAmount = await nftActivityRepository.getActiveTotalNftStakedAmount(battle);
 
             res.json({'success': true, 'message': '', 'data': totalStakedAmount});
         } catch (error) {
@@ -121,7 +119,7 @@ export default class BattleController {
                 return res.status(400).json({'success': false, 'message': 'No battle found.'});
             }
 
-            const status = await nftActivity.getStakedStatus(tokenIds as Array<string>, contractAddress, battle.betContractAddress);
+            const status = await nftActivityRepository.getStakedStatus(tokenIds as Array<string>, contractAddress, battle.betContractAddress);
 
             res.json({'success': true, 'message': '', 'data': status});
         } catch (error) {
@@ -145,8 +143,8 @@ export default class BattleController {
         } = req.body;
 
         try {
-            const projectL = await project.getProject(projectL_id);
-            const projectR = await project.getProject(projectR_id);
+            const projectL = await ProjectRepository.getProject(projectL_id);
+            const projectR = await ProjectRepository.getProject(projectR_id);
 
             const battleInstance = await BattleRepository.addFeaturedBattle(
                 startDate,

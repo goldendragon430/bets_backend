@@ -10,7 +10,6 @@ class FeaturedBattleRouter {
   }
 
   initializeRoutes() {
-    // this.router.route('/').get(this.BattleController.getBattles);
     this.router.route('/add').post(this.BattleController.addBattle);
     this.router.route('/get_active_battle_ids').get(this.BattleController.getActiveBattleIds);
     this.router.route('/get_battle_by_id/:battleId').get(this.BattleController.getBattle);
