@@ -1,6 +1,7 @@
 import FeaturedBattle from '../models/featuredBattle';
 import { NetworkType } from '../utils/enums';
 import ProjectRepository from './project';
+import { rpcProvider } from '../utils';
 
 class FeaturedBattleRepository {
     constructor() {
@@ -29,10 +30,12 @@ class FeaturedBattleRepository {
     };
 
     getActiveBattleIds = async () => {
-        const now = new Date();
+        const blockNumber = await rpcProvider.getBlockNumber()
+        const block = await rpcProvider.getBlock(blockNumber)
+
         const battles = await FeaturedBattle.find({
-            startDate: { $lte: now },
-            endDate: { $gte: now },
+            startTime: { $lte: block.timestamp },
+            endTime: { $gte: block.timestamp },
         });
 
         return battles.map((battle) => {

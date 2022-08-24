@@ -17,6 +17,8 @@ const featuredBattleSchema = new Schema({
         required: true,
     },
     startDate: Date,
+    startTime: Number, // This field is not in ERD but need to be added for filtering of simplicity
+    endTime: Number,// This field is not in ERD but need to be added for filtering of simplicity
     battleLength: Number, // # minutes of battle
     network: {
         type: String,
