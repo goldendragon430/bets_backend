@@ -1,7 +1,7 @@
 import nftActivity from '../repositories/nftActivity';
 import { ActivityType } from '../utils/enums';
 
-export const nftTransferFunc = async (contractAddress, from, to, tokenId, event) => {
+export const nftTransferFunc = async (contractAddress: string, from: string, to: string, tokenId: string, event: any) => {
     try {
         const activity = await nftActivity.getNFTActivity(event.transactionHash);
         if (!activity) {
@@ -13,7 +13,7 @@ export const nftTransferFunc = async (contractAddress, from, to, tokenId, event)
     }
 };
 
-export const nftStakedFunc = async (collectionAddress: string, user: string, tokenIds: Array<number>, event, betContractAddress) => {
+export const nftStakedFunc = async (collectionAddress: string, user: string, tokenIds: Array<number>, event: any, betContractAddress: string) => {
     try {
         const activity = await nftActivity.getNFTActivity(event.transactionHash);
         if (!activity) {

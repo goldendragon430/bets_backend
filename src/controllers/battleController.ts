@@ -162,9 +162,10 @@ export default class BattleController {
             const duplicateBattle = await BattleRepository.getBattleByQuery({
                 startDate: new Date(startDate),
                 battleLength: parseInt(battleLength),
+                betContractAddress,
                 projectL: projectL_id,
                 projectR: projectR_id,
-            })
+            });
 
             if (duplicateBattle) {
                 return res.status(400).json({ 'success': false, 'message': 'Battle is already exist.' });

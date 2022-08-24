@@ -74,7 +74,7 @@ class NFTActivityRepository {
 
             const activity = new NFTActivity({
                 contractAddress,
-                betContractAddress,
+                betContractAddress: staked?.betContractAddress || '',
                 activity: staked ? ActivityType.Unstaked : ActivityType.Transfer,
                 from,
                 to,
