@@ -138,10 +138,10 @@ mongoose.connect(process.env.DB_CONFIG as string)
         });
         const uniqueNFTAddresses = [...new Set(nftContractAddresses.filter((item) => item !== ''))];
         const uniqueBetAddresses = [...new Set(betContractAddresses.filter((item) => item !== ''))];
-        uniqueNFTAddresses.map(async (nftAddress) => { 
+        uniqueNFTAddresses.map(async (nftAddress) => {
             await getNFTTransferEvent(nftAddress);
         });
-        uniqueBetAddresses.map(async (betAddress) => { 
+        uniqueBetAddresses.map(async (betAddress) => {
             await getNFTStakedEvent(betAddress);
         });
 
