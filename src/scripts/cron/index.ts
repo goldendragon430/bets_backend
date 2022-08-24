@@ -6,16 +6,16 @@ import { ethers } from 'ethers';
 import redisHandle from '../../utils/redis';
 import { rpcProvider } from '../../utils';
 import { nftStakedFunc, nftTransferFunc } from '../../services/getEventFunc';
+import BattleRepository from '../../repositories/featuredBattle';
 import * as ERC721ContractABI from '../../abis/erc721.json';
-import battle from '../../repositories/featuredBattle';
-import project from '../../repositories/project';
 import * as BetContractAbi from '../../abis/BetABI.json';
+import { ServiceType } from '../../utils/enums';
 
 mongoose.set('debug', true);
 mongoose.connect(process.env.DB_CONFIG as string)
     .then(async () => {
         console.log('Connected to Database');
-        let redisClient;
+        let redisClient: any;
 
         try {
             await redisHandle.init();
@@ -64,7 +64,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
                                 const to = ev.args.to;
                                 const tokenId = ev.args.tokenId;
 
-                                await nftTransferFunc(nftAddress, from, to, tokenId, ev);
+                                await nftTransferFunc(nftAddress, from, to, tokenId, ev, ServiceType.Cron);
                             }
                         }
                     }
@@ -112,7 +112,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
                                 const user = ev.args.user;
                                 const tokenIds = ev.args.tokenIds;
 
-                                await nftStakedFunc(collectionAddress, user, tokenIds, ev, betContractAddress);
+                                await nftStakedFunc(collectionAddress, user, tokenIds, ev, betContractAddress, ServiceType.Cron);
                             }
                         }
                     }
@@ -126,13 +126,23 @@ mongoose.connect(process.env.DB_CONFIG as string)
             });
         };
 
-        const activeBattles = await battle.getActiveBattles();
+        const activeBattles = await BattleRepository.getActiveBattles();
+        const nftContractAddresses: Array<string> = [];
+        const betContractAddresses: Array<string> = [];
         activeBattles.map(async (activeBattle) => {
             if (activeBattle) {
-                await getNFTTransferEvent(activeBattle.projectL?.contract || '');
-                await getNFTTransferEvent(activeBattle.projectR?.contract || '');
-                await getNFTStakedEvent(activeBattle.betContractAddress);
+                nftContractAddresses.push(activeBattle.projectL?.contract || '');
+                nftContractAddresses.push(activeBattle.projectR?.contract || '');
+                betContractAddresses.push(activeBattle.betContractAddress);
             }
+        });
+        const uniqueNFTAddresses = [...new Set(nftContractAddresses.filter((item) => item !== ''))];
+        const uniqueBetAddresses = [...new Set(betContractAddresses.filter((item) => item !== ''))];
+        uniqueNFTAddresses.map(async (nftAddress) => { 
+            await getNFTTransferEvent(nftAddress);
+        });
+        uniqueBetAddresses.map(async (betAddress) => { 
+            await getNFTStakedEvent(betAddress);
         });
 
     })

@@ -1,5 +1,5 @@
 import NFTActivity from '../models/nftActivity';
-import { ActivityType } from '../utils/enums';
+import { ActivityType, ServiceType } from '../utils/enums';
 
 class NFTActivityRepository {
     constructor() { }
@@ -62,6 +62,7 @@ class NFTActivityRepository {
         transactionHash: string,
         blockNumber: number,
         betContractAddress: string = '',
+        serviceType: ServiceType,
     ) => {
 
         if (activity === ActivityType.Transfer) {
@@ -80,7 +81,8 @@ class NFTActivityRepository {
                 to,
                 tokenId,
                 transactionHash,
-                blockNumber
+                blockNumber,
+                source: serviceType,
             });
 
             return activity.save();
@@ -94,7 +96,8 @@ class NFTActivityRepository {
             to,
             tokenId,
             transactionHash,
-            blockNumber
+            blockNumber,
+            source: serviceType,
         });
 
         return nftActivityInstance.save();

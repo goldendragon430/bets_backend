@@ -21,7 +21,7 @@ const featuredBattleSchema = new Schema({
     network: {
         type: String,
         enum: [NetworkType.ETH, NetworkType.SOL, NetworkType.ADA],
-        default: NetworkType.ETH,
+        defaultValue: NetworkType.ETH,
     },
     winner: {
         type: Schema.Types.ObjectId,

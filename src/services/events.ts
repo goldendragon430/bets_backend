@@ -4,6 +4,7 @@ import { node_url } from '../config';
 import * as BetContractAbi from '../abis/BetABI.json';
 import { nftStakedFunc } from './getEventFunc';
 import BattleRepository from '../repositories/featuredBattle';
+import { ServiceType } from '../utils/enums';
 dotenv.config();
 
 export const installBetEvents = async () => {
@@ -32,7 +33,7 @@ export const installBetEventsByAddress = (betContractAddress) => {
                     const user = ev.args.user;
                     const tokenIds = ev.args.tokenIds;
 
-                    await nftStakedFunc(collectionAddress, user, tokenIds, ev, betContractAddress);
+                    await nftStakedFunc(collectionAddress, user, tokenIds, ev, betContractAddress, ServiceType.Contract);
                 }
             }
         }

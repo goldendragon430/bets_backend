@@ -8,6 +8,7 @@ import { nftTransferFunc, nftStakedFunc } from '../services/getEventFunc';
 import * as ERC721ContractABI from '../abis/erc721.json';
 import battle from '../repositories/featuredBattle';
 import * as BetContractAbi from '../abis/BetABI.json';
+import { ServiceType } from '../utils/enums';
 
 mongoose.set('debug', true);
 mongoose.connect(process.env.DB_CONFIG as string)
@@ -26,7 +27,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
                             const to = ev.args.to;
                             const tokenId = ev.args.tokenId;
 
-                            await nftTransferFunc(nftAddress, from, to, tokenId, ev);
+                            await nftTransferFunc(nftAddress, from, to, tokenId, ev, ServiceType.PastEvent);
                         }
                     }
                 }
@@ -48,7 +49,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
                             const user = ev.args.user;
                             const tokenIds = ev.args.tokenIds;
 
-                            await nftStakedFunc(collectionAddress, user, tokenIds, ev, betContractAddress);
+                            await nftStakedFunc(collectionAddress, user, tokenIds, ev, betContractAddress, ServiceType.PastEvent);
                         }
                     }
                 }

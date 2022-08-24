@@ -9,3 +9,9 @@ export enum NetworkType {
     SOL = 'Solana',
     ADA = 'Cardano',
 }
+
+export enum ServiceType {
+    Cron = 'Cron',
+    PastEvent = 'PastEvent',
+    Contract = 'Contract',
+}
