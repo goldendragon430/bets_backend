@@ -30,8 +30,8 @@ class FeaturedBattleRepository {
     };
 
     getActiveBattleIds = async () => {
-        const blockNumber = await rpcProvider.getBlockNumber()
-        const block = await rpcProvider.getBlock(blockNumber)
+        const blockNumber = await rpcProvider.getBlockNumber();
+        const block = await rpcProvider.getBlock(blockNumber);
 
         const battles = await FeaturedBattle.find({
             startTime: { $lte: block.timestamp },
