@@ -31,8 +31,8 @@ class FeaturedBattleRepository {
     getActiveBattleIds = async () => {
         const now = new Date();
         const battles = await FeaturedBattle.find({
-            startDate: {$lte: now},
-            endDate: {$gte: now},
+            startDate: { $lte: now },
+            endDate: { $gte: now },
         });
 
         return battles.map((battle) => {
@@ -42,9 +42,18 @@ class FeaturedBattleRepository {
 
     getBattleHistories = async () => {
         const battles = await FeaturedBattle.find();
-        return battles.map((item) => {
-            return item.toJSON();
-        });
+        const histories = await Promise.all(
+            battles.map(async (item) => {
+                const projectL = await ProjectRepository.getProjectById(item?.projectL);
+                const projectR = await ProjectRepository.getProjectById(item?.projectR);
+                return Object.assign(item.toJSON(), {
+                    id: item.id,
+                    projectL: projectL?.toJSON(),
+                    projectR: projectR?.toJSON(),
+                });
+            })
+        );
+        return histories;
     }
 
     getActiveBattles = async () => {
