@@ -17,8 +17,8 @@ export default class Routes {
     app.use('/api/v1/projects', projectRouter);
     // // tokenTxs routes
     // app.use('/api/v1/tokentxs', tokenTxRouter);
-    // // users routes
-    // app.use('/api/v1/users', usersRouter);
+    // users routes
+    app.use('/api/v1/users', usersRouter);
     // // nftStaked routes
     // app.use('/api/v1/staked_nfts', stakedNFTRouter);
     // uploads
