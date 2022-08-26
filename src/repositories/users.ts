@@ -4,8 +4,8 @@ import playerWallet from '../models/playerWallet';
 class UsersRepository {
   constructor() {}
 
-  getUser = async (username: string) => {
-    const filters = [{ username }];
+  getUser = async (address: string) => {
+    const filters = [{ address }];
 
     const user = await users.findOne({ $and: filters });
 
@@ -14,6 +14,25 @@ class UsersRepository {
     } else {
       return undefined;
     }
+  }
+
+  createUser = async (address: string) => {
+    const nonce = Math.floor(Math.random() * 1000000);
+    const user = new users({
+      username: address,
+      address,
+      nonce,
+    });
+
+    const savedUser = await user.save();
+
+    return savedUser;
+  }
+
+  updateUser = async (user: any) => {
+    const savedUser = await user.save();
+
+    return savedUser;
   }
 
   addUser = async (username: string) => {
