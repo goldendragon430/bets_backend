@@ -15,6 +15,10 @@ class ProjectRepository {
         return project.findOne({ _id: id });
     }
 
+    getProjectByContract = async (contractAddress: string) => {
+        return project.findOne({ contract: contractAddress });
+    }
+
     addProject = async(
         name: string,
         subName: string,

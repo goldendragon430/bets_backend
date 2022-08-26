@@ -8,7 +8,7 @@ import * as cors from 'cors';
 import rateLimiter from './middlewares/rateLimit';
 import { unCoughtErrorHandler } from './handlers/errorHandler';
 import Routes from './routes';
-import { installBetEvents } from './services/events';
+import { installNFTStakedEvents } from './services/events';
 import redisHandle from './utils/redis';
 
 // app.enable('trust proxy') // only if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
@@ -18,6 +18,7 @@ export default class Server {
         this.config(app);
         this.connect();
         this.initRedis();
+        installNFTStakedEvents();
         new Routes(app);
     }
 
@@ -25,7 +26,6 @@ export default class Server {
         mongoose.connect(process.env.DB_CONFIG as string)
             .then(() => {
                 console.log('Connected to Database');
-                installBetEvents();
             })
             .catch(err => {
                 throw new Error(err);

@@ -4,13 +4,13 @@ import { ActivityType, ServiceType } from '../utils/enums';
 class NFTActivityRepository {
     constructor() { }
 
-    getStakedStatus = async (tokenIds: Array<string>, contractAddress: string, betContractAddress: string) => {
+    getStakedStatus = async (tokenIds: Array<string>, contractAddress: string, battleId: number) => {
         const status: Array<{ tokenId: string, status: boolean }> = [];
         for (const tokenId of tokenIds) {
             const activity = await NFTActivity.findOne({
                 tokenId,
                 contractAddress,
-                betContractAddress,
+                battleId,
                 activity: ActivityType.Staked
             });
             status.push({
@@ -24,22 +24,22 @@ class NFTActivityRepository {
     getActiveTotalNftStakedAmount = async (battle: any) => {
         const collectionAStakedCount = await NFTActivity.count({
             contractAddress: battle.projectL?.contract,
-            betContractAddress: battle.betContractAddress,
+            battleId: battle.battleId,
             activity: ActivityType.Staked
         });
         const collectionBStakedCount = await NFTActivity.count({
             contractAddress: battle.projectR?.contract,
-            betContractAddress: battle.betContractAddress,
+            battleId: battle.battleId,
             activity: ActivityType.Staked
         });
         const collectionAUnstakedCount = await NFTActivity.count({
             contractAddress: battle.projectL?.contract,
-            betContractAddress: battle.betContractAddress,
+            battleId: battle.battleId,
             activity: ActivityType.Unstaked
         });
         const collectionBUnstakedCount = await NFTActivity.count({
             contractAddress: battle.projectR?.contract,
-            betContractAddress: battle.betContractAddress,
+            battleId: battle.battleId,
             activity: ActivityType.Unstaked
         });
 
@@ -54,6 +54,7 @@ class NFTActivityRepository {
     }
 
     addNFTActivity = async (
+        battleId: number,
         contractAddress: string,
         activity: ActivityType,
         from: string,
@@ -61,7 +62,6 @@ class NFTActivityRepository {
         tokenId: string,
         transactionHash: string,
         blockNumber: number,
-        betContractAddress: string = '',
         serviceType: ServiceType,
     ) => {
 
@@ -75,7 +75,7 @@ class NFTActivityRepository {
 
             const activity = new NFTActivity({
                 contractAddress,
-                betContractAddress: staked?.betContractAddress || '',
+                battleId: staked?.battleId || 0,
                 activity: staked ? ActivityType.Unstaked : ActivityType.Transfer,
                 from,
                 to,
@@ -89,8 +89,8 @@ class NFTActivityRepository {
         }
 
         const nftActivityInstance = new NFTActivity({
+            battleId,
             contractAddress,
-            betContractAddress,
             activity,
             from,
             to,

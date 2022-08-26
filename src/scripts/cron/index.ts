@@ -1,28 +1,27 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
-import mongoose from 'mongoose';
-import * as cron from 'node-cron';
 import { ethers } from 'ethers';
+import mongoose from 'mongoose';
+import * as dotenv from 'dotenv';
+import * as cron from 'node-cron';
 import redisHandle from '../../utils/redis';
-import { rpcProvider } from '../../utils';
-import { nftStakedFunc, nftTransferFunc } from '../../services/getEventFunc';
 import BattleRepository from '../../repositories/featuredBattle';
-import * as ERC721ContractABI from '../../abis/erc721.json';
-import * as BetContractAbi from '../../abis/BetABI.json';
+import { rpcProvider } from '../../utils';
+import { battleCreateFunc, nftStakedFunc, nftTransferFunc } from '../../services/getEventFunc';
 import { ServiceType } from '../../utils/enums';
+import { getBetContract } from '../../utils/constants';
+import * as ERC721ContractABI from '../../abis/erc721.json';
+dotenv.config();
 
 mongoose.set('debug', true);
 mongoose.connect(process.env.DB_CONFIG as string)
     .then(async () => {
         console.log('Connected to Database');
-        let redisClient: any;
+
+        const betContract = getBetContract();
 
         try {
             await redisHandle.init();
             redisHandle.onConnect();
             redisHandle.onError();
-
-            redisClient = redisHandle.getRedisClient();
         } catch (e) {
             console.error('redis server connection error: ', e);
         }
@@ -33,17 +32,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
             }
             let latestBlockNumber = await rpcProvider.getBlockNumber() - 10;
 
-            try {
-                const res = await redisClient.get('nftTransferBlock');
-
-                if (res == undefined) {
-                    await redisClient.set('nftTransferBlock', latestBlockNumber);
-                } else {
-                    latestBlockNumber = parseInt(res);
-                }
-            } catch (e) {
-                console.error('redis server error: ', e);
-            }
+            latestBlockNumber = await redisHandle.get('nftTransferBlock', latestBlockNumber);
 
             // Monitoring NFT transfer events for collectionA and collectionB
             cron.schedule('* * * * *', async () => {
@@ -71,7 +60,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
                     console.log(`${events.length} NFT Transfer events found on contract ${nftAddress}`);
 
                     latestBlockNumber = blockNumber;
-                    await redisClient.set('nftTransferBlock', blockNumber);
+                    await redisHandle.set('nftTransferBlock', blockNumber);
                 }
                 catch (e) {
                     console.log('getNFTTransferEvent error: ', e);
@@ -79,26 +68,15 @@ mongoose.connect(process.env.DB_CONFIG as string)
             });
         };
 
-        const getNFTStakedEvent = async (betContractAddress) => {
+        const getNFTStakedEvent = async () => {
             let latestBlockNumber = await rpcProvider.getBlockNumber() - 10;
 
-            try {
-                const res = await redisClient.get('nftStakedBlock');
-
-                if (res == undefined) {
-                    await redisClient.set('nftStakedBlock', latestBlockNumber);
-                } else {
-                    latestBlockNumber = parseInt(res);
-                }
-            } catch (e) {
-                console.error('redis server error: ', e);
-            }
+            latestBlockNumber = await redisHandle.get('nftStakedBlock', latestBlockNumber);
 
             cron.schedule('* * * * *', async () => {
                 try {
                     const blockNumber = await rpcProvider.getBlockNumber();
 
-                    const betContract = new ethers.Contract(betContractAddress, BetContractAbi, rpcProvider);
                     const events = await betContract.queryFilter(
                         betContract.filters.NFTStaked(),
                         latestBlockNumber,
@@ -108,41 +86,77 @@ mongoose.connect(process.env.DB_CONFIG as string)
                     if (events.length > 0) {
                         for (const ev of events) {
                             if (ev.args) {
+                                const battleId = ev.args.battleId;
                                 const collectionAddress = ev.args.collectionAddress;
                                 const user = ev.args.user;
                                 const tokenIds = ev.args.tokenIds;
 
-                                await nftStakedFunc(collectionAddress, user, tokenIds, ev, betContractAddress, ServiceType.Cron);
+                                await nftStakedFunc(battleId, collectionAddress, user, tokenIds, ev, ServiceType.Cron);
                             }
                         }
                     }
                     console.log(`${events.length} NFT Staked events found on contract ${betContract.address}`);
 
                     latestBlockNumber = blockNumber;
-                    await redisClient.set('nftStakedBlock', blockNumber);
+                    await redisHandle.set('nftStakedBlock', blockNumber);
                 } catch (e) {
                     console.log('getNFTStakedEvent error: ', e);
                 }
             });
         };
 
+        const getBattleCreateEvents = async () => {
+            let latestBlockNumber = await rpcProvider.getBlockNumber() - 10;
+
+            latestBlockNumber = await redisHandle.get('battleCreateBlock', latestBlockNumber);
+
+            cron.schedule('* * * * *', async () => {
+                try {
+                    const blockNumber = await rpcProvider.getBlockNumber();
+
+                    const events = await betContract.queryFilter(
+                        betContract.filters.NewBattleCreated(),
+                        latestBlockNumber,
+                        blockNumber
+                    );
+
+                    if (events.length > 0) {
+                        for (const ev of events) {
+                            if (ev.args) {
+                                const battleId = ev.args.battleId;
+                                const startTime = ev.args.startTime;
+                                const endTime = ev.args.endTime;
+                                const teamACollectionAddress = ev.args.teamACollectionAddress;
+                                const teamBCollectionAddress = ev.args.teamBCollectionAddress;
+
+                                await battleCreateFunc(battleId, startTime, endTime, teamACollectionAddress, teamBCollectionAddress);
+                            }
+                        }
+                    }
+                    console.log(`${events.length} CreatedBattle events found on ${betContract.address}`);
+
+                    latestBlockNumber = blockNumber;
+                    await redisHandle.set('battleCreateBlock', blockNumber);
+                } catch (e) {
+                    console.log('getBattleCreateEvents error: ', e);
+                }
+            });
+        };
+
+        await getNFTStakedEvent();
+        await getBattleCreateEvents();
+
         const activeBattles = await BattleRepository.getActiveBattles();
         const nftContractAddresses: Array<string> = [];
-        const betContractAddresses: Array<string> = [];
         activeBattles.map(async (activeBattle) => {
             if (activeBattle) {
                 nftContractAddresses.push(activeBattle.projectL?.contract || '');
                 nftContractAddresses.push(activeBattle.projectR?.contract || '');
-                betContractAddresses.push(activeBattle.betContractAddress);
             }
         });
         const uniqueNFTAddresses = [...new Set(nftContractAddresses.filter((item) => item !== ''))];
-        const uniqueBetAddresses = [...new Set(betContractAddresses.filter((item) => item !== ''))];
         uniqueNFTAddresses.map(async (nftAddress) => {
             await getNFTTransferEvent(nftAddress);
-        });
-        uniqueBetAddresses.map(async (betAddress) => {
-            await getNFTStakedEvent(betAddress);
         });
 
     })

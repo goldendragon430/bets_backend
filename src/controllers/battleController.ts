@@ -3,7 +3,6 @@ import { apiErrorHandler } from '../handlers/errorHandler';
 import BattleRepository from '../repositories/featuredBattle';
 import ProjectRepository from '../repositories/project';
 import nftActivityRepository from '../repositories/nftActivity';
-import { installBetEventsByAddress } from '../services/events';
 import { NetworkType } from '../utils/enums';
 
 export default class BattleController {
@@ -120,7 +119,7 @@ export default class BattleController {
                 return res.status(400).json({ 'success': false, 'message': 'No battle found.' });
             }
 
-            const status = await nftActivityRepository.getStakedStatus(tokenIds as Array<string>, contractAddress, battle.betContractAddress);
+            const status = await nftActivityRepository.getStakedStatus(tokenIds as Array<string>, contractAddress, battle.battleId);
 
             res.json({ 'success': true, 'message': '', 'data': status });
         } catch (error) {
@@ -138,7 +137,7 @@ export default class BattleController {
         const {
             startDate,
             battleLength,
-            betContractAddress,
+            battleId,
             projectL: projectL_id,
             projectR: projectR_id,
         } = req.body;
@@ -151,7 +150,7 @@ export default class BattleController {
                 return res.status(400).json({ 'success': false, 'message': 'Project is not exist.' });
             }
 
-            if (!betContractAddress) {
+            if (!battleId) {
                 return res.status(400).json({ 'success': false, 'message': 'Bet contract address is required.' });
             }
 
@@ -162,7 +161,7 @@ export default class BattleController {
             const duplicateBattle = await BattleRepository.getBattleByQuery({
                 startDate: new Date(startDate),
                 battleLength: parseInt(battleLength),
-                betContractAddress,
+                battleId,
                 projectL: projectL_id,
                 projectR: projectR_id,
             });
@@ -174,13 +173,11 @@ export default class BattleController {
             const battleInstance = await BattleRepository.addFeaturedBattle(
                 startDate,
                 battleLength,
-                betContractAddress,
+                battleId as number,
                 NetworkType.ETH,
                 projectL,
                 projectR,
             );
-
-            installBetEventsByAddress(betContractAddress);
 
             res.json({ 'success': true, 'message': '', 'data': battleInstance });
         } catch (error) {

@@ -68,10 +68,27 @@ class FeaturedBattleRepository {
         );
     };
 
+    addBattle = async (battleId: number, startTime: number, endTime: number, projectLContract: string, projectRContract: string) => {
+        const projectL = await ProjectRepository.getProjectByContract(projectLContract);
+        const projectR = await ProjectRepository.getProjectByContract(projectRContract);
+
+        const battleLength = endTime - startTime;
+        const battle = new FeaturedBattle({
+            startDate: new Date(startTime * 1000),
+            battleId: battleId,
+            startTime: startTime,
+            endTime: endTime,
+            battleLength: battleLength,
+            projectL: projectL,
+            projectR: projectR,
+        });
+        await battle.save();
+    }
+
     addFeaturedBattle = async (
         startDate: string,
         battleLength: number,
-        betContractAddress: string,
+        battleId: number,
         network: NetworkType,
         projectL: any,
         projectR: any,
@@ -79,7 +96,7 @@ class FeaturedBattleRepository {
         const battle = new FeaturedBattle({
             startDate: new Date(startDate),
             battleLength,
-            betContractAddress,
+            battleId,
             network,
             projectL,
             projectR,

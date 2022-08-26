@@ -12,11 +12,14 @@ const featuredBattleSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'project'
     },
-    betContractAddress: {
-        type: String,
+    battleId: {
+        type: Number,
         required: true,
     },
-    startDate: Date,
+    startDate: {
+        type: Date,
+        requried: true,
+    },
     startTime: Number, // This field is not in ERD but need to be added for filtering of simplicity
     endTime: Number, // This field is not in ERD but need to be added for filtering of simplicity
     battleLength: Number, // # minutes of battle

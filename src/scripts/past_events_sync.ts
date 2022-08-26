@@ -1,19 +1,20 @@
 import * as dotenv from 'dotenv';
-
-dotenv.config();
 import mongoose from 'mongoose';
 import { ethers } from 'ethers';
 import { rpcProvider } from '../utils';
-import { nftTransferFunc, nftStakedFunc } from '../services/getEventFunc';
-import * as ERC721ContractABI from '../abis/erc721.json';
-import battle from '../repositories/featuredBattle';
-import * as BetContractAbi from '../abis/BetABI.json';
+import { nftTransferFunc, nftStakedFunc, battleCreateFunc } from '../services/getEventFunc';
 import { ServiceType } from '../utils/enums';
+import { getBetContract } from '../utils/constants';
+import battle from '../repositories/featuredBattle';
+import * as ERC721ContractABI from '../abis/erc721.json';
+dotenv.config();
 
 mongoose.set('debug', true);
 mongoose.connect(process.env.DB_CONFIG as string)
     .then(async () => {
         console.log('Connected to Database');
+
+        const betContract = getBetContract();
 
         const getNFTTransferEvent = async (nftAddress: string) => {
             try {
@@ -37,27 +38,53 @@ mongoose.connect(process.env.DB_CONFIG as string)
             }
         };
 
-        const getNFTStakedEvent = async (betContractAddress) => {
+        const getNFTStakedEvent = async () => {
             try {
-                const betContract = new ethers.Contract(betContractAddress, BetContractAbi, rpcProvider);
                 const events = await betContract.queryFilter(betContract.filters.NFTStaked());
 
                 if (events.length > 0) {
                     for (const ev of events) {
                         if (ev.args) {
+                            const battleId = ev.args.battleId;
                             const collectionAddress = ev.args.collectionAddress;
                             const user = ev.args.user;
                             const tokenIds = ev.args.tokenIds;
 
-                            await nftStakedFunc(collectionAddress, user, tokenIds, ev, betContractAddress, ServiceType.PastEvent);
+                            await nftStakedFunc(battleId, collectionAddress, user, tokenIds, ev, ServiceType.PastEvent);
                         }
                     }
                 }
-                console.log(`${events.length} NFTStaked events found on ${betContractAddress}`);
+                console.log(`${events.length} NFTStaked events found on ${betContract.address}`);
             } catch (e) {
                 console.log('getNFTStakedEvent error: ', e);
             }
         };
+
+        const getBattleCreateEvents = async () => {
+            try {
+                const events = await betContract.queryFilter(betContract.filters.NewBattleCreated());
+
+                if (events.length > 0) {
+                    for (const ev of events) {
+                        if (ev.args) {
+                            const battleId = ev.args.battleId;
+                            const startTime = ev.args.startTime;
+                            const endTime = ev.args.endTime;
+                            const teamACollectionAddress = ev.args.teamACollectionAddress;
+                            const teamBCollectionAddress = ev.args.teamBCollectionAddress;
+
+                            await battleCreateFunc(battleId, startTime, endTime, teamACollectionAddress, teamBCollectionAddress);
+                        }
+                    }
+                }
+                console.log(`${events.length} CreatedBattle events found on ${betContract.address}`);
+            } catch (e) {
+                console.log('getBattleCreateEvents error: ', e);
+            }
+        };
+
+        await getNFTStakedEvent();
+        await getBattleCreateEvents();
 
         const activeBattles = await battle.getActiveBattles();
         await Promise.all(
@@ -65,7 +92,6 @@ mongoose.connect(process.env.DB_CONFIG as string)
                 if (activeBattle) {
                     await getNFTTransferEvent(activeBattle.projectL?.contract || '');
                     await getNFTTransferEvent(activeBattle.projectR?.contract || '');
-                    await getNFTStakedEvent(activeBattle.betContractAddress);
                 }
             })
         );
