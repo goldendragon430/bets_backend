@@ -1,12 +1,12 @@
-import { ethers } from "ethers";
-import { getBetContract, getProvider } from "../utils/constants";
+import { ethers } from 'ethers';
+import { getBetContract, getProvider } from '../utils/constants';
 
 async function main() {
     const provider = getProvider();
     const signer = new ethers.Wallet(process.env.PRIVATE_KEY as string, provider);
     const betContract = getBetContract();
 
-    
+
     // const tx = await betContract.connect(signer).createBattle(
     //     1661544024,
     //     1661630424,
@@ -18,15 +18,14 @@ async function main() {
     const tx = await betContract.connect(signer).stakeNftA(
         3,
         [138, 127, 126, 125],
-    )
+    );
     console.log(tx);
     await tx.wait();
 }
-  
+
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
 main().catch((error) => {
     console.error(error);
     process.exitCode = 1;
   });
-  
