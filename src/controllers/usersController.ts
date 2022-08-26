@@ -39,6 +39,7 @@ export default class UsersController {
    */
   register = async (req: Request, res: Response, next: NextFunction) => {
     const { address } = req.body;
+
     try {
       let user = await UserRepository.getUser(address);
 

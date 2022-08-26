@@ -1,9 +1,13 @@
 import * as mongoose from 'mongoose';
+
 const Schema = mongoose.Schema;
 
 const usersSchema = new Schema({
     username: String,
-    address: String,
+    address: {
+        type: String,
+        required: true,
+    },
     nonce: Number,
     signature: String,
     isAdmin: {
