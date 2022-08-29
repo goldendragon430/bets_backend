@@ -14,9 +14,7 @@ app.listen(port, () => {
 }).on('error', (err: any) => {
   if (err.code === 'EADDRINUSE') {
     console.log('server startup error: address already in use');
-    process.exit(1);
   } else {
     console.log(err);
-    process.exit(1);
   }
 });

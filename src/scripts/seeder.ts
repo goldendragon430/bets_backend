@@ -16,7 +16,7 @@ const insertProjects = async () => {
         {
             'collectionSize': 19425,
             'contract': '0x036D48B9d40758EaA075482fFfa58D1cE3F90bD0',
-            'headerImage': 'https://lh3.googleusercontent.com/5c-HcdLMinTg3LvEwXYZYC-u5nN22Pn5ivTPYA4pVEsWJHU1rCobhUlHSFjZgCHPGSmcGMQGCrDCQU8BfSfygmL7Uol9MRQZt6-gqA=s2500',
+            'headerImage': 'https://img.seadn.io/files/436f67aeb168c3b3e23b14c3f753c6d5.png?fit=max&w=600',
             'logo': 'https://lh3.googleusercontent.com/lHexKRMpw-aoSyB1WdFBff5yfANLReFxHzt1DOj_sg7mS14yARpuvYcUtsyyx-Nkpk6WTcUPFoG53VnLJezYi8hAs0OxNZwlw6Y-dmI',
             'magicEdenLink': '',
             'name': 'Mutant Ape Yacht Club',
@@ -27,7 +27,7 @@ const insertProjects = async () => {
         {
             'collectionSize': 10000,
             'contract': '0x5E8569023518E3B88304df25329a4DA4f59F1124',
-            'headerImage': 'https://lh3.googleusercontent.com/O0XkiR_Z2--OPa_RA6FhXrR16yBOgIJqSLdHTGA0-LAhyzjSYcb3WEPaCYZHeh19JIUEAUazofVKXcY2qOylWCdoeBN6IfGZLJ3I4A=s2500',
+            'headerImage': 'https://img.seadn.io/files/622785b7d9ac4412855de7fa55c34b1b.png?fit=max&w=600',
             'logo': 'https://lh3.googleusercontent.com/H8jOCJuQokNqGBpkBN5wk1oZwO7LM8bNnrHCaekV2nKjnCqw6UB5oaH8XyNeBDj6bA_n1mjejzhFQUP3O1NfjFLHr3FOaeHcTOOT',
             'magicEdenLink': '',
             'name': 'Azuki',

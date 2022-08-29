@@ -1,6 +1,8 @@
 import NFTActivityRepository from '../repositories/nftActivity';
+import ClaimActivityRepository from '../repositories/claimActivity';
 import FeaturedBattleRepository from '../repositories/featuredBattle';
 import { ActivityType, ServiceType } from '../utils/enums';
+import { BigNumber } from 'ethers';
 
 export const nftTransferFunc = async (contractAddress: string, from: string, to: string, tokenId: string, event: any, serviceType: ServiceType) => {
     try {
@@ -35,5 +37,16 @@ export const battleCreateFunc = async (battleId: number, startTime: number, endT
 
     } catch (e) {
         console.error('Battle create Event Err: ', e);
+    }
+};
+
+export const abpClaimedFunc = async (battleId: number, user: string, amount: BigNumber, event: any) => {
+    try {
+        const activity = await ClaimActivityRepository.getClaimActivity(event.transactionHash);
+        if (!activity) {
+            await ClaimActivityRepository.addClaimActivity(battleId, user, amount, event.transactionHash, event.blockNumber);
+        }
+    } catch (e) {
+        console.error('ABP Claim Event Err: ', e);
     }
 };

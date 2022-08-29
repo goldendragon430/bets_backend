@@ -5,7 +5,7 @@ import * as cron from 'node-cron';
 import redisHandle from '../../utils/redis';
 import BattleRepository from '../../repositories/featuredBattle';
 import { rpcProvider } from '../../utils';
-import { battleCreateFunc, nftStakedFunc, nftTransferFunc } from '../../services/getEventFunc';
+import { battleCreateFunc, nftStakedFunc, nftTransferFunc, abpClaimedFunc } from '../../services/getEventFunc';
 import { ServiceType } from '../../utils/enums';
 import { getBetContract } from '../../utils/constants';
 import * as ERC721ContractABI from '../../abis/erc721.json';
@@ -143,8 +143,45 @@ mongoose.connect(process.env.DB_CONFIG as string)
             });
         };
 
+        const getABPClaimedEvent = async () => {
+            let latestBlockNumber = await rpcProvider.getBlockNumber() - 10;
+
+            latestBlockNumber = await redisHandle.get('abpClaimedBlock', latestBlockNumber);
+
+            cron.schedule('* * * * *', async () => {
+                try {
+                    const blockNumber = await rpcProvider.getBlockNumber();
+
+                    const events = await betContract.queryFilter(
+                        betContract.filters.ABPClaimed(),
+                        latestBlockNumber,
+                        blockNumber
+                    );
+
+                    if (events.length > 0) {
+                        for (const ev of events) {
+                            if (ev.args) {
+                                const battleId = ev.args.battleId;
+                                const user = ev.args.user;
+                                const amount = ev.args.amount;
+            
+                                await abpClaimedFunc(battleId, user, amount, ev);
+                            }
+                        }
+                    }
+                    console.log(`${events.length} ABI Claimed events found on contract ${betContract.address}`);
+
+                    latestBlockNumber = blockNumber;
+                    await redisHandle.set('abpClaimedBlock', blockNumber);
+                } catch (e) {
+                    console.log('getABPClaimedEvent error: ', e);
+                }
+            });
+        };
+
         await getNFTStakedEvent();
         await getBattleCreateEvents();
+        await getABPClaimedEvent();
 
         const activeBattles = await BattleRepository.getActiveBattles();
         const nftContractAddresses: Array<string> = [];

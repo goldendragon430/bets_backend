@@ -176,24 +176,24 @@ export default class UsersController {
   }
 
   /**
-     * @description Check user whether is admin or not
-     * @param req
-     * @param res
-     * @param next
-     */
+   * @description Get user information Function
+   * @param req
+   * @param res
+   * @param next
+   */
   checkAdmin = async (req: Request, res: Response, next: NextFunction) => {
     try {
       // @ts-ignore
       const user = await UserRepository.getUserById(req.user?.id);
 
       if (user?.isAdmin) {
-        next();
+        return next();
       }
       return res.status(401).json({
         'success': false,
         'message': 'You are not authorized to access this resource',
         'data': undefined,
-      })
+      });
     } catch (error) {
       apiErrorHandler(error, req, res, 'Get user information failed.');
     }

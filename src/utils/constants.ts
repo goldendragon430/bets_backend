@@ -6,7 +6,7 @@ dotenv.config();
 const NETWORK = process.env.NETWORK || 'goerli';
 
 const BET_CONTRACT_ADDRESS = {
-    'goerli': '0x6f07650dcef7378dc31707b8906FE65fd1c752CD'
+    'goerli': '0x9F060500633e5Ef8358BA17fae64D9a2377c0f2d'
 };
 
 export const node_url = {

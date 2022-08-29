@@ -3,7 +3,11 @@ import { apiErrorHandler } from '../handlers/errorHandler';
 import BattleRepository from '../repositories/featuredBattle';
 import ProjectRepository from '../repositories/project';
 import nftActivityRepository from '../repositories/nftActivity';
+import ClaimActivityRepository from '../repositories/claimActivity';
 import { NetworkType } from '../utils/enums';
+import { rpcProvider } from '../utils';
+import { getBetContract } from '../utils/constants';
+import { battleCreateFunc } from '../services/getEventFunc';
 
 export default class BattleController {
     constructor() {
@@ -135,51 +139,68 @@ export default class BattleController {
      */
     addBattle = async (req: Request, res: Response, next: NextFunction) => {
         const {
-            startTime,
-            battleLength,
-            projectL: projectL_contract,
-            projectR: projectR_contract,
+            transactionHash
         } = req.body;
 
         try {
-            console.log('Authentication success');
-            console.log(req);
-            const projectL = await ProjectRepository.getProjectByContract(projectL_contract);
-            const projectR = await ProjectRepository.getProjectByContract(projectR_contract);
-
-            if (!projectL || !projectR) {
-                return res.status(400).json({ 'success': false, 'message': 'Project is not exist.' });
+            if (!transactionHash) {
+                return res.status(400).json({
+                    'success': false,
+                    'message': 'Transaction hash is required.'
+                })
+            }
+            const transaction = await rpcProvider.getTransaction(transactionHash);
+            if (!transaction) {
+                return res.status(400).json({
+                    'success': false,
+                    'message': 'Transaction hash is required.'
+                })
             }
 
-            if (battleLength && parseInt(battleLength) <= 0) {
-                return res.status(400).json({ 'success': false, 'message': 'Battle length should be exist' });
+            const blockNumber = transaction.blockNumber;
+            if (!blockNumber) {
+                return res.status(400).json({
+                    'success': false,
+                    'message': 'Block number is required.'
+                })
             }
-
-            const duplicateBattle = await BattleRepository.getBattleByQuery({
-                startDate: new Date(startTime * 1000),
-                battleLength: parseInt(battleLength),
-                projectL: projectL._id,
-                projectR: projectR._id,
-            });
-
-            if (duplicateBattle) {
-                return res.status(400).json({ 'success': false, 'message': 'Battle is already exist.' });
+            const betContract = getBetContract();
+            const events = await betContract.queryFilter(betContract.filters.NewBattleCreated(), blockNumber, blockNumber + 1);
+            if (!events || events.length === 0) { 
+                return res.status(400).json({
+                    'success': false,
+                    'message': 'No event found.'
+                })
             }
+            const event = events[0];
+            await battleCreateFunc(event?.args?.battleId, event?.args?.startTime, event?.args?.endTime, event?.args?.teamACollectionAddress, event?.args?.teamBCollectionAddress);
 
-            const battleId = 0;
-            const battleInstance = await BattleRepository.addFeaturedBattle(
-                startTime,
-                battleLength,
-                battleId as number,
-                NetworkType.ETH,
-                projectL,
-                projectR,
-            );
-
-            res.json({ 'success': true, 'message': '', 'data': battleInstance });
+            res.json({ 'success': true, 'message': '', 'data': 'Battle created' });
         } catch (error) {
-            console.error(error);
             apiErrorHandler(error, req, res, 'Add Battle failed.');
+        }
+    };
+
+    /**
+     * @description Get Leaderboard Data
+     * @param req
+     * @param res
+     * @param next
+     */
+     getLeaderboard = async (req: Request, res: Response, next: NextFunction) => {
+        const { battleId } = req.params;
+        try {
+            const battle = await BattleRepository.getBattle(battleId);
+
+            if (!battle) {
+                return res.status(400).json({ 'success': false, 'message': 'No battle found.' });
+            }
+
+            const leaderboard = await ClaimActivityRepository.getLeaderboard(battle.battleId);
+
+            res.json({ 'success': true, 'message': '', 'data': leaderboard });
+        } catch (error) {
+            apiErrorHandler(error, req, res, 'Get Tx failed.');
         }
     };
 }
