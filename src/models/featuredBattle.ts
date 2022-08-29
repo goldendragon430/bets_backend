@@ -39,7 +39,7 @@ const featuredBattleSchema = new Schema({
 featuredBattleSchema.method('toJSON', function() {
     const { __v, _id, ...object } = this.toObject();
     object.id = _id;
-    object.endDate = new Date(object.startDate.getTime() + (object.battleLength ? object.battleLength * 60000 : 0));
+    object.endDate = new Date(object.startDate.getTime() + (object.battleLength ? object.battleLength * 1000 : 0));
     object.createdAt = undefined;
     object.updatedAt = undefined;
     return object;
