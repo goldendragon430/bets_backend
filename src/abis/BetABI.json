@@ -37,6 +37,31 @@
       },
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "ABPClaimed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "battleId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
         "internalType": "bool",
         "name": "side",
         "type": "bool"
@@ -1030,13 +1055,18 @@
         "type": "uint256"
       },
       {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
+        "internalType": "address[]",
+        "name": "users",
+        "type": "address[]"
       },
       {
         "internalType": "uint256[]",
         "name": "tokenIds",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "userTokenIdLengths",
         "type": "uint256[]"
       }
     ],
@@ -1053,13 +1083,18 @@
         "type": "uint256"
       },
       {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
+        "internalType": "address[]",
+        "name": "users",
+        "type": "address[]"
       },
       {
         "internalType": "uint256[]",
         "name": "tokenIds",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "userTokenIdLengths",
         "type": "uint256[]"
       }
     ],

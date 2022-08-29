@@ -1,45 +1,28 @@
-import passport from 'passport';
-import * as dotenv from 'dotenv';
-import { Strategy as LocalStrategy } from 'passport-local';
-import UserModel from '../models/users';
+import * as passport from 'passport';
 import {
     Strategy as JWTStrategy,
     ExtractJwt,
     StrategyOptions,
 } from 'passport-jwt';
-dotenv.config();
-
-const JWT_SECRET = process.env.JWT_SECRET;
-
-// passport.use(
-//   new LocalStrategy(
-//     {
-//       usernameField: "username",
-//       passwordField: "password",
-//       session: false,
-//     },
-//     (username: string, password: string, done: any) => {
-//       if (username === "hoge" && password === "fuga") {
-//         return done(null, username);
-//       } else {
-//         return done(null, false, {
-//           message: "usernameまたはpasswordが違います",
-//         });
-//       }
-//     }
-//   )
-// );
+import UserModel from '../models/users';
+import { JWT_CONFIG } from '../config';
 
 const opts: StrategyOptions = {
-    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: JWT_SECRET,
+    jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
+    secretOrKey: JWT_CONFIG.secret,
 };
 
 passport.use(
+    'jwt',
     new JWTStrategy(opts, (jwt_payload: any, done: any) => {
         UserModel.findById(jwt_payload._id)
-            .then(user => {
-                if (user) return done(null, user);
+            .then((user) => {
+                if (user) {
+                    if (user.isAdmin === true) {
+                        return done(null, user);
+                    }
+                    return done(null, false);
+                }
                 return done(null, false);
             }).catch(err => console.error(err));
     })

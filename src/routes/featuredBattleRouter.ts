@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import BattleController from '../controllers/battleController';
+import passport from '../utils/passport';
 
 class FeaturedBattleRouter {
   router = Router();
@@ -10,7 +11,7 @@ class FeaturedBattleRouter {
   }
 
   initializeRoutes() {
-    this.router.route('/add').post(this.BattleController.addBattle);
+    this.router.route('/add').post(passport.authenticate('jwt', { session: false }), this.BattleController.addBattle);
     this.router.route('/get_active_battle_ids').get(this.BattleController.getActiveBattleIds);
     this.router.route('/get_battle_by_id/:battleId').get(this.BattleController.getBattle);
     this.router.route('/get_active_total_nft_staked_amount/:battleId').get(this.BattleController.getActiveTotalNftStakedAmount);

@@ -135,23 +135,20 @@ export default class BattleController {
      */
     addBattle = async (req: Request, res: Response, next: NextFunction) => {
         const {
-            startDate,
+            startTime,
             battleLength,
-            battleId,
-            projectL: projectL_id,
-            projectR: projectR_id,
+            projectL: projectL_contract,
+            projectR: projectR_contract,
         } = req.body;
 
         try {
-            const projectL = await ProjectRepository.getProject(projectL_id);
-            const projectR = await ProjectRepository.getProject(projectR_id);
+            console.log('Authentication success');
+            console.log(req);
+            const projectL = await ProjectRepository.getProjectByContract(projectL_contract);
+            const projectR = await ProjectRepository.getProjectByContract(projectR_contract);
 
             if (!projectL || !projectR) {
                 return res.status(400).json({ 'success': false, 'message': 'Project is not exist.' });
-            }
-
-            if (!battleId) {
-                return res.status(400).json({ 'success': false, 'message': 'Bet contract address is required.' });
             }
 
             if (battleLength && parseInt(battleLength) <= 0) {
@@ -159,19 +156,19 @@ export default class BattleController {
             }
 
             const duplicateBattle = await BattleRepository.getBattleByQuery({
-                startDate: new Date(startDate),
+                startDate: new Date(startTime * 1000),
                 battleLength: parseInt(battleLength),
-                battleId,
-                projectL: projectL_id,
-                projectR: projectR_id,
+                projectL: projectL._id,
+                projectR: projectR._id,
             });
 
             if (duplicateBattle) {
                 return res.status(400).json({ 'success': false, 'message': 'Battle is already exist.' });
             }
 
+            const battleId = 0;
             const battleInstance = await BattleRepository.addFeaturedBattle(
-                startDate,
+                startTime,
                 battleLength,
                 battleId as number,
                 NetworkType.ETH,
@@ -181,6 +178,7 @@ export default class BattleController {
 
             res.json({ 'success': true, 'message': '', 'data': battleInstance });
         } catch (error) {
+            console.error(error);
             apiErrorHandler(error, req, res, 'Add Battle failed.');
         }
     };

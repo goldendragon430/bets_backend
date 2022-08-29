@@ -86,7 +86,7 @@ class FeaturedBattleRepository {
     }
 
     addFeaturedBattle = async (
-        startDate: string,
+        startTime: number,
         battleLength: number,
         battleId: number,
         network: NetworkType,
@@ -94,7 +94,7 @@ class FeaturedBattleRepository {
         projectR: any,
     ) => {
         const battle = new FeaturedBattle({
-            startDate: new Date(startDate),
+            startDate: new Date(startTime * 1000),
             battleLength,
             battleId,
             network,

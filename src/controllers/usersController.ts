@@ -1,12 +1,9 @@
 import { ethers } from 'ethers';
-import * as dotenv from 'dotenv';
 import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { apiErrorHandler } from '../handlers/errorHandler';
 import UserRepository from '../repositories/users';
-dotenv.config();
-
-const JWT_SECRET = process.env.JWT_SECRET;
+import { JWT_CONFIG } from '../config';
 
 export default class UsersController {
   constructor() { }
@@ -121,7 +118,7 @@ export default class UsersController {
         const token = jwt.sign({
           _id: user._id,
           address: user.address
-        }, JWT_SECRET, { expiresIn: '1h' });
+        }, JWT_CONFIG.secret, { expiresIn: '24h' });
 
         return res.status(200).json({
           'success': true,
@@ -159,6 +156,47 @@ export default class UsersController {
       'message': '',
       'data': user,
     });
+  }
+
+  /**
+   * @description Get user information Function
+   * @param req
+   * @param res
+   * @param next
+   */
+  getUserInfo = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // @ts-ignore
+      const user = await UserRepository.getUserById(req.user?.id);
+
+      return res.json({ 'success': true, 'message': 'Get user', 'data': user });
+    } catch (error) {
+      apiErrorHandler(error, req, res, 'Get user information failed.');
+    }
+  }
+
+  /**
+     * @description Check user whether is admin or not
+     * @param req
+     * @param res
+     * @param next
+     */
+  checkAdmin = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // @ts-ignore
+      const user = await UserRepository.getUserById(req.user?.id);
+
+      if (user?.isAdmin) {
+        next();
+      }
+      return res.status(401).json({
+        'success': false,
+        'message': 'You are not authorized to access this resource',
+        'data': undefined,
+      })
+    } catch (error) {
+      apiErrorHandler(error, req, res, 'Get user information failed.');
+    }
   }
 
   /**

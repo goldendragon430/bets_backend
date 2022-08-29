@@ -16,6 +16,16 @@ class UsersRepository {
     }
   }
 
+  getUserById = async (_id: string) => {
+    const user = await UserModel.findOne({ _id });
+
+    if ( user ) {
+      return user;
+    } else {
+      return undefined;
+    }
+  }
+
   createUser = async (address: string) => {
     const nonce = Math.floor(Math.random() * 1000000);
     const user = new UserModel({
