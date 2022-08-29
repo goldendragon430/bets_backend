@@ -164,7 +164,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
                                 const battleId = ev.args.battleId;
                                 const user = ev.args.user;
                                 const amount = ev.args.amount;
-            
+
                                 await abpClaimedFunc(battleId, user, amount, ev);
                             }
                         }

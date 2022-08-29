@@ -147,14 +147,14 @@ export default class BattleController {
                 return res.status(400).json({
                     'success': false,
                     'message': 'Transaction hash is required.'
-                })
+                });
             }
             const transaction = await rpcProvider.getTransaction(transactionHash);
             if (!transaction) {
                 return res.status(400).json({
                     'success': false,
                     'message': 'Transaction hash is required.'
-                })
+                });
             }
 
             const blockNumber = transaction.blockNumber;
@@ -162,15 +162,15 @@ export default class BattleController {
                 return res.status(400).json({
                     'success': false,
                     'message': 'Block number is required.'
-                })
+                });
             }
             const betContract = getBetContract();
             const events = await betContract.queryFilter(betContract.filters.NewBattleCreated(), blockNumber, blockNumber + 1);
-            if (!events || events.length === 0) { 
+            if (!events || events.length === 0) {
                 return res.status(400).json({
                     'success': false,
                     'message': 'No event found.'
-                })
+                });
             }
             const event = events[0];
             await battleCreateFunc(event?.args?.battleId, event?.args?.startTime, event?.args?.endTime, event?.args?.teamACollectionAddress, event?.args?.teamBCollectionAddress);
