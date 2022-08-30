@@ -4,10 +4,11 @@ import ClaimActivity from '../models/claimActivity';
 class ClaimActivityRepository {
     constructor() { }
 
-    getLeaderboard = async (battleId: number) => {
-        const activities = await ClaimActivity.find({ battleId: battleId });
+    getLeaderboard = async () => {
+        const activities = await ClaimActivity.find();
         const leaderboard = activities.map(activity => {
             return {
+                battleId: activity.battleId,
                 user: activity.user,
                 amount: activity.amountInDecimal
             };

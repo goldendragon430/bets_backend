@@ -188,15 +188,8 @@ export default class BattleController {
      * @param next
      */
      getLeaderboard = async (req: Request, res: Response, next: NextFunction) => {
-        const { battleId } = req.params;
         try {
-            const battle = await BattleRepository.getBattle(battleId);
-
-            if (!battle) {
-                return res.status(400).json({ 'success': false, 'message': 'No battle found.' });
-            }
-
-            const leaderboard = await ClaimActivityRepository.getLeaderboard(battle.battleId);
+            const leaderboard = await ClaimActivityRepository.getLeaderboard();
 
             res.json({ 'success': true, 'message': '', 'data': leaderboard });
         } catch (error) {
