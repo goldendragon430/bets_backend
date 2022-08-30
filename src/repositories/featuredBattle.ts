@@ -68,6 +68,16 @@ class FeaturedBattleRepository {
         );
     };
 
+    getBattlesByFulfill = async () => {
+        const blockNumber = await rpcProvider.getBlockNumber();
+        const block = await rpcProvider.getBlock(blockNumber);
+
+        const battles = await FeaturedBattle.find({
+            startTime: { $lte: block.timestamp },
+            endTime: { $lte: block.timestamp },
+        });
+    };
+
     addBattle = async (battleId: number, startTime: number, endTime: number, projectLContract: string, projectRContract: string) => {
         const projectL = await ProjectRepository.getProjectByContract(projectLContract);
         const projectR = await ProjectRepository.getProjectByContract(projectRContract);

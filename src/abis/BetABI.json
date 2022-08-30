@@ -236,6 +236,31 @@
       },
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "RefundClaimed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "battleId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "timestamp",
         "type": "uint256"
@@ -288,8 +313,50 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "addManagerAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "battleIdTracker",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "name": "betAmount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -314,74 +381,6 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "betInfoLength",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "betInfos",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "depositer",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "timestamp",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "side",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -429,6 +428,25 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "chanceRatioFlag",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "battleId",
         "type": "uint256"
       }
@@ -452,6 +470,19 @@
       }
     ],
     "name": "claimRakeReward",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "battleId",
+        "type": "uint256"
+      }
+    ],
+    "name": "claimRefund",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -561,27 +592,17 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "battleId",
-        "type": "uint256"
-      },
-      {
         "internalType": "address",
-        "name": "_user",
+        "name": "",
         "type": "address"
-      },
-      {
-        "internalType": "bool",
-        "name": "_side",
-        "type": "bool"
       }
     ],
-    "name": "getUserBettedAmount",
+    "name": "managerAddress",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "bool",
         "name": "",
-        "type": "uint256"
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -763,6 +784,62 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "refundClaimStatus",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "refundStatus",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "removeManagerAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
@@ -885,21 +962,16 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "battleId",
+        "name": "_battleId",
         "type": "uint256"
       },
       {
-        "internalType": "uint256",
-        "name": "_betStart",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_betEnd",
-        "type": "uint256"
+        "internalType": "bool",
+        "name": "_flag",
+        "type": "bool"
       }
     ],
-    "name": "setBetPeriod",
+    "name": "setChanceRatio",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -933,9 +1005,14 @@
         "internalType": "uint256[]",
         "name": "tokenIds",
         "type": "uint256[]"
+      },
+      {
+        "internalType": "bool",
+        "name": "_side",
+        "type": "bool"
       }
     ],
-    "name": "stakeNftA",
+    "name": "stakeNft",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -944,29 +1021,16 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "battleId",
+        "name": "",
         "type": "uint256"
       },
       {
-        "internalType": "uint256[]",
-        "name": "tokenIds",
-        "type": "uint256[]"
-      }
-    ],
-    "name": "stakeNftB",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
+        "internalType": "bool",
         "name": "",
-        "type": "uint256"
+        "type": "bool"
       }
     ],
-    "name": "totalBettedAmountA",
+    "name": "totalBettedAmount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -983,9 +1047,14 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
-    "name": "totalBettedAmountB",
+    "name": "totalBettedChanceAmount",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1002,28 +1071,14 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "name": "totalNftStakedA",
-    "outputs": [
+      },
       {
-        "internalType": "uint256",
+        "internalType": "bool",
         "name": "",
-        "type": "uint256"
+        "type": "bool"
       }
     ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "totalNftStakedB",
+    "name": "totalNftStaked",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1055,32 +1110,9 @@
         "type": "uint256"
       },
       {
-        "internalType": "address[]",
-        "name": "users",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "tokenIds",
-        "type": "uint256[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "userTokenIdLengths",
-        "type": "uint256[]"
-      }
-    ],
-    "name": "unstakeNftAFromUser",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "battleId",
-        "type": "uint256"
+        "internalType": "bool",
+        "name": "_side",
+        "type": "bool"
       },
       {
         "internalType": "address[]",
@@ -1098,7 +1130,7 @@
         "type": "uint256[]"
       }
     ],
-    "name": "unstakeNftBFromUser",
+    "name": "unstakeNftFromUser",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1116,12 +1148,17 @@
         "type": "address"
       },
       {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      },
+      {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
       }
     ],
-    "name": "userNftAStakeInfo",
+    "name": "userNftStakeInfo",
     "outputs": [
       {
         "internalType": "bool",
@@ -1143,62 +1180,14 @@
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "name": "userNftAStakeLength",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
       },
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "userNftBStakeInfo",
-    "outputs": [
       {
         "internalType": "bool",
         "name": "",
         "type": "bool"
       }
     ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "userNftBStakeLength",
+    "name": "userNftStakeLength",
     "outputs": [
       {
         "internalType": "uint256",
