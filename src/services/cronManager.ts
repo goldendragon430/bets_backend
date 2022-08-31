@@ -14,7 +14,7 @@ export const setupCronJobMap = async (): Promise<void> => {
     const activeBattles = await BattleRepository.getActiveBattles();
 
     const betContract = getBetContract();
-    
+
     try {
         await redisHandle.init();
         redisHandle.onConnect();
@@ -186,11 +186,11 @@ export const setupCronJobMap = async (): Promise<void> => {
     }, { scheduled: false });
 
     const requestRandomTriggerJob = cron.schedule('* * * * *', async () => {
-        await BattleRepository.getBattlesByFulfill()
+        await BattleRepository.getBattlesByFulfill();
     }, { scheduled: false });
 
     const finalizeTriggerJob = cron.schedule('* * * * *', async () => {
-            
+
     }, { scheduled: false });
 
     jobMap.set('nftStakedJob', nftStakedJob);
@@ -200,4 +200,4 @@ export const setupCronJobMap = async (): Promise<void> => {
     jobMap.set('FinalizeJob', FinalizeJob);
     jobMap.set('requestRandomTriggerJob', requestRandomTriggerJob);
     jobMap.set('finalizeTriggerJob', finalizeTriggerJob);
-}
+};
