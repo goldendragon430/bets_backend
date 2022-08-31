@@ -108,8 +108,8 @@ class FeaturedBattleRepository {
         const projectL = await ProjectRepository.getProjectByContract(projectLContract);
         const projectR = await ProjectRepository.getProjectByContract(projectRContract);
 
-        setupNFTTransferJob(projectLContract)
-        setupNFTTransferJob(projectRContract)
+        setupNFTTransferJob(projectLContract);
+        setupNFTTransferJob(projectRContract);
 
         const battleLength = endTime - startTime;
         const battle = new FeaturedBattle({
