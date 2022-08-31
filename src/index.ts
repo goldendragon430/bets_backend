@@ -10,6 +10,7 @@ import { unCoughtErrorHandler } from './handlers/errorHandler';
 import Routes from './routes';
 import { installNFTStakedEvents } from './services/events';
 import redisHandle from './utils/redis';
+import { setupCronJobMap } from './services/cronManager';
 
 // app.enable('trust proxy') // only if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
 
@@ -26,6 +27,10 @@ export default class Server {
         mongoose.connect(process.env.DB_CONFIG as string)
             .then(() => {
                 console.log('Connected to Database');
+                setupCronJobMap()
+                    .then(() => {
+                        console.log('setupCronJobMap done');
+                    });
             })
             .catch(err => {
                 throw new Error(err);

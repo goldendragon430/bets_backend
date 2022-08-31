@@ -1,10 +1,9 @@
 import { ethers } from 'ethers';
-import { getBetContract, getProvider } from '../utils/constants';
+import { BetContract, provider } from '../utils/constants';
 
 async function main() {
-    const provider = getProvider();
     const signer = new ethers.Wallet(process.env.PRIVATE_KEY as string, provider);
-    const betContract = getBetContract();
+    const betContract = BetContract;
 
 
     // const tx = await betContract.connect(signer).createBattle(

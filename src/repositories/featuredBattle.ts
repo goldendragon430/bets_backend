@@ -1,7 +1,8 @@
 import FeaturedBattle from '../models/featuredBattle';
-import { NetworkType } from '../utils/enums';
+import { BattleStatus, NetworkType } from '../utils/enums';
 import ProjectRepository from './project';
 import { rpcProvider } from '../utils';
+import { setupNFTTransferJob } from '../services/cronManager';
 
 class FeaturedBattleRepository {
     constructor() {
@@ -68,19 +69,47 @@ class FeaturedBattleRepository {
         );
     };
 
-    getBattlesByFulfill = async () => {
+    getBattlesByCreated = async () => {
         const blockNumber = await rpcProvider.getBlockNumber();
         const block = await rpcProvider.getBlock(blockNumber);
 
         const battles = await FeaturedBattle.find({
             startTime: { $lte: block.timestamp },
             endTime: { $lte: block.timestamp },
+            $and: [
+                { status: BattleStatus.Created },
+                { status: { $ne: BattleStatus.RequestRandomWords }, }
+            ],
+        });
+
+        return battles.map((battle) => {
+            return battle.battleId;
         });
     };
+
+    getBattlesByFulfill = async () => {
+        const battles = await FeaturedBattle.find({
+            status: BattleStatus.Fulfilled
+        });
+
+        return battles.map((battle) => {
+            return battle.battleId;
+        });
+    };
+
+    updateBattleStatus = async (battleId: number, status: BattleStatus) => {
+        return await FeaturedBattle.updateOne(
+            { battleId: battleId },
+            { $set: { status: status } },
+        );
+    }
 
     addBattle = async (battleId: number, startTime: number, endTime: number, projectLContract: string, projectRContract: string) => {
         const projectL = await ProjectRepository.getProjectByContract(projectLContract);
         const projectR = await ProjectRepository.getProjectByContract(projectRContract);
+
+        setupNFTTransferJob(projectLContract)
+        setupNFTTransferJob(projectRContract)
 
         const battleLength = endTime - startTime;
         const battle = new FeaturedBattle({
@@ -89,31 +118,12 @@ class FeaturedBattleRepository {
             startTime: startTime,
             endTime: endTime,
             battleLength: battleLength,
+            status: BattleStatus.Created,
             projectL: projectL,
             projectR: projectR,
         });
         await battle.save();
     }
-
-    addFeaturedBattle = async (
-        startTime: number,
-        battleLength: number,
-        battleId: number,
-        network: NetworkType,
-        projectL: any,
-        projectR: any,
-    ) => {
-        const battle = new FeaturedBattle({
-            startDate: new Date(startTime * 1000),
-            battleLength,
-            battleId,
-            network,
-            projectL,
-            projectR,
-        });
-
-        return battle.save();
-    };
 }
 
 export default new FeaturedBattleRepository();

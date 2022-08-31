@@ -1,4 +1,6 @@
 import FinalizeActivity from '../models/finalizeActivity';
+import FeaturedBattle from '../models/featuredBattle';
+import { BattleStatus } from '../utils/enums';
 
 class FinalizeActivityRepository {
     constructor() { }
@@ -16,6 +18,11 @@ class FinalizeActivityRepository {
         transactionHash: string,
         blockNumber: number,
     ) => {
+        await FeaturedBattle.updateOne(
+            { battleId: battleId },
+            { $set: { status: BattleStatus.Finalized } },
+        );
+
         const finalizeActivityInstance = new FinalizeActivity({
             battleId,
             side,

@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 import { rpcProvider } from '../utils';
 import { nftTransferFunc, nftStakedFunc, battleCreateFunc, fulfilledFunc, finalizedFunc } from '../services/getEventFunc';
 import { ServiceType } from '../utils/enums';
-import { getBetContract } from '../utils/constants';
+import { BetContract } from '../utils/constants';
 import battle from '../repositories/featuredBattle';
 import * as ERC721ContractABI from '../abis/erc721.json';
 dotenv.config();
@@ -13,8 +13,6 @@ mongoose.set('debug', true);
 mongoose.connect(process.env.DB_CONFIG as string)
     .then(async () => {
         console.log('Connected to Database');
-
-        const betContract = getBetContract();
 
         const getNFTTransferEvent = async (nftAddress: string) => {
             try {
@@ -40,7 +38,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
 
         const getNFTStakedEvent = async () => {
             try {
-                const events = await betContract.queryFilter(betContract.filters.NFTStaked());
+                const events = await BetContract.queryFilter(BetContract.filters.NFTStaked());
 
                 if (events.length > 0) {
                     for (const ev of events) {
@@ -54,7 +52,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
                         }
                     }
                 }
-                console.log(`${events.length} NFTStaked events found on ${betContract.address}`);
+                console.log(`${events.length} NFTStaked events found on ${BetContract.address}`);
             } catch (e) {
                 console.log('getNFTStakedEvent error: ', e);
             }
@@ -62,7 +60,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
 
         const getBattleCreateEvents = async () => {
             try {
-                const events = await betContract.queryFilter(betContract.filters.NewBattleCreated());
+                const events = await BetContract.queryFilter(BetContract.filters.NewBattleCreated());
 
                 if (events.length > 0) {
                     for (const ev of events) {
@@ -77,7 +75,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
                         }
                     }
                 }
-                console.log(`${events.length} CreatedBattle events found on ${betContract.address}`);
+                console.log(`${events.length} CreatedBattle events found on ${BetContract.address}`);
             } catch (e) {
                 console.log('getBattleCreateEvents error: ', e);
             }
@@ -85,8 +83,8 @@ mongoose.connect(process.env.DB_CONFIG as string)
 
         const getFulfilledEvents = async () => {
             try {
-                const events = await betContract.queryFilter(
-                    betContract.filters.Fulfilled(),
+                const events = await BetContract.queryFilter(
+                    BetContract.filters.Fulfilled(),
                 );
                 if (events.length > 0) {
                     for (const ev of events) {
@@ -98,7 +96,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
                         }
                     }
                 }
-                console.log(`${events.length} Fulfilled events found on contract ${betContract.address}`);
+                console.log(`${events.length} Fulfilled events found on contract ${BetContract.address}`);
             } catch (e) {
                 console.log('getFulfillEvent error: ', e);
             }
@@ -106,8 +104,8 @@ mongoose.connect(process.env.DB_CONFIG as string)
 
         const getFinalizedEvents = async () => {
             try {
-                const events = await betContract.queryFilter(
-                    betContract.filters.BattleFinalized(),
+                const events = await BetContract.queryFilter(
+                    BetContract.filters.BattleFinalized(),
                 );
 
                 if (events.length > 0) {
@@ -123,7 +121,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
                         }
                     }
                 }
-                console.log(`${events.length} Finalized events found on contract ${betContract.address}`);
+                console.log(`${events.length} Finalized events found on contract ${BetContract.address}`);
             } catch (e) {
                 console.log('getFinalizedEvents error: ', e);
             }
@@ -132,7 +130,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
         // await getNFTStakedEvent();
         // await getBattleCreateEvents();
         await getFulfilledEvents();
-        await getFinalizedEvents();
+        // await getFinalizedEvents();
 
         // const activeBattles = await battle.getActiveBattles();
         // await Promise.all(

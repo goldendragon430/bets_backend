@@ -6,7 +6,7 @@ import nftActivityRepository from '../repositories/nftActivity';
 import ClaimActivityRepository from '../repositories/claimActivity';
 import { NetworkType } from '../utils/enums';
 import { rpcProvider } from '../utils';
-import { getBetContract } from '../utils/constants';
+import { BetContract } from '../utils/constants';
 import { battleCreateFunc } from '../services/getEventFunc';
 
 export default class BattleController {
@@ -164,8 +164,7 @@ export default class BattleController {
                     'message': 'Block number is required.'
                 });
             }
-            const betContract = getBetContract();
-            const events = await betContract.queryFilter(betContract.filters.NewBattleCreated(), blockNumber, blockNumber + 1);
+            const events = await BetContract.queryFilter(BetContract.filters.NewBattleCreated(), blockNumber, blockNumber + 1);
             if (!events || events.length === 0) {
                 return res.status(400).json({
                     'success': false,

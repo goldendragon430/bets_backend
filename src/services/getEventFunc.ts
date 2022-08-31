@@ -53,22 +53,22 @@ export const abpClaimedFunc = async (battleId: number, user: string, amount: Big
     }
 };
 
-export const fulfilledFunc = async (battleId: number, timestamp: BigNumber, event: any) => {
+export const fulfilledFunc = async (battleId: BigNumber, timestamp: BigNumber, event: any) => {
     try {
         const activity = await FulfillActivityRepository.getFulfillActivity(event.transactionHash);
         if (!activity) {
-            await FulfillActivityRepository.addFulfillActivity(battleId, timestamp.toNumber(), event.transactionHash, event.blockNumber);
+            await FulfillActivityRepository.addFulfillActivity(battleId.toNumber(), timestamp.toNumber(), event.transactionHash, event.blockNumber);
         }
     } catch (e) {
         console.error('Fulfill Event Err: ', e);
     }
 };
 
-export const finalizedFunc = async (battleId: number, side: boolean, chanceA: BigNumber, chanceB: BigNumber, bingo: BigNumber, event: any) => {
+export const finalizedFunc = async (battleId: BigNumber, side: boolean, chanceA: BigNumber, chanceB: BigNumber, bingo: BigNumber, event: any) => {
     try {
         const activity = await FinalizeActivityRepository.getFinalizeActivity(event.transactionHash);
         if (!activity) {
-            await FinalizeActivityRepository.addFinalizeActivity(battleId, side, chanceA.toNumber(), chanceB.toNumber(), bingo.toNumber(), event.transactionHash, event.blockNumber);
+            await FinalizeActivityRepository.addFinalizeActivity(battleId.toNumber(), side, chanceA.toNumber(), chanceB.toNumber(), bingo.toNumber(), event.transactionHash, event.blockNumber);
         }
     } catch (e) {
         console.error('Finalize Event Err: ', e);

@@ -1,20 +1,15 @@
-import cron from 'node-cron';
+import * as cron from 'node-cron';
 import BattleRepository from '../repositories/featuredBattle';
 import { rpcProvider } from '../utils';
-import { getBetContract } from '../utils/constants';
-import { ServiceType } from '../utils/enums';
+import { BetContract, adminSigner, getERC721Contract } from '../utils/constants';
+import { ServiceType, BattleStatus } from '../utils/enums';
 import redisHandle from '../utils/redis';
-import { abpClaimedFunc, battleCreateFunc, finalizedFunc, fulfilledFunc, nftStakedFunc } from './getEventFunc';
+import { abpClaimedFunc, battleCreateFunc, finalizedFunc, fulfilledFunc, nftStakedFunc, nftTransferFunc } from './getEventFunc';
 
 // hash map to map keys to jobs
 const jobMap: Map<string, cron.ScheduledTask> = new Map();
-const jobGroupsMap: Map<string, cron.ScheduledTask[]> = new Map();
 
 export const setupCronJobMap = async (): Promise<void> => {
-    const activeBattles = await BattleRepository.getActiveBattles();
-
-    const betContract = getBetContract();
-
     try {
         await redisHandle.init();
         redisHandle.onConnect();
@@ -24,20 +19,23 @@ export const setupCronJobMap = async (): Promise<void> => {
     }
 
     let latestBlockNumber = await rpcProvider.getBlockNumber() - 10;
-    latestBlockNumber = await redisHandle.get('nftStakedBlock', latestBlockNumber);
-    latestBlockNumber = await redisHandle.get('battleCreateBlock', latestBlockNumber);
-    latestBlockNumber = await redisHandle.get('abpClaimedBlock', latestBlockNumber);
-    latestBlockNumber = await redisHandle.get('nftTransferBlock', latestBlockNumber);
-    latestBlockNumber = await redisHandle.get('fulfilledBlock', latestBlockNumber);
-    latestBlockNumber = await redisHandle.get('finalizedBlock', latestBlockNumber);
+
+    latestBlockNumber = await redisHandle.initVaule('nftStakedBlock', latestBlockNumber);
+    latestBlockNumber = await redisHandle.initVaule('battleCreateBlock', latestBlockNumber);
+    latestBlockNumber = await redisHandle.initVaule('abpClaimedBlock', latestBlockNumber);
+    latestBlockNumber = await redisHandle.initVaule('nftTransferBlock', latestBlockNumber);
+    latestBlockNumber = await redisHandle.initVaule('fulfilledBlock', latestBlockNumber);
+    latestBlockNumber = await redisHandle.initVaule('finalizedBlock', latestBlockNumber);
 
     const nftStakedJob = cron.schedule('* * * * *', async () => {
         try {
+            const nftStakedBlockNumber = await redisHandle.get('nftStakedBlock');
+
             const blockNumber = await rpcProvider.getBlockNumber();
 
-            const events = await betContract.queryFilter(
-                betContract.filters.NFTStaked(),
-                latestBlockNumber,
+            const events = await BetContract.queryFilter(
+                BetContract.filters.NFTStaked(),
+                nftStakedBlockNumber,
                 blockNumber
             );
 
@@ -53,22 +51,22 @@ export const setupCronJobMap = async (): Promise<void> => {
                     }
                 }
             }
-            console.log(`${events.length} NFT Staked events found on contract ${betContract.address}`);
+            console.log(`${events.length} NFT Staked events found on contract ${BetContract.address}`);
 
-            latestBlockNumber = blockNumber;
             await redisHandle.set('nftStakedBlock', blockNumber);
         } catch (e) {
             console.log('getNFTStakedEvent error: ', e);
         }
-    }, { scheduled: false });
+    }, { scheduled: false }).start();
 
     const battleCreateJob = cron.schedule('* * * * *', async () => {
         try {
+            const battleCreateBlockNumber = await redisHandle.get('battleCreateBlock');
             const blockNumber = await rpcProvider.getBlockNumber();
 
-            const events = await betContract.queryFilter(
-                betContract.filters.NewBattleCreated(),
-                latestBlockNumber,
+            const events = await BetContract.queryFilter(
+                BetContract.filters.NewBattleCreated(),
+                battleCreateBlockNumber,
                 blockNumber
             );
 
@@ -85,22 +83,22 @@ export const setupCronJobMap = async (): Promise<void> => {
                     }
                 }
             }
-            console.log(`${events.length} CreatedBattle events found on ${betContract.address}`);
+            console.log(`${events.length} CreatedBattle events found on ${BetContract.address}`);
 
-            latestBlockNumber = blockNumber;
             await redisHandle.set('battleCreateBlock', blockNumber);
         } catch (e) {
             console.log('getBattleCreateEvents error: ', e);
         }
-    }, { scheduled: false });
+    }, { scheduled: false }).start();
 
     const ABPClaimJob = cron.schedule('* * * * *', async () => {
         try {
+            const abpClaimedBlockNumber = await redisHandle.get('abpClaimedBlock');
             const blockNumber = await rpcProvider.getBlockNumber();
 
-            const events = await betContract.queryFilter(
-                betContract.filters.ABPClaimed(),
-                latestBlockNumber,
+            const events = await BetContract.queryFilter(
+                BetContract.filters.ABPClaimed(),
+                abpClaimedBlockNumber,
                 blockNumber
             );
 
@@ -115,22 +113,22 @@ export const setupCronJobMap = async (): Promise<void> => {
                     }
                 }
             }
-            console.log(`${events.length} ABI Claimed events found on contract ${betContract.address}`);
+            console.log(`${events.length} ABI Claimed events found on contract ${BetContract.address}`);
 
-            latestBlockNumber = blockNumber;
             await redisHandle.set('abpClaimedBlock', blockNumber);
         } catch (e) {
             console.log('getABPClaimedEvent error: ', e);
         }
-    }, { scheduled: false });
+    }, { scheduled: false }).start();
 
     const FulfillJob = cron.schedule('* * * * *', async () => {
         try {
+            const fulfilledBlockNumber = await redisHandle.get('fulfilledBlock');
             const blockNumber = await rpcProvider.getBlockNumber();
 
-            const events = await betContract.queryFilter(
-                betContract.filters.Fulfilled(),
-                latestBlockNumber,
+            const events = await BetContract.queryFilter(
+                BetContract.filters.Fulfilled(),
+                fulfilledBlockNumber,
                 blockNumber
             );
 
@@ -144,22 +142,22 @@ export const setupCronJobMap = async (): Promise<void> => {
                     }
                 }
             }
-            console.log(`${events.length} Fulfilled events found on contract ${betContract.address}`);
+            console.log(`${events.length} Fulfilled events found on contract ${BetContract.address}`);
 
-            latestBlockNumber = blockNumber;
             await redisHandle.set('fulfilledBlock', blockNumber);
         } catch (e) {
             console.log('getFulfillEvent error: ', e);
         }
-    }, { scheduled: false });
+    }, { scheduled: false }).start();
 
     const FinalizeJob = cron.schedule('* * * * *', async () => {
         try {
+            const finalizedBlockBlockNumber = await redisHandle.get('finalizedBlock');
             const blockNumber = await rpcProvider.getBlockNumber();
 
-            const events = await betContract.queryFilter(
-                betContract.filters.BattleFinalized(),
-                latestBlockNumber,
+            const events = await BetContract.queryFilter(
+                BetContract.filters.BattleFinalized(),
+                finalizedBlockBlockNumber,
                 blockNumber
             );
 
@@ -176,22 +174,48 @@ export const setupCronJobMap = async (): Promise<void> => {
                     }
                 }
             }
-            console.log(`${events.length} Finalized events found on contract ${betContract.address}`);
+            console.log(`${events.length} Finalized events found on contract ${BetContract.address}`);
 
-            latestBlockNumber = blockNumber;
             await redisHandle.set('finalizedBlock', blockNumber);
         } catch (e) {
             console.log('getFulfillEvent error: ', e);
         }
-    }, { scheduled: false });
+    }, { scheduled: false }).start();
 
-    const requestRandomTriggerJob = cron.schedule('* * * * *', async () => {
-        await BattleRepository.getBattlesByFulfill();
-    }, { scheduled: false });
+    const requestRandomTriggerJob = cron.schedule('*/2 * * * *', async () => {
+        const battleIds = await BattleRepository.getBattlesByCreated();
+        console.log(battleIds);
 
-    const finalizeTriggerJob = cron.schedule('* * * * *', async () => {
+        await Promise.all(
+            battleIds.map(async (battleId) => {
+                try {
+                    const tx = await BetContract.connect(adminSigner).requestRandomWords(battleId);
+                    await tx.wait();
+                    console.log(`In ${battleId} battle requested random words in attached transaction Hash`, tx.hash);
+                    await BattleRepository.updateBattleStatus(battleId, BattleStatus.RequestRandomWords);
+                } catch (e) {
+                    console.error(`Error while requesting random words for battle ID ${battleId}`);
+                }
+            })
+        );
+    }, { scheduled: false }).start();
 
-    }, { scheduled: false });
+    const finalizeTriggerJob = cron.schedule('1-59/2 * * * *', async () => {
+        const battleIds = await BattleRepository.getBattlesByFulfill();
+        console.log(battleIds);
+
+        await Promise.all(
+            battleIds.map(async (battleId) => {
+                try {
+                    const tx = await BetContract.connect(adminSigner).finalizeBattle(battleId);
+                    await tx.wait();
+                    console.log(`In ${battleId} battle finalized in attached transaction Hash`, tx.hash);
+                } catch (e) {
+                    console.error(`Error while finalizing for battle ID ${battleId}`);
+                }
+            })
+        );
+    }, { scheduled: false }).start();
 
     jobMap.set('nftStakedJob', nftStakedJob);
     jobMap.set('battleCreateJob', battleCreateJob);
@@ -200,4 +224,51 @@ export const setupCronJobMap = async (): Promise<void> => {
     jobMap.set('FinalizeJob', FinalizeJob);
     jobMap.set('requestRandomTriggerJob', requestRandomTriggerJob);
     jobMap.set('finalizeTriggerJob', finalizeTriggerJob);
+
+    const activeBattles = await BattleRepository.getActiveBattles();
+    activeBattles.map(async (activeBattle) => {
+        if (activeBattle) {
+            setupNFTTransferJob(activeBattle.projectL?.contract || '');
+            setupNFTTransferJob(activeBattle.projectR?.contract || '');
+        }
+    });
+};
+
+export const setupNFTTransferJob = (nftAddress: string) => {
+    if (nftAddress === '' || jobMap.has(nftAddress)) {
+        return;
+    }
+
+    const nftTransferJob = cron.schedule('* * * * *', async () => {
+        try {
+            const nftTransferBlockNumber = await redisHandle.get('nftTransferBlock');
+            const blockNumber = await rpcProvider.getBlockNumber();
+
+            const nftContract = getERC721Contract(nftAddress);
+            const events = await nftContract.queryFilter(
+                nftContract.filters.Transfer(),
+                nftTransferBlockNumber,
+                blockNumber
+            );
+
+            if (events.length > 0) {
+                for (const ev of events) {
+                    if (ev.args) {
+                        const from = ev.args.from;
+                        const to = ev.args.to;
+                        const tokenId = ev.args.tokenId;
+
+                        await nftTransferFunc(nftAddress, from, to, tokenId, ev, ServiceType.Cron);
+                    }
+                }
+            }
+            console.log(`${events.length} NFT Transfer events found on contract ${nftAddress}`);
+
+            await redisHandle.set('nftTransferBlock', blockNumber);
+        } catch (e) {
+            console.log('getNFTTransferEvent error: ', e);
+        }
+    }, { scheduled: false }).start();
+
+    jobMap.set(nftAddress, nftTransferJob);
 };

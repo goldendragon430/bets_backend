@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import { NetworkType } from '../utils/enums';
+import { NetworkType, BattleStatus } from '../utils/enums';
 
 const Schema = mongoose.Schema;
 
@@ -23,6 +23,11 @@ const featuredBattleSchema = new Schema({
     startTime: Number, // This field is not in ERD but need to be added for filtering of simplicity
     endTime: Number, // This field is not in ERD but need to be added for filtering of simplicity
     battleLength: Number, // # minutes of battle
+    status: {
+        type: String,
+        enum: [BattleStatus.Created, BattleStatus.RequestRandomWords, BattleStatus.Fulfilled, BattleStatus.Finalized],
+        default: BattleStatus.Created,
+    },
     network: {
         type: String,
         enum: [NetworkType.ETH, NetworkType.SOL, NetworkType.ADA],

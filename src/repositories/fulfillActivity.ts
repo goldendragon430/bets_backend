@@ -1,4 +1,6 @@
 import FulfillActivity from '../models/fulfillActivity';
+import FeaturedBattle from '../models/featuredBattle';
+import { BattleStatus } from '../utils/enums';
 
 class FulfillActivityRepository {
     constructor() { }
@@ -13,6 +15,11 @@ class FulfillActivityRepository {
         transactionHash: string,
         blockNumber: number,
     ) => {
+        await FeaturedBattle.updateOne(
+            { battleId: battleId },
+            { $set: { status: BattleStatus.Fulfilled } },
+        );
+
         const fulfillActivityInstance = new FulfillActivity({
             battleId,
             timestamp,

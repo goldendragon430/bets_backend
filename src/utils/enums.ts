@@ -15,3 +15,9 @@ export enum ServiceType {
     PastEvent = 'PastEvent',
     Contract = 'Contract',
 }
+export enum BattleStatus {
+    Created = 'Created',
+    RequestRandomWords = 'RequestRandomWords',
+    Fulfilled = 'Fulfilled',
+    Finalized = 'Finalized',
+}
