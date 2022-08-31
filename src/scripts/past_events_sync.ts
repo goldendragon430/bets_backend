@@ -93,7 +93,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
                         if (ev.args) {
                             const battleId = ev.args.battleId;
                             const timestamp = ev.args.timestamp;
-    
+
                             await fulfilledFunc(battleId, timestamp, ev);
                         }
                     }
@@ -102,14 +102,14 @@ mongoose.connect(process.env.DB_CONFIG as string)
             } catch (e) {
                 console.log('getFulfillEvent error: ', e);
             }
-        }
+        };
 
         const getFinalizedEvents = async () => {
             try {
                 const events = await betContract.queryFilter(
                     betContract.filters.BattleFinalized(),
                 );
-    
+
                 if (events.length > 0) {
                     for (const ev of events) {
                         if (ev.args) {
@@ -118,7 +118,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
                             const chanceA = ev.args.chanceA;
                             const chanceB = ev.args.chanceB;
                             const bingo = ev.args.bingo;
-    
+
                             await finalizedFunc(battleId, side, chanceA, chanceB, bingo, ev);
                         }
                     }
@@ -127,7 +127,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
             } catch (e) {
                 console.log('getFinalizedEvents error: ', e);
             }
-        }
+        };
 
         // await getNFTStakedEvent();
         // await getBattleCreateEvents();
