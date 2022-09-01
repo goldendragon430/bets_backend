@@ -133,7 +133,7 @@ class FeaturedBattleRepository {
             projectL: projectL,
             projectR: projectR,
             twitterAnnounceID: twitterID,
-        })
+        });
     }
 
     updateBattle = async (battleId: number, startTime: number, endTime: number, projectLContract: string, projectRContract: string, twitterID: string | undefined) => {
@@ -162,7 +162,7 @@ class FeaturedBattleRepository {
                     twitterAnnounceID: twitterID,
                 }
             }
-        )
+        );
     }
 }
 
