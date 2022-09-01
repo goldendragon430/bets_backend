@@ -59,7 +59,7 @@ export const setupCronJobMap = async (): Promise<void> => {
         }
     }, { scheduled: false }).start();
 
-    const battleCreateJob = cron.schedule('* * * * *', async () => {
+    const battleCreateJob = cron.schedule('*/5 * * * *', async () => {
         try {
             const battleCreateBlockNumber = await redisHandle.get('battleCreateBlock');
             const blockNumber = await rpcProvider.getBlockNumber();
@@ -113,7 +113,7 @@ export const setupCronJobMap = async (): Promise<void> => {
                     }
                 }
             }
-            console.log(`${events.length} ABI Claimed events found on contract ${BetContract.address}`);
+            console.log(`${events.length} ABP Claimed events found on contract ${BetContract.address}`);
 
             await redisHandle.set('abpClaimedBlock', blockNumber);
         } catch (e) {
@@ -211,6 +211,7 @@ export const setupCronJobMap = async (): Promise<void> => {
                     await tx.wait();
                     console.log(`In ${battleId} battle finalized in attached transaction Hash`, tx.hash);
                 } catch (e) {
+                    await BattleRepository.updateBattleFinalizeFailedCount(battleId);
                     console.error(`Error while finalizing for battle ID ${battleId}`);
                 }
             })

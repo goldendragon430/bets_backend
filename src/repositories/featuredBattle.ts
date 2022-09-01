@@ -89,7 +89,8 @@ class FeaturedBattleRepository {
 
     getBattlesByFulfill = async () => {
         const battles = await FeaturedBattle.find({
-            status: BattleStatus.Fulfilled
+            status: BattleStatus.Fulfilled,
+            finalizeFailedCount: { $lt: 3 },
         });
 
         return battles.map((battle) => {
@@ -104,7 +105,14 @@ class FeaturedBattleRepository {
         );
     }
 
-    addBattle = async (battleId: number, startTime: number, endTime: number, projectLContract: string, projectRContract: string) => {
+    updateBattleFinalizeFailedCount = async (battleId: number) => {
+        return await FeaturedBattle.updateOne(
+            { battleId: battleId },
+            { $inc: { finalizeFailedCount: 1 } },
+        );
+    }
+
+    addBattle = async (battleId: number, startTime: number, endTime: number, projectLContract: string, projectRContract: string, twitterID: string | undefined) => {
         const projectL = await ProjectRepository.getProjectByContract(projectLContract);
         const projectR = await ProjectRepository.getProjectByContract(projectRContract);
 
@@ -112,17 +120,49 @@ class FeaturedBattleRepository {
         setupNFTTransferJob(projectRContract);
 
         const battleLength = endTime - startTime;
-        const battle = new FeaturedBattle({
+
+        await FeaturedBattle.create({
             startDate: new Date(startTime * 1000),
             battleId: battleId,
             startTime: startTime,
             endTime: endTime,
             battleLength: battleLength,
             status: BattleStatus.Created,
+            network: NetworkType.ETH,
+            finalizeFailedCount: 0,
             projectL: projectL,
             projectR: projectR,
-        });
-        await battle.save();
+            twitterAnnounceID: twitterID,
+        })
+    }
+
+    updateBattle = async (battleId: number, startTime: number, endTime: number, projectLContract: string, projectRContract: string, twitterID: string | undefined) => {
+        const projectL = await ProjectRepository.getProjectByContract(projectLContract);
+        const projectR = await ProjectRepository.getProjectByContract(projectRContract);
+
+        setupNFTTransferJob(projectLContract);
+        setupNFTTransferJob(projectRContract);
+
+        const battleLength = endTime - startTime;
+
+        await FeaturedBattle.updateOne(
+            { battleId: battleId },
+            {
+                $set: {
+                    startDate: new Date(startTime * 1000),
+                    battleId: battleId,
+                    startTime: startTime,
+                    endTime: endTime,
+                    battleLength: battleLength,
+                    status: BattleStatus.Created,
+                    network: NetworkType.ETH,
+                    finalizeFailedCount: 0,
+                    projectL: projectL,
+                    projectR: projectR,
+                    twitterAnnounceID: twitterID,
+                }
+            }
+        )
     }
 }
 

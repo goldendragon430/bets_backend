@@ -17,12 +17,12 @@ export const nftTransferFunc = async (contractAddress: string, from: string, to:
     }
 };
 
-export const nftStakedFunc = async (battleId: number, collectionAddress: string, user: string, tokenIds: Array<number>, event: any, serviceType: ServiceType) => {
+export const nftStakedFunc = async (battleId: BigNumber, collectionAddress: string, user: string, tokenIds: Array<BigNumber>, event: any, serviceType: ServiceType) => {
     try {
         const activity = await NFTActivityRepository.getNFTActivity(event.transactionHash);
         if (!activity) {
             for (const tokenId of tokenIds) {
-                await NFTActivityRepository.addNFTActivity(battleId, collectionAddress, ActivityType.Staked, user, user, tokenId.toString(), event.transactionHash, event.blockNumber, serviceType);
+                await NFTActivityRepository.addNFTActivity(battleId.toNumber(), collectionAddress, ActivityType.Staked, user, user, tokenId.toString(), event.transactionHash, event.blockNumber, serviceType);
             }
         }
     } catch (e) {
@@ -30,11 +30,13 @@ export const nftStakedFunc = async (battleId: number, collectionAddress: string,
     }
 };
 
-export const battleCreateFunc = async (battleId: number, startTime: number, endTime: number, teamACollectionAddress: string, teamBCollectionAddress: string) => {
+export const battleCreateFunc = async (battleId: BigNumber, startTime: BigNumber, endTime: BigNumber, teamACollectionAddress: string, teamBCollectionAddress: string, twitterID: string = '') => {
     try {
         const battle = await FeaturedBattleRepository.getBattleByQuery({ battleId: battleId });
         if (!battle) {
-            await FeaturedBattleRepository.addBattle(battleId, startTime, endTime, teamACollectionAddress, teamBCollectionAddress);
+            await FeaturedBattleRepository.addBattle(battleId.toNumber(), startTime.toNumber(), endTime.toNumber(), teamACollectionAddress, teamBCollectionAddress, twitterID);
+        } else {
+            await FeaturedBattleRepository.updateBattle(battleId.toNumber(), startTime.toNumber(), endTime.toNumber(), teamACollectionAddress, teamBCollectionAddress, twitterID);
         }
 
     } catch (e) {
@@ -42,11 +44,11 @@ export const battleCreateFunc = async (battleId: number, startTime: number, endT
     }
 };
 
-export const abpClaimedFunc = async (battleId: number, user: string, amount: BigNumber, event: any) => {
+export const abpClaimedFunc = async (battleId: BigNumber, user: string, amount: BigNumber, event: any) => {
     try {
         const activity = await ClaimActivityRepository.getClaimActivity(event.transactionHash);
         if (!activity) {
-            await ClaimActivityRepository.addClaimActivity(battleId, user, amount, event.transactionHash, event.blockNumber);
+            await ClaimActivityRepository.addClaimActivity(battleId.toNumber(), user, amount, event.transactionHash, event.blockNumber);
         }
     } catch (e) {
         console.error('ABP Claim Event Err: ', e);

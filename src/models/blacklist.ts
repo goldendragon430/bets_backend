@@ -13,7 +13,7 @@ const blackListSchema = new Schema({
         },
         processed: {
             type: Boolean,
-            defaultValue: false,
+            default: false,
         },
         transactionHash: String
     },

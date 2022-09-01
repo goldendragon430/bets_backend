@@ -139,7 +139,8 @@ export default class BattleController {
      */
     addBattle = async (req: Request, res: Response, next: NextFunction) => {
         const {
-            transactionHash
+            transactionHash,
+            twitterID,
         } = req.body;
 
         try {
@@ -172,7 +173,7 @@ export default class BattleController {
                 });
             }
             const event = events[0];
-            await battleCreateFunc(event?.args?.battleId, event?.args?.startTime, event?.args?.endTime, event?.args?.teamACollectionAddress, event?.args?.teamBCollectionAddress);
+            await battleCreateFunc(event?.args?.battleId, event?.args?.startTime, event?.args?.endTime, event?.args?.teamACollectionAddress, event?.args?.teamBCollectionAddress, twitterID);
 
             res.json({ 'success': true, 'message': '', 'data': 'Battle created' });
         } catch (error) {

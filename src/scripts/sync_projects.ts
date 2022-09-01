@@ -3,6 +3,7 @@ import axios from 'axios';
 import Project from '../models/project';
 import FeaturedBattle from '../models/featuredBattle';
 import 'dotenv/config';
+import { NetworkType } from '../utils/enums';
 
 const dbConnect = async () => {
     return mongoose.connect(process.env.DB_CONFIG as string)
@@ -12,7 +13,7 @@ const dbConnect = async () => {
         });
 };
 
-const googleSheetLoadfromUrl = async (sheetNameParam = 'Eth Projects - Updated') => {
+const googleSheetLoadfromUrl = async (sheetNameParam = 'Eth Projects (Old)') => {
     const base = `https://docs.google.com/spreadsheets/d/1dOzbFEuQzDGw0SeHKCSyuWOYq0ogv9d7upO_KarnUK8/gviz/tq?`;
     const sheetName = sheetNameParam;
     const query = encodeURIComponent('Select *');
@@ -26,15 +27,14 @@ const googleSheetLoadfromUrl = async (sheetNameParam = 'Eth Projects - Updated')
 
         // extract row data:
         jsonData.table.rows.forEach((rowData) => {
-            const name = rowData.c[0] != undefined ? rowData.c[0].v : '';
-            const subName = rowData.c[1] != undefined ? rowData.c[1].v : '';
-            const collectionSize = rowData.c[3] != undefined ? rowData.c[3].v : '';
-            const openseaLink = rowData.c[6] != undefined ? rowData.c[6].v : '';
-            const twitterLink = rowData.c[7] != undefined ? rowData.c[7].v : '';
-            const headerImage = rowData.c[8] != undefined ? rowData.c[8].v : '';
-            const logoImage = rowData.c[9] != undefined ? rowData.c[9].v : '';
-            const contractAddress = rowData.c[10] != undefined ? rowData.c[10].v : '';
-            const bannerImage = rowData.c[11] != undefined ? rowData.c[11].v : '';
+            const name = rowData.c[0] != undefined ? rowData.c[0].v : ''; // Project Name
+            const subName = rowData.c[1] != undefined ? rowData.c[1].v : ''; // SubName
+            const collectionSize = rowData.c[3] != undefined ? rowData.c[3].v : ''; // Collection Size
+            const openseaLink = rowData.c[6] != undefined ? rowData.c[6].v : ''; // Opensea Link
+            const twitterLink = rowData.c[7] != undefined ? rowData.c[7].v : ''; // Twitter Link
+            const headerImage = rowData.c[8] != undefined ? rowData.c[8].v : ''; // Header Image
+            const logoImage = rowData.c[9] != undefined ? rowData.c[9].v : ''; // Logo Image
+            const contractAddress = rowData.c[10] != undefined ? rowData.c[10].v : ''; // Contract Address
 
             data.push({
                 name: name,
@@ -45,6 +45,7 @@ const googleSheetLoadfromUrl = async (sheetNameParam = 'Eth Projects - Updated')
                 logo: logoImage,
                 headerImage: headerImage,
                 openSeaLink: openseaLink,
+                network: NetworkType.ETH
             });
         });
         return data;

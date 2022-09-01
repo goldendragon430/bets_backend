@@ -167,7 +167,7 @@ mongoose.connect(process.env.DB_CONFIG as string)
                             }
                         }
                     }
-                    console.log(`${events.length} ABI Claimed events found on contract ${BetContract.address}`);
+                    console.log(`${events.length} ABP Claimed events found on contract ${BetContract.address}`);
 
                     latestBlockNumber = blockNumber;
                     await redisHandle.set('abpClaimedBlock', blockNumber);

@@ -28,10 +28,14 @@ const featuredBattleSchema = new Schema({
         enum: [BattleStatus.Created, BattleStatus.RequestRandomWords, BattleStatus.Fulfilled, BattleStatus.Finalized],
         default: BattleStatus.Created,
     },
+    finalizeFailedCount: {
+        type: Number,
+        default: 0,
+    },
     network: {
         type: String,
         enum: [NetworkType.ETH, NetworkType.SOL, NetworkType.ADA],
-        defaultValue: NetworkType.ETH,
+        default: NetworkType.ETH,
     },
     winner: {
         type: Schema.Types.ObjectId,
