@@ -1,8 +1,9 @@
 import FeaturedBattle from '../models/featuredBattle';
-import { BattleStatus, NetworkType } from '../utils/enums';
+import { ActivityType, BattleStatus, NetworkType } from '../utils/enums';
 import ProjectRepository from './project';
 import { rpcProvider } from '../utils';
 import { setupNFTTransferJob } from '../services/cronManager';
+import NftActivityModel from '../models/nftActivity';
 
 class FeaturedBattleRepository {
     constructor() {
@@ -30,6 +31,20 @@ class FeaturedBattleRepository {
         });
     };
 
+    getBattleByBattleId = async (battleId: number) => {
+        const battle = await FeaturedBattle.findOne({ battleId });
+        if (!battle) {
+            return undefined;
+        }
+        const projectL = await ProjectRepository.getProjectById(battle.projectL);
+        const projectR = await ProjectRepository.getProjectById(battle.projectR);
+        return Object.assign(battle.toJSON(), {
+            id: battle.id,
+            projectL: projectL?.toJSON(),
+            projectR: projectR?.toJSON(),
+        });
+    };
+
     getActiveBattleIds = async () => {
         const blockNumber = await rpcProvider.getBlockNumber();
         const block = await rpcProvider.getBlock(blockNumber);
@@ -45,7 +60,7 @@ class FeaturedBattleRepository {
     };
 
     getBattleHistories = async () => {
-        const battles = await FeaturedBattle.find();
+        const battles = await FeaturedBattle.find({ finalizeFailedCount: { $lt: 3 } });
         const histories = await Promise.all(
             battles.map(async (item) => {
                 const projectL = await ProjectRepository.getProjectById(item?.projectL);
@@ -58,6 +73,54 @@ class FeaturedBattleRepository {
             })
         );
         return histories;
+    };
+
+    getBattleEvents = async (battle_id: number) => {
+        const battle = await this.getBattleByBattleId(battle_id);
+        if (!battle) { 
+            return [];
+        }
+        const activities = await NftActivityModel.aggregate([
+            {
+                $match: {
+                    battleId: battle_id,
+                    activity: { $in: [ActivityType.Staked, ActivityType.Unstaked, ActivityType.Betted] },
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        transactionHash: '$transactionHash',
+                        blockNumber: '$blockNumber',
+                        contractAddress: '$contractAddress',
+                        activity: '$activity',
+                        amount: '$amountInDecimal',
+                        from: '$from'
+                    },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { '_id.blockNumber': 1 } }
+        ])
+
+        return activities.map((activity) => {
+            const projectName = activity._id.contractAddress === battle.projectL?.contract ? battle.projectL?.name : battle.projectR?.name;
+            let amount = 0;
+            if (activity._id.activity === ActivityType.Staked) {
+                amount = activity.count
+            } else if (activity._id.activity === ActivityType.Unstaked) {
+                amount = 1;
+            } else if (activity._id.activity === ActivityType.Betted) { 
+                amount = activity._id.amount;
+            }
+            return {
+                txHash: activity._id.transactionHash,
+                user: activity._id.from,
+                amount: amount,
+                teamName: projectName,
+                action: activity._id.activity,
+            }
+        })
     }
 
     getActiveBattles = async () => {

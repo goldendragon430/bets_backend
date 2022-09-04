@@ -64,6 +64,24 @@ export default class BattleController {
     };
 
     /**
+     * @description Get all battle events (Staked or Betted)
+     * @param req
+     * @param res
+     * @param next
+     */
+    getBattleEvents = async (req: Request, res: Response, next: NextFunction) => {
+        const { battleId } = req.params;
+
+        try {
+            const battles = await BattleRepository.getBattleEvents(parseInt(battleId));
+
+            res.json({ 'success': true, 'message': '', 'data': battles });
+        } catch (error) {
+            apiErrorHandler(error, req, res, 'Get Battle Histories failed.');
+        }
+    };
+
+    /**
      * @description Get Battles Function
      * @param req
      * @param res
@@ -187,7 +205,7 @@ export default class BattleController {
      * @param res
      * @param next
      */
-     getLeaderboard = async (req: Request, res: Response, next: NextFunction) => {
+    getLeaderboard = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const leaderboard = await ClaimActivityRepository.getLeaderboard();
 

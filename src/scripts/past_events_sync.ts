@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { ethers } from 'ethers';
 import { rpcProvider } from '../utils';
-import { nftTransferFunc, nftStakedFunc, battleCreateFunc, fulfilledFunc, finalizedFunc } from '../services/getEventFunc';
+import { nftTransferFunc, nftStakedFunc, battleCreateFunc, fulfilledFunc, finalizedFunc, bettedFunc } from '../services/getEventFunc';
 import { ServiceType } from '../utils/enums';
 import { BetContract } from '../utils/constants';
 import battle from '../repositories/featuredBattle';
@@ -102,6 +102,29 @@ mongoose.connect(process.env.DB_CONFIG as string)
             }
         };
 
+        const getBettedEvents = async () => {
+            try {
+                const events = await BetContract.queryFilter(
+                    BetContract.filters.Betted(),
+                );
+                if (events.length > 0) {
+                    for (const ev of events) {
+                        if (ev.args) {
+                            const battleId = ev.args.battleId;
+                            const user = ev.args.user;
+                            const amount = ev.args.amount;
+                            const side = ev.args.side;
+
+                            await bettedFunc(battleId, user, amount, side, ev);
+                        }
+                    }
+                }
+                console.log(`${events.length} Betted events found on contract ${BetContract.address}`);
+            } catch (e) {
+                console.log('getBetted error: ', e);
+            }
+        };
+
         const getFinalizedEvents = async () => {
             try {
                 const events = await BetContract.queryFilter(
@@ -129,8 +152,9 @@ mongoose.connect(process.env.DB_CONFIG as string)
 
         // await getNFTStakedEvent();
         // await getBattleCreateEvents();
-        await getFulfilledEvents();
+        // await getFulfilledEvents();
         // await getFinalizedEvents();
+        await getBettedEvents();
 
         // const activeBattles = await battle.getActiveBattles();
         // await Promise.all(

@@ -1,4 +1,6 @@
+import { BigNumber, ethers } from 'ethers';
 import NFTActivity from '../models/nftActivity';
+import FeaturedBattleRepository from './featuredBattle';
 import { ActivityType, ServiceType } from '../utils/enums';
 
 class NFTActivityRepository {
@@ -98,6 +100,36 @@ class NFTActivityRepository {
             transactionHash,
             blockNumber,
             source: serviceType,
+        });
+
+        return nftActivityInstance.save();
+    }
+
+    addBettedActivity = async (
+        battleId: number,
+        user: string,
+        amount: BigNumber,
+        side: boolean,
+        transactionHash: string,
+        blockNumber: number,
+    ) => {
+        const battle = await FeaturedBattleRepository.getBattleByBattleId(battleId);
+        const contractAddress = !side ? battle?.projectL?.contract : battle?.projectR?.contract;
+        const from = user;
+        const to = user;
+
+        const nftActivityInstance = new NFTActivity({
+            battleId,
+            contractAddress,
+            activity: ActivityType.Betted,
+            from,
+            to,
+            amount: amount.toString(),
+            amountInDecimal: parseFloat(ethers.utils.formatEther(amount)),
+            tokenId: '',
+            transactionHash,
+            blockNumber,
+            source: ServiceType.Contract,
         });
 
         return nftActivityInstance.save();

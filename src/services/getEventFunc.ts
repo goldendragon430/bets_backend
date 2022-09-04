@@ -55,6 +55,24 @@ export const abpClaimedFunc = async (battleId: BigNumber, user: string, amount: 
     }
 };
 
+export const bettedFunc = async (battleId: BigNumber, user: string, amount: BigNumber, side: false, event: any) => {
+    try {
+        const activity = await NFTActivityRepository.getNFTActivity(event.transactionHash);
+        if (!activity) {
+            await NFTActivityRepository.addBettedActivity(
+                battleId.toNumber(),
+                user,
+                amount,
+                side,
+                event.transactionHash,
+                event.blockNumber
+            );
+        }
+    } catch (e) {
+        console.error('Betted Event Err: ', e);
+    }
+};
+
 export const fulfilledFunc = async (battleId: BigNumber, timestamp: BigNumber, event: any) => {
     try {
         const activity = await FulfillActivityRepository.getFulfillActivity(event.transactionHash);

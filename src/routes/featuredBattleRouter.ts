@@ -19,7 +19,7 @@ class FeaturedBattleRouter {
     this.router.route('/get_active_total_nft_staked_amount/:battleId').get(this.BattleController.getActiveTotalNftStakedAmount);
     this.router.route('/get_nft_staked_status').post(this.BattleController.getNFTStakedStatus);
     this.router.route('/get_battle_histories').get(this.BattleController.getBattleHistories);
-
+    this.router.route('/get_battle_events/:battleId').get(this.BattleController.getBattleEvents);
     this.router.route('/get_leaderboard').get(this.BattleController.getLeaderboard);
   }
 }

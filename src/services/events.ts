@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { nftStakedFunc, battleCreateFunc, abpClaimedFunc } from './getEventFunc';
+import { nftStakedFunc, battleCreateFunc, abpClaimedFunc, bettedFunc } from './getEventFunc';
 import { ServiceType } from '../utils/enums';
 import { BetContract, provider } from '../utils/constants';
 dotenv.config();
@@ -46,5 +46,23 @@ export const installNFTStakedEvents = async () => {
         }
     });
 
-    console.log('Initialized NFTStaked Event on ', contract.address);
+    contract.on('Betted', async (battleId, user, amount, side) => {
+        const blockNumber = await provider.getBlockNumber();
+        const events = await contract.queryFilter(contract.filters.Betted(), (blockNumber - 10));
+
+        if (events.length > 0) {
+            for (const ev of events) {
+                if (ev.args) {
+                    const battleId = ev.args.battleId;
+                    const user = ev.args.user;
+                    const amount = ev.args.amount;
+                    const side = ev.args.side;
+
+                    await bettedFunc(battleId, user, amount, side, ev);
+                }
+            }
+        }
+    });
+
+    console.log('Initialized All events on ', contract.address);
 };

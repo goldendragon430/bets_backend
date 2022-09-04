@@ -2,6 +2,7 @@ export enum ActivityType {
     Transfer = 'Transfer',
     Staked = 'Staked',
     Unstaked = 'Unstaked',
+    Betted = 'Betted',
 }
 
 export enum NetworkType {
