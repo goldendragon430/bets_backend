@@ -4,7 +4,7 @@ import { rpcProvider } from '../utils';
 import { BetContract, adminSigner, getERC721Contract } from '../utils/constants';
 import { ServiceType, BattleStatus } from '../utils/enums';
 import redisHandle from '../utils/redis';
-import { abpClaimedFunc, battleCreateFunc, finalizedFunc, fulfilledFunc, nftStakedFunc, nftTransferFunc } from './getEventFunc';
+import { abpClaimedFunc, battleCreateFunc, bettedFunc, finalizedFunc, fulfilledFunc, nftStakedFunc, nftTransferFunc } from './getEventFunc';
 
 // hash map to map keys to jobs
 const jobMap: Map<string, cron.ScheduledTask> = new Map();
@@ -21,13 +21,14 @@ export const setupCronJobMap = async (): Promise<void> => {
     let latestBlockNumber = await rpcProvider.getBlockNumber() - 10;
 
     latestBlockNumber = await redisHandle.initVaule('nftStakedBlock', latestBlockNumber);
+    latestBlockNumber = await redisHandle.initVaule('bettedJobBlock', latestBlockNumber);
     latestBlockNumber = await redisHandle.initVaule('battleCreateBlock', latestBlockNumber);
     latestBlockNumber = await redisHandle.initVaule('abpClaimedBlock', latestBlockNumber);
     latestBlockNumber = await redisHandle.initVaule('nftTransferBlock', latestBlockNumber);
     latestBlockNumber = await redisHandle.initVaule('fulfilledBlock', latestBlockNumber);
     latestBlockNumber = await redisHandle.initVaule('finalizedBlock', latestBlockNumber);
 
-    const nftStakedJob = cron.schedule('* * * * *', async () => {
+    const nftStakedJob = cron.schedule('1-59/5 * * * *', async () => {
         try {
             const nftStakedBlockNumber = await redisHandle.get('nftStakedBlock');
 
@@ -59,7 +60,39 @@ export const setupCronJobMap = async (): Promise<void> => {
         }
     }, { scheduled: false }).start();
 
-    const battleCreateJob = cron.schedule('*/5 * * * *', async () => {
+    const bettedJob = cron.schedule('2-59/5 * * * *', async () => {
+        try {
+            const bettedBlockNumber = await redisHandle.get('bettedJobBlock');
+
+            const blockNumber = await rpcProvider.getBlockNumber();
+
+            const events = await BetContract.queryFilter(
+                BetContract.filters.Betted(),
+                bettedBlockNumber,
+                blockNumber
+            );
+
+            if (events.length > 0) {
+                for (const ev of events) {
+                    if (ev.args) {
+                        const battleId = ev.args.battleId;
+                        const user = ev.args.user;
+                        const amount = ev.args.amount;
+                        const side = ev.args.side;
+
+                        await bettedFunc(battleId, user, amount, side, ev);
+                    }
+                }
+            }
+            console.log(`${events.length} Betted events found on contract ${BetContract.address}`);
+
+            await redisHandle.set('bettedJobBlock', blockNumber);
+        } catch (e) {
+            console.log('getBettedEvent error: ', e);
+        }
+    }, { scheduled: false }).start();
+
+    const battleCreateJob = cron.schedule('3-59/5 * * * *', async () => {
         try {
             const battleCreateBlockNumber = await redisHandle.get('battleCreateBlock');
             const blockNumber = await rpcProvider.getBlockNumber();
@@ -91,7 +124,7 @@ export const setupCronJobMap = async (): Promise<void> => {
         }
     }, { scheduled: false }).start();
 
-    const ABPClaimJob = cron.schedule('* * * * *', async () => {
+    const ABPClaimJob = cron.schedule('4-59/5 * * * *', async () => {
         try {
             const abpClaimedBlockNumber = await redisHandle.get('abpClaimedBlock');
             const blockNumber = await rpcProvider.getBlockNumber();
@@ -121,7 +154,7 @@ export const setupCronJobMap = async (): Promise<void> => {
         }
     }, { scheduled: false }).start();
 
-    const FulfillJob = cron.schedule('* * * * *', async () => {
+    const FulfillJob = cron.schedule('*/5 * * * *', async () => {
         try {
             const fulfilledBlockNumber = await redisHandle.get('fulfilledBlock');
             const blockNumber = await rpcProvider.getBlockNumber();
@@ -150,7 +183,7 @@ export const setupCronJobMap = async (): Promise<void> => {
         }
     }, { scheduled: false }).start();
 
-    const FinalizeJob = cron.schedule('* * * * *', async () => {
+    const FinalizeJob = cron.schedule('*/5 * * * *', async () => {
         try {
             const finalizedBlockBlockNumber = await redisHandle.get('finalizedBlock');
             const blockNumber = await rpcProvider.getBlockNumber();
@@ -219,6 +252,7 @@ export const setupCronJobMap = async (): Promise<void> => {
     }, { scheduled: false }).start();
 
     jobMap.set('nftStakedJob', nftStakedJob);
+    jobMap.set('bettedJob', bettedJob);
     jobMap.set('battleCreateJob', battleCreateJob);
     jobMap.set('ABPClaimJob', ABPClaimJob);
     jobMap.set('FulfillJob', FulfillJob);

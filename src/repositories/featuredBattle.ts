@@ -77,7 +77,7 @@ class FeaturedBattleRepository {
 
     getBattleEvents = async (battle_id: number) => {
         const battle = await this.getBattleByBattleId(battle_id);
-        if (!battle) { 
+        if (!battle) {
             return [];
         }
         const activities = await NftActivityModel.aggregate([
@@ -101,16 +101,16 @@ class FeaturedBattleRepository {
                 }
             },
             { $sort: { '_id.blockNumber': 1 } }
-        ])
+        ]);
 
         return activities.map((activity) => {
             const projectName = activity._id.contractAddress === battle.projectL?.contract ? battle.projectL?.name : battle.projectR?.name;
             let amount = 0;
             if (activity._id.activity === ActivityType.Staked) {
-                amount = activity.count
+                amount = activity.count;
             } else if (activity._id.activity === ActivityType.Unstaked) {
                 amount = 1;
-            } else if (activity._id.activity === ActivityType.Betted) { 
+            } else if (activity._id.activity === ActivityType.Betted) {
                 amount = activity._id.amount;
             }
             return {
@@ -119,8 +119,8 @@ class FeaturedBattleRepository {
                 amount: amount,
                 teamName: projectName,
                 action: activity._id.activity,
-            }
-        })
+            };
+        });
     }
 
     getActiveBattles = async () => {

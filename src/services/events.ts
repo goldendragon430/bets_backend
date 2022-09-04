@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { nftStakedFunc, battleCreateFunc, abpClaimedFunc, bettedFunc } from './getEventFunc';
+import { nftStakedFunc, battleCreateFunc, abpClaimedFunc, bettedFunc, fulfilledFunc, finalizedFunc } from './getEventFunc';
 import { ServiceType } from '../utils/enums';
 import { BetContract, provider } from '../utils/constants';
 dotenv.config();
@@ -41,6 +41,41 @@ export const installNFTStakedEvents = async () => {
                     const amount = ev.args.amount;
 
                     await abpClaimedFunc(battleId, user, amount, ev);
+                }
+            }
+        }
+    });
+
+    contract.on('Fulfilled', async (battleId, timestamp) => {
+        const blockNumber = await provider.getBlockNumber();
+        const events = await contract.queryFilter(contract.filters.Fulfilled(), (blockNumber - 10));
+
+        if (events.length > 0) {
+            for (const ev of events) {
+                if (ev.args) {
+                    const battleId = ev.args.battleId;
+                    const timestamp = ev.args.timestamp;
+
+                    await fulfilledFunc(battleId, timestamp, ev);
+                }
+            }
+        }
+    });
+
+    contract.on('BattleFinalized', async (battleId, timestamp) => {
+        const blockNumber = await provider.getBlockNumber();
+        const events = await contract.queryFilter(contract.filters.Fulfilled(), (blockNumber - 10));
+
+        if (events.length > 0) {
+            for (const ev of events) {
+                if (ev.args) {
+                    const battleId = ev.args.battleId;
+                    const side = ev.args.side;
+                    const chanceA = ev.args.chanceA;
+                    const chanceB = ev.args.chanceB;
+                    const bingo = ev.args.bingo;
+
+                    await finalizedFunc(battleId, side, chanceA, chanceB, bingo, ev);
                 }
             }
         }
