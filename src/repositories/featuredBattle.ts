@@ -222,7 +222,7 @@ class FeaturedBattleRepository {
             finalizeFailedCount: 0,
             projectL: projectL,
             projectR: projectR,
-        }
+        };
         if (twitterID) {
             updateData = Object.assign(updateData, { twitterAnnounceID: twitterID });
         }
@@ -261,9 +261,9 @@ class FeaturedBattleRepository {
         });
 
 
-        let userInfoL: any = {};
+        const userInfoL: any = {};
         for (const activity of projectLActivities) {
-            const userAddress = activity.from
+            const userAddress = activity.from;
             if (userAddress) {
                 if (userInfoL[userAddress]) {
                     userInfoL[userAddress].tokenIds.push(BigNumber.from(activity.tokenId));
@@ -276,13 +276,13 @@ class FeaturedBattleRepository {
             }
         }
 
-        let tokenIdsL = []
-        let tokenLengthL = []
+        let tokenIdsL = [];
+        let tokenLengthL = [];
         Object.keys(userInfoL).map((userAddress) => {
-            console.log(userInfoL[userAddress])
+            console.log(userInfoL[userAddress]);
             tokenIdsL = tokenIdsL.concat(userInfoL[userAddress].tokenIds);
             tokenLengthL = tokenLengthL.concat(userInfoL[userAddress].tokenIds.length);
-            return userInfoL[userAddress].tokenIds
+            return userInfoL[userAddress].tokenIds;
         });
 
         const projectRActivities = await NftActivityModel.find({
@@ -291,9 +291,9 @@ class FeaturedBattleRepository {
             contractAddress: battle.projectR?.contract,
         });
 
-        let userInfoR: any = {};
+        const userInfoR: any = {};
         for (const activity of projectRActivities) {
-            const userAddress = activity.from
+            const userAddress = activity.from;
             if (userAddress) {
                 if (userInfoR[userAddress]) {
                     userInfoR[userAddress].tokenIds.push(BigNumber.from(activity.tokenId));
@@ -305,12 +305,12 @@ class FeaturedBattleRepository {
                 }
             }
         }
-        let tokenIdsR = []
-        let tokenLengthR = []
+        let tokenIdsR = [];
+        let tokenLengthR = [];
         Object.keys(userInfoR).map((userAddress) => {
             tokenIdsR = tokenIdsR.concat(userInfoR[userAddress].tokenIds);
             tokenLengthR = tokenLengthR.concat(userInfoR[userAddress].tokenIds.length);
-            return userInfoR[userAddress].tokenIds
+            return userInfoR[userAddress].tokenIds;
         });
 
         return {
