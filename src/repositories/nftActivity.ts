@@ -68,26 +68,31 @@ class NFTActivityRepository {
     ) => {
 
         if (activity === ActivityType.Transfer) {
-            const staked = await NFTActivity.findOne({
+            const activeBattleIds = await FeaturedBattleRepository.getActiveBattleIds();
+
+            const stakedList = await NFTActivity.find({
                 contractAddress,
                 activity: ActivityType.Staked,
+                battleId: { $in: activeBattleIds },
                 from,
                 tokenId,
             });
 
-            const activity = new NFTActivity({
-                contractAddress,
-                battleId: staked?.battleId || 0,
-                activity: staked ? ActivityType.Unstaked : ActivityType.Transfer,
-                from,
-                to,
-                tokenId,
-                transactionHash,
-                blockNumber,
-                source: serviceType,
-            });
-
-            return activity.save();
+            for (const staked of stakedList) {
+                const activity = new NFTActivity({
+                    contractAddress,
+                    battleId: staked?.battleId || 0,
+                    activity: staked ? ActivityType.Unstaked : ActivityType.Transfer,
+                    from,
+                    to,
+                    tokenId,
+                    transactionHash,
+                    blockNumber,
+                    source: serviceType,
+                });
+                await activity.save();
+            }
+            return;
         }
 
         const nftActivityInstance = new NFTActivity({

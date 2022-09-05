@@ -219,41 +219,45 @@ export const setupCronJobMap = async (): Promise<void> => {
         const battleIds = await BattleRepository.getBattlesByCreated();
         console.log(battleIds);
 
-        await Promise.all(
-            battleIds.map(async (battleId) => {
+        for (const battleId of battleIds) {
+            try {
                 try {
-                    const { side, users, tokenIds, userTokenIdLengths } = await BattleRepository.getUnstakeInfos(battleId);
-                    if (users.length > 0) {
-                        const unstakeTx = await BetContract.connect(adminSigner).unstakeNftFromUser(battleId, side, users, tokenIds, userTokenIdLengths);
+                    const { projectL, projectR } = await BattleRepository.getUnstakeInfos(battleId);
+                    if (projectL.users.length > 0) {
+                        const unstakeTx = await BetContract.connect(adminSigner).unstakeNftFromUser(battleId, projectL.side, projectL.users, projectL.tokenIds, projectL.userTokenIdLengths);
                         await unstakeTx.wait();
                     }
-                    const tx = await BetContract.connect(adminSigner).requestRandomWords(battleId);
-                    await tx.wait();
-                    console.log(`In ${battleId} battle requested random words in attached transaction Hash`, tx.hash);
-                    await BattleRepository.updateBattleStatus(battleId, BattleStatus.RequestRandomWords);
-                } catch (e) {
-                    console.error(`Error while requesting random words for battle ID ${battleId}`);
+                    if (projectR.users.length > 0) {
+                        const unstakeTx = await BetContract.connect(adminSigner).unstakeNftFromUser(battleId, projectR.side, projectR.users, projectR.tokenIds, projectR.userTokenIdLengths);
+                        await unstakeTx.wait();
+                    }
+                } catch (e1) {
+                    console.error(`Error while unstaking for battle ID ${battleId}`);
                 }
-            })
-        );
+                const tx = await BetContract.connect(adminSigner).requestRandomWords(battleId);
+                await tx.wait();
+                console.log(`In ${battleId} battle requested random words in attached transaction Hash`, tx.hash);
+                await BattleRepository.updateBattleStatus(battleId, BattleStatus.RequestRandomWords);
+            } catch (e) {
+                console.error(`Error while requesting random words for battle ID ${battleId}`);
+            }
+        }
     }, { scheduled: false }).start();
 
     const finalizeTriggerJob = cron.schedule('1-59/2 * * * *', async () => {
         const battleIds = await BattleRepository.getBattlesByFulfill();
         console.log(battleIds);
 
-        await Promise.all(
-            battleIds.map(async (battleId) => {
-                try {
-                    const tx = await BetContract.connect(adminSigner).finalizeBattle(battleId);
-                    await tx.wait();
-                    console.log(`In ${battleId} battle finalized in attached transaction Hash`, tx.hash);
-                } catch (e) {
-                    await BattleRepository.updateBattleFinalizeFailedCount(battleId);
-                    console.error(`Error while finalizing for battle ID ${battleId}`);
-                }
-            })
-        );
+        for (const battleId of battleIds) {
+            try {
+                const tx = await BetContract.connect(adminSigner).finalizeBattle(battleId);
+                await tx.wait();
+                console.log(`In ${battleId} battle finalized in attached transaction Hash`, tx.hash);
+            } catch (e) {
+                await BattleRepository.updateBattleFinalizeFailedCount(battleId);
+                console.error(`Error while finalizing for battle ID ${battleId}`);
+            }
+        }
     }, { scheduled: false }).start();
 
     jobMap.set('nftStakedJob', nftStakedJob);

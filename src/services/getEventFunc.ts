@@ -86,6 +86,7 @@ export const fulfilledFunc = async (battleId: BigNumber, timestamp: BigNumber, e
 
 export const finalizedFunc = async (battleId: BigNumber, side: boolean, chanceA: BigNumber, chanceB: BigNumber, bingo: BigNumber, event: any) => {
     try {
+        console.log(battleId, side, chanceA, chanceB, bingo, event);
         const activity = await FinalizeActivityRepository.getFinalizeActivity(event.transactionHash);
         if (!activity) {
             await FinalizeActivityRepository.addFinalizeActivity(battleId.toNumber(), side, chanceA.toNumber(), chanceB.toNumber(), bingo.toNumber(), event.transactionHash, event.blockNumber);
