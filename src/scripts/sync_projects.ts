@@ -13,7 +13,7 @@ const dbConnect = async () => {
         });
 };
 
-const googleSheetLoadfromUrl = async (sheetNameParam = 'Eth Projects (Old)') => {
+const googleSheetLoadfromUrl = async (sheetNameParam = 'ETH SOL List') => {
     const base = `https://docs.google.com/spreadsheets/d/1dOzbFEuQzDGw0SeHKCSyuWOYq0ogv9d7upO_KarnUK8/gviz/tq?`;
     const sheetName = sheetNameParam;
     const query = encodeURIComponent('Select *');
@@ -29,23 +29,30 @@ const googleSheetLoadfromUrl = async (sheetNameParam = 'Eth Projects (Old)') => 
         jsonData.table.rows.forEach((rowData) => {
             const name = rowData.c[0] != undefined ? rowData.c[0].v : ''; // Project Name
             const subName = rowData.c[1] != undefined ? rowData.c[1].v : ''; // SubName
-            const collectionSize = rowData.c[3] != undefined ? rowData.c[3].v : ''; // Collection Size
-            const openseaLink = rowData.c[6] != undefined ? rowData.c[6].v : ''; // Opensea Link
-            const twitterLink = rowData.c[7] != undefined ? rowData.c[7].v : ''; // Twitter Link
-            const headerImage = rowData.c[8] != undefined ? rowData.c[8].v : ''; // Header Image
+            const network = rowData.c[2] != undefined ? rowData.c[2].v : ''; // Network
+            const contract = rowData.c[3] != undefined ? rowData.c[3].v : ''; // Contract Address
+            const collectionSize = rowData.c[4] != undefined ? rowData.c[4].v : ''; // Collection Size
+            const twitterLink = rowData.c[5] != undefined ? rowData.c[5].v : ''; // Twitter Link
+            const creator = rowData.c[6] != undefined ? rowData.c[6].v : ''; // Creator
             const logoImage = rowData.c[9] != undefined ? rowData.c[9].v : ''; // Logo Image
-            const contractAddress = rowData.c[10] != undefined ? rowData.c[10].v : ''; // Contract Address
+            const headerImage = rowData.c[10] != undefined ? rowData.c[10].v : ''; // Header Image
+            const openseaLink = rowData.c[11] != undefined ? rowData.c[11].v : ''; // Opensea Link
+            const magicEdenLink = rowData.c[12] != undefined ? rowData.c[12].v : ''; // MagicEden link
+            const discordLink = rowData.c[13] != undefined ? rowData.c[13].v : ''; // MagicEden link
 
             data.push({
                 name: name,
                 subName: subName,
-                contract: contractAddress,
+                network: network === 'ETH' ? NetworkType.ETH : NetworkType.SOL,
+                contract: contract,
                 collectionSize: collectionSize,
+                creator: creator,
                 twitterID: twitterLink,
                 logo: logoImage,
                 headerImage: headerImage,
                 openSeaLink: openseaLink,
-                network: NetworkType.ETH
+                magicEdenLink: magicEdenLink,
+                discordLink: discordLink,
             });
         });
         return data;
@@ -56,7 +63,7 @@ const googleSheetLoadfromUrl = async (sheetNameParam = 'Eth Projects (Old)') => 
 };
 
 const insertProjects = async (datas) => {
-    await Project.create(datas);
+    await Project.create(datas.filter((item) => item.twitterID !== '' && item.contract !== ''));
 };
 
 async function main() {

@@ -105,6 +105,7 @@ class FeaturedBattleRepository {
 
         return activities.map((activity) => {
             const projectName = activity._id.contractAddress === battle.projectL?.contract ? battle.projectL?.name : battle.projectR?.name;
+            const projectSubName = activity._id.contractAddress === battle.projectL?.contract ? battle.projectL?.subName : battle.projectR?.subName;
             let amount = 0;
             if (activity._id.activity === ActivityType.Staked) {
                 amount = activity.count;
@@ -118,6 +119,7 @@ class FeaturedBattleRepository {
                 user: activity._id.from,
                 amount: amount,
                 teamName: projectName,
+                subTeamName: projectSubName,
                 action: activity._id.activity,
             };
         });
@@ -226,6 +228,29 @@ class FeaturedBattleRepository {
                 }
             }
         );
+    }
+
+    getUnstakeInfos = async (battleId: number) => {
+        const battle = await this.getBattleByBattleId(battleId);
+        if (!battle) {
+            return {
+                side: false,
+                users: [],
+                tokenIds: [],
+                userTokenIdLengths: []
+            };
+        }
+        const activities = await NftActivityModel.find({
+            battleId: battleId,
+            activity: ActivityType.Unstaked,
+        });
+
+        return {
+            side: false,
+            users: [],
+            tokenIds: [],
+            userTokenIdLengths: []
+        }
     }
 }
 

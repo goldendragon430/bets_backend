@@ -222,6 +222,11 @@ export const setupCronJobMap = async (): Promise<void> => {
         await Promise.all(
             battleIds.map(async (battleId) => {
                 try {
+                    const { side, users, tokenIds, userTokenIdLengths } = await BattleRepository.getUnstakeInfos(battleId);
+                    if (users.length > 0) {
+                        const unstakeTx = await BetContract.connect(adminSigner).unstakeNftFromUser(battleId, side, users, tokenIds, userTokenIdLengths);
+                        await unstakeTx.wait();
+                    }
                     const tx = await BetContract.connect(adminSigner).requestRandomWords(battleId);
                     await tx.wait();
                     console.log(`In ${battleId} battle requested random words in attached transaction Hash`, tx.hash);
