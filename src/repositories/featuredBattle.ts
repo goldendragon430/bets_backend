@@ -250,7 +250,7 @@ class FeaturedBattleRepository {
             users: [],
             tokenIds: [],
             userTokenIdLengths: []
-        }
+        };
     }
 }
 
