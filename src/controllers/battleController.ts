@@ -54,8 +54,12 @@ export default class BattleController {
      * @param next
      */
     getBattleHistories = async (req: Request, res: Response, next: NextFunction) => {
+        const { network } = req.params;
         try {
-            const battles = await BattleRepository.getBattleHistories();
+            if (network && !(network in NetworkType)) {
+                return res.status(400).json({ 'success': false, 'message': 'Invalid network.' });
+            }
+            const battles = await BattleRepository.getBattleHistories(NetworkType[network] || NetworkType.ETH);
 
             res.json({ 'success': true, 'message': '', 'data': battles });
         } catch (error) {

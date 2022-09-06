@@ -1,10 +1,11 @@
 import project from '../models/project';
+import { NetworkType } from '../utils/enums';
 
 class ProjectRepository {
     constructor() {}
 
-    getProjects = async () => {
-        return project.find({});
+    getProjects = async (network: NetworkType) => {
+        return project.find({ network: network });
     }
 
     getProject = async (id) => {

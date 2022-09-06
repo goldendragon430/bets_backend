@@ -60,8 +60,14 @@ class FeaturedBattleRepository {
         });
     };
 
-    getBattleHistories = async () => {
-        const battles = await FeaturedBattle.find({ finalizeFailedCount: { $lt: 3 } });
+    getBattleHistories = async (network: NetworkType) => {
+        const battles = await FeaturedBattle.find(
+            {
+                finalizeFailedCount: { $lt: 3 },
+                network: network
+            },
+        );
+
         const histories = await Promise.all(
             battles.map(async (item) => {
                 const projectL = await ProjectRepository.getProjectById(item?.projectL);
