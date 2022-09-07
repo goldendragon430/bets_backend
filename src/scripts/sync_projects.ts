@@ -63,11 +63,11 @@ const googleSheetLoadfromUrl = async (sheetNameParam = 'ETH SOL List') => {
 };
 
 const insertProjects = async (datas) => {
-    const projects = datas.filter((item) => item.twitterID !== '' && item.contract !== '' && item.headerImage !== '')
+    const projects = datas.filter((item) => item.twitterID !== '' && item.contract !== '' && item.headerImage !== '');
     for (const data of projects) {
         const project = await Project.findOne({ name: data.name });
         if (!project) {
-            await Project.create(data)
+            await Project.create(data);
         }
     }
 };

@@ -6,7 +6,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const { Connection, PublicKey, Keypair, SystemProgram } = solanaWeb3;
-const { Program, web3, utils, AnchorProvider, BN, Wallet } = anchor
+const { Program, web3, utils, AnchorProvider, BN, Wallet } = anchor;
 const ESCROW_VAULT_SEED = 'alphabets-escrow-vault-new';
 const BET_INFO_SEED = 'alphabets-account-new';
 
@@ -16,15 +16,15 @@ const wallet = new Wallet(keypair);
 const programID = new PublicKey(idl.metadata.address);
 const abpMintPubkey = new PublicKey('BonB8rnokgtdSe2HRuQZ4ZiZCbtos9sKdYwabgvNcPSp');
 const strTou8Arry = (s: string) => {
-    var enc = new TextEncoder();
+    const enc = new TextEncoder();
     return enc.encode(s);
-}
+};
 
 const getProvider = async () => {
     /* create the provider and return it to the caller */
     /* network set to local network for now */
 
-    const network = "https://metaplex.devnet.rpcpool.com";//https://api.devnet.solana.com
+    const network = 'https://metaplex.devnet.rpcpool.com'; // https://api.devnet.solana.com
     const connection = new Connection(network, 'processed');
 
     const provider = new AnchorProvider(
@@ -33,7 +33,7 @@ const getProvider = async () => {
         },
     );
     return provider;
-}
+};
 
 exports.initBet = async () => {
     const provider = await getProvider();
@@ -65,9 +65,9 @@ exports.initBet = async () => {
             }
         );
     } catch (err) {
-        console.log("initBet tx error: ", err);
+        console.log('initBet tx error: ', err);
     }
-}
+};
 
 exports.startBet = async (startTime, endTime, battleId) => {
     const provider = await getProvider();
@@ -107,9 +107,9 @@ exports.startBet = async (startTime, endTime, battleId) => {
             }
         );
     } catch (err) {
-        console.log("startTime tx error: ", err);
+        console.log('startTime tx error: ', err);
     }
-}
+};
 
 exports.closeBet = async (battleId) => {
     const provider = await getProvider();
@@ -141,9 +141,9 @@ exports.closeBet = async (battleId) => {
             }
         );
     } catch (err) {
-        console.log("closeBet tx error: ", err);
+        console.log('closeBet tx error: ', err);
     }
-}
+};
 
 exports.unStakeAll = async (userAddr, battleId) => {
     const userPubkey = new PublicKey(userAddr);
@@ -169,7 +169,7 @@ exports.unStakeAll = async (userAddr, battleId) => {
             userBettingAccount: userBettingPubkey,
         },
     });
-}
+};
 
 exports.determineBet = async (battleId) => {
     const provider = await getProvider();
@@ -201,9 +201,9 @@ exports.determineBet = async (battleId) => {
             }
         );
     } catch (err) {
-        console.log("determineBet tx error: ", err);
+        console.log('determineBet tx error: ', err);
     }
-}
+};
 
 exports.getEndTime = async (battleId) => {
     const provider = await getProvider();
@@ -216,20 +216,20 @@ exports.getEndTime = async (battleId) => {
         );
     try {
         const bettingData = await program.account.bettingAccount.fetch(bettingPubkey);
-        let endTime = bettingData.endTime;
+        const endTime = bettingData.endTime;
         return endTime;
     } catch (err) {
         console.log('auto test: ', err);
         return 0;
     }
-}
+};
 
 exports.getTimeStamp = async () => {
     const connection = new Connection('https://metaplex.devnet.rpcpool.com', 'processed');
     const slot = await connection.getSlot();
     const timestamp = await connection.getBlockTime(slot);
     return timestamp;
-}
+};
 
 exports.getUserBetInfo = async (userAddr: string, battleId: string) => {
     const userPubkey = new PublicKey(userAddr);
@@ -243,9 +243,9 @@ exports.getUserBetInfo = async (userAddr: string, battleId: string) => {
             program.programId
         );
     try {
-        let userBetInfo = await program.account.userBetAccount.fetch(userBettingPubkey);
+        const userBetInfo = await program.account.userBetAccount.fetch(userBettingPubkey);
         return userBetInfo;
     } catch (err) {
         return [];
     }
-}
+};

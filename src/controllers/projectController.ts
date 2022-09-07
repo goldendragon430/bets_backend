@@ -38,7 +38,7 @@ export default class ProjectController {
             if (network && !(network in NetworkType)) {
                 return res.status(400).json({ 'success': false, 'message': 'Invalid network.' });
             }
-            
+
             const projects = await project.getProjects(NetworkType[network] || NetworkType.ETH);
 
             res.json({'success': true, 'message': '', 'data': projects});
