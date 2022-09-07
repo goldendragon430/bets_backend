@@ -184,6 +184,13 @@ class FeaturedBattleRepository {
         );
     }
 
+    resetBattleFinalizeFailedCount = async (battleId: number) => {
+        return await FeaturedBattle.updateOne(
+            { battleId: battleId },
+            { finalizeFailedCount: 0 },
+        );
+    }
+
     addBattle = async (battleId: number, startTime: number, endTime: number, projectLContract: string, projectRContract: string, twitterID: string | undefined) => {
         const projectL = await ProjectRepository.getProjectByContract(projectLContract);
         const projectR = await ProjectRepository.getProjectByContract(projectRContract);

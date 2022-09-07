@@ -253,6 +253,7 @@ export const setupCronJobMap = async (): Promise<void> => {
                 const tx = await BetContract.connect(adminSigner).finalizeBattle(battleId);
                 await tx.wait();
                 console.log(`In ${battleId} battle finalized in attached transaction Hash`, tx.hash);
+                await BattleRepository.resetBattleFinalizeFailedCount(battleId);
             } catch (e) {
                 await BattleRepository.updateBattleFinalizeFailedCount(battleId);
                 console.error(`Error while finalizing for battle ID ${battleId}`);
