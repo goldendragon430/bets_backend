@@ -64,7 +64,7 @@ export const installNFTStakedEvents = async () => {
 
     contract.on('BattleFinalized', async (battleId, timestamp) => {
         const blockNumber = await provider.getBlockNumber();
-        const events = await contract.queryFilter(contract.filters.Fulfilled(), (blockNumber - 10));
+        const events = await contract.queryFilter(contract.filters.BattleFinalized(), (blockNumber - 10));
 
         if (events.length > 0) {
             for (const ev of events) {

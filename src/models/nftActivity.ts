@@ -18,7 +18,7 @@ const nftActivitySchema = new Schema({
     to: String,
     amount: String,
     amountInDecimal: Number,
-    tokenId: String,
+    tokenId: Number,
     transactionHash: String,
     blockNumber: Number,
     source: {

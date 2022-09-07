@@ -6,11 +6,11 @@ import FeaturedBattleRepository from '../repositories/featuredBattle';
 import { ActivityType, ServiceType } from '../utils/enums';
 import { BigNumber } from 'ethers';
 
-export const nftTransferFunc = async (contractAddress: string, from: string, to: string, tokenId: string, event: any, serviceType: ServiceType) => {
+export const nftTransferFunc = async (contractAddress: string, from: string, to: string, tokenId: BigNumber, event: any, serviceType: ServiceType) => {
     try {
         const activity = await NFTActivityRepository.getNFTActivity(event.transactionHash);
         if (!activity) {
-            await NFTActivityRepository.addNFTActivity(0, contractAddress, ActivityType.Transfer, from, to, tokenId, event.transactionHash, event.blockNumber, serviceType);
+            await NFTActivityRepository.addNFTActivity(0, contractAddress, ActivityType.Transfer, from, to, tokenId.toNumber(), event.transactionHash, event.blockNumber, serviceType);
         }
     } catch (e) {
         console.error('NFT Transfer Event Err: ', e);
@@ -22,7 +22,7 @@ export const nftStakedFunc = async (battleId: BigNumber, collectionAddress: stri
         const activity = await NFTActivityRepository.getNFTActivity(event.transactionHash);
         if (!activity) {
             for (const tokenId of tokenIds) {
-                await NFTActivityRepository.addNFTActivity(battleId.toNumber(), collectionAddress, ActivityType.Staked, user, user, tokenId.toString(), event.transactionHash, event.blockNumber, serviceType);
+                await NFTActivityRepository.addNFTActivity(battleId.toNumber(), collectionAddress, ActivityType.Staked, user, user, tokenId.toNumber(), event.transactionHash, event.blockNumber, serviceType);
             }
         }
     } catch (e) {

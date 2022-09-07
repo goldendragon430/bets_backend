@@ -5,7 +5,6 @@ import { rpcProvider } from '../utils';
 import { nftTransferFunc, nftStakedFunc, battleCreateFunc, fulfilledFunc, finalizedFunc, bettedFunc } from '../services/getEventFunc';
 import { ServiceType } from '../utils/enums';
 import { BetContract } from '../utils/constants';
-import battle from '../repositories/featuredBattle';
 import * as ERC721ContractABI from '../abis/erc721.json';
 dotenv.config();
 

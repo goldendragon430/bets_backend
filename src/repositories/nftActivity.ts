@@ -61,7 +61,7 @@ class NFTActivityRepository {
         activity: ActivityType,
         from: string,
         to: string,
-        tokenId: string,
+        tokenId: number,
         transactionHash: string,
         blockNumber: number,
         serviceType: ServiceType,
