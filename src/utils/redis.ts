@@ -35,6 +35,46 @@ class CRedis {
     getRedisClient()     {
         return this.redisClient;
     }
+
+    async initVaule(key: string, defaultValue: number): Promise<number> {
+        try {
+            const res = await this.redisClient.get(key);
+
+            if (res == undefined) {
+                await this.redisClient.set(key, defaultValue);
+            } else {
+                defaultValue = parseInt(res);
+            }
+
+            return defaultValue;
+        } catch (e) {
+            console.error('redis server error: ', e);
+            return defaultValue;
+        }
+    }
+
+    async get(key: string): Promise<number> {
+        try {
+            const res = await this.redisClient.get(key);
+
+            if (res == undefined) {
+                return 0;
+            } else {
+                return parseInt(res);
+            }
+        } catch (e) {
+            console.error('redis server error: ', e);
+            return 0;
+        }
+    }
+
+    async set(key: string, value: number) {
+        try {
+            await this.redisClient.set(key, value);
+        } catch (e) {
+            console.error('redis server error: ', e);
+        }
+    }
 }
 
 const redisHandle = new CRedis();

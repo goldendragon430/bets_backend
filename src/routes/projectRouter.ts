@@ -10,7 +10,7 @@ class ProjectRouter {
     }
 
     initializeRoutes() {
-        this.router.route('/').get(this.ProjectController.getProjects);
+        this.router.route('/:network?').get(this.ProjectController.getProjects);
         this.router.route('/:id').get(this.ProjectController.getProject);
         this.router.route('/add').post(this.ProjectController.addProject);
     }

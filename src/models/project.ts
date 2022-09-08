@@ -12,7 +12,7 @@ const projectSchema = new Schema({
     network: {
         type: String,
         enum: [NetworkType.ETH, NetworkType.SOL, NetworkType.ADA],
-        defaultValue: NetworkType.ETH,
+        default: NetworkType.ETH,
     },
     contract: {
         type: String,

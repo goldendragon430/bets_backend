@@ -1,4 +1,4 @@
-import users from '../models/users';
+import UserModel from '../models/users';
 import playerWallet from '../models/playerWallet';
 
 class UsersRepository {
@@ -7,7 +7,17 @@ class UsersRepository {
   getUser = async (address: string) => {
     const filters = [{ address }];
 
-    const user = await users.findOne({ $and: filters });
+    const user = await UserModel.findOne({ $and: filters });
+
+    if ( user ) {
+      return user;
+    } else {
+      return undefined;
+    }
+  }
+
+  getUserById = async (_id: string) => {
+    const user = await UserModel.findOne({ _id });
 
     if ( user ) {
       return user;
@@ -18,10 +28,10 @@ class UsersRepository {
 
   createUser = async (address: string) => {
     const nonce = Math.floor(Math.random() * 1000000);
-    const user = new users({
+    const user = new UserModel({
       username: address,
-      address,
-      nonce,
+      address: address,
+      nonce: nonce,
     });
 
     const savedUser = await user.save();
@@ -36,7 +46,7 @@ class UsersRepository {
   }
 
   addUser = async (username: string) => {
-    const user = await users.create({ username });
+    const user = await UserModel.create({ username });
 
     if ( user ) {
       return user;
@@ -51,7 +61,7 @@ class UsersRepository {
     address: string,
   ) => {
     const filters = [{ id }];
-    const user = await users.findOne({ $and: filters });
+    const user = await UserModel.findOne({ $and: filters });
 
     if ( user ) {
       const wallet = await playerWallet.findOne({ $and: [{ address }, { network }] });

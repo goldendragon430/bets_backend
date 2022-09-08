@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { apiErrorHandler } from '../handlers/errorHandler';
 
 import project from '../repositories/project';
+import { NetworkType } from '../utils/enums';
 
 export default class ProjectController {
     constructor() { }
@@ -31,10 +32,14 @@ export default class ProjectController {
      * @param next
      */
     getProjects = async (req: Request, res: Response, next: NextFunction) => {
-        const { } = req.body;
+        const { network } = req.params;
 
         try {
-            const projects = await project.getProjects();
+            if (network && !(network in NetworkType)) {
+                return res.status(400).json({ 'success': false, 'message': 'Invalid network.' });
+            }
+
+            const projects = await project.getProjects(NetworkType[network] || NetworkType.ETH);
 
             res.json({'success': true, 'message': '', 'data': projects});
         } catch (error) {

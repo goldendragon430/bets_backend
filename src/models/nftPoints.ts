@@ -17,7 +17,7 @@ const nftPointsSchema = new Schema({
         // Standard rate of 0.00694 per min
         accrualRate: {
             type: Number,
-            defaultValue: 0.00694
+            default: 0.00694
         },  // totalAccrued field: (Today - createdAt) * AccrualRate
     },
     { timestamps: true });

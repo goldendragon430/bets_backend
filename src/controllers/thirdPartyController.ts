@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { apiErrorHandler } from '../handlers/errorHandler';
 import { Client } from 'twitter-api-sdk';
-import * as dotenv from 'dotenv';
-dotenv.config();
 
 const TWITTER_ACCESS_TOKEN = process.env.TWITTER_ACCESS_TOKEN || '';
 

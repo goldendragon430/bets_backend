@@ -1,0 +1,27 @@
+import * as mongoose from 'mongoose';
+
+const Schema = mongoose.Schema;
+
+const claimActivitySchema = new Schema({
+    battleId: {
+        type: Number,
+        required: true,
+    },
+    user: {
+        type: String,
+        required: true
+    },
+    amount: {
+        type: String,
+        required: true,
+    },
+    amountInDecimal: {
+        type: Number,
+        required: true,
+    },
+    transactionHash: String,
+    blockNumber: Number,
+},
+    { timestamps: true });
+
+export default mongoose.model('claimActivities', claimActivitySchema);

@@ -16,6 +16,5 @@ app.listen(port, () => {
     console.log('server startup error: address already in use');
   } else {
     console.log(err);
-    process.exit(1);
   }
 });
