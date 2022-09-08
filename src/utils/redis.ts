@@ -1,6 +1,8 @@
 import { createClient } from 'redis';
 import { REDIS_CONFIG } from '../config';
 
+const NETWORK = process.env.NETWORK || 'goerli';
+
 class CRedis {
     redisClient: any;
 
@@ -11,7 +13,7 @@ class CRedis {
     async init() {
         try {
             this.redisClient = createClient({
-                url: REDIS_CONFIG.HOST
+                url: REDIS_CONFIG[NETWORK].HOST
             });
 
             await this.redisClient.connect();

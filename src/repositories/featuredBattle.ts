@@ -1,7 +1,7 @@
 import FeaturedBattle from '../models/featuredBattle';
 import { ActivityType, BattleStatus, NetworkType } from '../utils/enums';
 import ProjectRepository from './project';
-import { rpcProvider } from '../utils';
+import { provider } from '../utils/constants';
 import { setupNFTTransferJob } from '../services/cronManager';
 import NftActivityModel from '../models/nftActivity';
 import { BigNumber } from 'ethers';
@@ -47,8 +47,8 @@ class FeaturedBattleRepository {
     };
 
     getActiveBattleIds = async () => {
-        const blockNumber = await rpcProvider.getBlockNumber();
-        const block = await rpcProvider.getBlock(blockNumber);
+        const blockNumber = await provider.getBlockNumber();
+        const block = await provider.getBlock(blockNumber);
 
         const battles = await FeaturedBattle.find({
             startTime: { $lte: block.timestamp },
@@ -68,7 +68,7 @@ class FeaturedBattleRepository {
             },
         );
 
-        const histories = await Promise.all(
+        return await Promise.all(
             battles.map(async (item) => {
                 const projectL = await ProjectRepository.getProjectById(item?.projectL);
                 const projectR = await ProjectRepository.getProjectById(item?.projectR);
@@ -79,7 +79,6 @@ class FeaturedBattleRepository {
                 });
             })
         );
-        return histories;
     };
 
     getBattleEvents = async (battle_id: number) => {
@@ -142,8 +141,8 @@ class FeaturedBattleRepository {
     };
 
     getBattlesByCreated = async () => {
-        const blockNumber = await rpcProvider.getBlockNumber();
-        const block = await rpcProvider.getBlock(blockNumber);
+        const blockNumber = await provider.getBlockNumber();
+        const block = await provider.getBlock(blockNumber);
 
         const battles = await FeaturedBattle.find({
             startTime: { $lte: block.timestamp },

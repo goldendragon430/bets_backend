@@ -1,6 +1,6 @@
 import * as cron from 'node-cron';
 import BattleRepository from '../repositories/featuredBattle';
-import { rpcProvider } from '../utils';
+import { provider } from '../utils/constants';
 import { BetContract, adminSigner, getERC721Contract } from '../utils/constants';
 import { ServiceType, BattleStatus } from '../utils/enums';
 import redisHandle from '../utils/redis';
@@ -18,7 +18,7 @@ export const setupCronJobMap = async (): Promise<void> => {
         console.error('redis server connection error: ', e);
     }
 
-    let latestBlockNumber = await rpcProvider.getBlockNumber() - 10;
+    let latestBlockNumber = await provider.getBlockNumber() - 10;
 
     latestBlockNumber = await redisHandle.initVaule('nftStakedBlock', latestBlockNumber);
     latestBlockNumber = await redisHandle.initVaule('bettedJobBlock', latestBlockNumber);
@@ -32,7 +32,7 @@ export const setupCronJobMap = async (): Promise<void> => {
         try {
             const nftStakedBlockNumber = await redisHandle.get('nftStakedBlock');
 
-            const blockNumber = await rpcProvider.getBlockNumber();
+            const blockNumber = await provider.getBlockNumber();
 
             const events = await BetContract.queryFilter(
                 BetContract.filters.NFTStaked(),
@@ -64,7 +64,7 @@ export const setupCronJobMap = async (): Promise<void> => {
         try {
             const bettedBlockNumber = await redisHandle.get('bettedJobBlock');
 
-            const blockNumber = await rpcProvider.getBlockNumber();
+            const blockNumber = await provider.getBlockNumber();
 
             const events = await BetContract.queryFilter(
                 BetContract.filters.Betted(),
@@ -95,7 +95,7 @@ export const setupCronJobMap = async (): Promise<void> => {
     const battleCreateJob = cron.schedule('3-59/5 * * * *', async () => {
         try {
             const battleCreateBlockNumber = await redisHandle.get('battleCreateBlock');
-            const blockNumber = await rpcProvider.getBlockNumber();
+            const blockNumber = await provider.getBlockNumber();
 
             const events = await BetContract.queryFilter(
                 BetContract.filters.NewBattleCreated(),
@@ -127,7 +127,7 @@ export const setupCronJobMap = async (): Promise<void> => {
     const ABPClaimJob = cron.schedule('4-59/5 * * * *', async () => {
         try {
             const abpClaimedBlockNumber = await redisHandle.get('abpClaimedBlock');
-            const blockNumber = await rpcProvider.getBlockNumber();
+            const blockNumber = await provider.getBlockNumber();
 
             const events = await BetContract.queryFilter(
                 BetContract.filters.ABPClaimed(),
@@ -157,7 +157,7 @@ export const setupCronJobMap = async (): Promise<void> => {
     const FulfillJob = cron.schedule('*/5 * * * *', async () => {
         try {
             const fulfilledBlockNumber = await redisHandle.get('fulfilledBlock');
-            const blockNumber = await rpcProvider.getBlockNumber();
+            const blockNumber = await provider.getBlockNumber();
 
             const events = await BetContract.queryFilter(
                 BetContract.filters.Fulfilled(),
@@ -186,7 +186,7 @@ export const setupCronJobMap = async (): Promise<void> => {
     const FinalizeJob = cron.schedule('*/5 * * * *', async () => {
         try {
             const finalizedBlockBlockNumber = await redisHandle.get('finalizedBlock');
-            const blockNumber = await rpcProvider.getBlockNumber();
+            const blockNumber = await provider.getBlockNumber();
 
             const events = await BetContract.queryFilter(
                 BetContract.filters.BattleFinalized(),
@@ -287,7 +287,7 @@ export const setupNFTTransferJob = (nftAddress: string) => {
     const nftTransferJob = cron.schedule('* * * * *', async () => {
         try {
             const nftTransferBlockNumber = await redisHandle.get('nftTransferBlock');
-            const blockNumber = await rpcProvider.getBlockNumber();
+            const blockNumber = await provider.getBlockNumber();
 
             const nftContract = getERC721Contract(nftAddress);
             const events = await nftContract.queryFilter(

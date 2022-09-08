@@ -2,8 +2,6 @@ import * as solanaWeb3 from '@solana/web3.js';
 import * as anchor from '@project-serum/anchor';
 import * as idl from '../abis/solana/idl.json';
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
-import * as dotenv from 'dotenv';
-dotenv.config();
 
 const { Connection, PublicKey, Keypair, SystemProgram } = solanaWeb3;
 const { Program, web3, utils, AnchorProvider, BN, Wallet } = anchor;

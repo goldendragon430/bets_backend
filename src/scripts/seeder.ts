@@ -1,10 +1,13 @@
 import mongoose from 'mongoose';
 import Project from '../models/project';
 import FeaturedBattle from '../models/featuredBattle';
+import { getDBConfig } from '../config';
 import 'dotenv/config';
 
+const DB_CONFIG = getDBConfig();
+
 const dbConnect = async () => {
-    return mongoose.connect(process.env.DB_CONFIG as string)
+    return mongoose.connect(DB_CONFIG)
         .then(() => console.log('Connected to Database'))
         .catch(err => {
             throw new Error(err);

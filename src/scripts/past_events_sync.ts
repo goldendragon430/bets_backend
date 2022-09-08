@@ -1,21 +1,24 @@
 import * as dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import { ethers } from 'ethers';
-import { rpcProvider } from '../utils';
+import { provider } from '../utils/constants';
 import { nftTransferFunc, nftStakedFunc, battleCreateFunc, fulfilledFunc, finalizedFunc, bettedFunc } from '../services/getEventFunc';
 import { ServiceType } from '../utils/enums';
 import { BetContract } from '../utils/constants';
+import { getDBConfig } from '../config';
 import * as ERC721ContractABI from '../abis/erc721.json';
 dotenv.config();
 
+const DB_CONFIG = getDBConfig();
+
 mongoose.set('debug', true);
-mongoose.connect(process.env.DB_CONFIG as string)
+mongoose.connect(DB_CONFIG)
     .then(async () => {
         console.log('Connected to Database');
 
         const getNFTTransferEvent = async (nftAddress: string) => {
             try {
-                const nftContract = new ethers.Contract(nftAddress, ERC721ContractABI, rpcProvider);
+                const nftContract = new ethers.Contract(nftAddress, ERC721ContractABI, provider);
                 const events = await nftContract.queryFilter(nftContract.filters.Transfer());
 
                 if (events.length > 0) {

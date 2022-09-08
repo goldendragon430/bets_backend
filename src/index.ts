@@ -11,11 +11,15 @@ import Routes from './routes';
 import { installNFTStakedEvents } from './services/events';
 import redisHandle from './utils/redis';
 import { setupCronJobMap } from './services/cronManager';
+import { getDBConfig } from './config';
 
 // app.enable('trust proxy') // only if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
 
 export default class Server {
+    DB_CONFIG: string;
+
     constructor(app: Application) {
+        this.DB_CONFIG = getDBConfig();
         this.config(app);
         this.connect();
         this.initRedis();
@@ -24,7 +28,7 @@ export default class Server {
     }
 
     public connect(): void {
-        mongoose.connect(process.env.DB_CONFIG as string)
+        mongoose.connect(this.DB_CONFIG)
             .then(() => {
                 console.log('Connected to Database');
                 setupCronJobMap()

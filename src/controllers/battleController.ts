@@ -1,11 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { apiErrorHandler } from '../handlers/errorHandler';
 import BattleRepository from '../repositories/featuredBattle';
-import ProjectRepository from '../repositories/project';
 import nftActivityRepository from '../repositories/nftActivity';
 import ClaimActivityRepository from '../repositories/claimActivity';
 import { NetworkType } from '../utils/enums';
-import { rpcProvider } from '../utils';
+import { provider } from '../utils/constants';
 import { BetContract } from '../utils/constants';
 import { battleCreateFunc } from '../services/getEventFunc';
 
@@ -190,7 +189,7 @@ export default class BattleController {
                     'message': 'Transaction hash is required.'
                 });
             }
-            const transaction = await rpcProvider.getTransaction(transactionHash);
+            const transaction = await provider.getTransaction(transactionHash);
             if (!transaction) {
                 return res.status(400).json({
                     'success': false,

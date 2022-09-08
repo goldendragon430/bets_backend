@@ -1,10 +1,11 @@
+/*
 import { ethers } from 'ethers';
 import mongoose from 'mongoose';
 import * as dotenv from 'dotenv';
 import * as cron from 'node-cron';
 import redisHandle from '../../utils/redis';
 import BattleRepository from '../../repositories/featuredBattle';
-import { rpcProvider } from '../../utils';
+import { provider } from '../../utils/constants';
 import { battleCreateFunc, nftStakedFunc, nftTransferFunc, abpClaimedFunc } from '../../services/getEventFunc';
 import { ServiceType } from '../../utils/enums';
 import { BetContract } from '../../utils/constants';
@@ -28,16 +29,16 @@ mongoose.connect(process.env.DB_CONFIG as string)
             if (!nftAddress) {
                 return;
             }
-            let latestBlockNumber = await rpcProvider.getBlockNumber() - 10;
+            let latestBlockNumber = await provider.getBlockNumber() - 10;
 
             latestBlockNumber = await redisHandle.get('nftTransferBlock');
 
             // Monitoring NFT transfer events for collectionA and collectionB
             cron.schedule('* * * * *', async () => {
                 try {
-                    const blockNumber = await rpcProvider.getBlockNumber();
+                    const blockNumber = await provider.getBlockNumber();
 
-                    const nftContract = new ethers.Contract(nftAddress, ERC721ContractABI, rpcProvider);
+                    const nftContract = new ethers.Contract(nftAddress, ERC721ContractABI, provider);
                     const events = await nftContract.queryFilter(
                         nftContract.filters.Transfer(),
                         latestBlockNumber,
@@ -67,13 +68,13 @@ mongoose.connect(process.env.DB_CONFIG as string)
         };
 
         const getNFTStakedEvent = async () => {
-            let latestBlockNumber = await rpcProvider.getBlockNumber() - 10;
+            let latestBlockNumber = await provider.getBlockNumber() - 10;
 
             latestBlockNumber = await redisHandle.get('nftStakedBlock');
 
             cron.schedule('* * * * *', async () => {
                 try {
-                    const blockNumber = await rpcProvider.getBlockNumber();
+                    const blockNumber = await provider.getBlockNumber();
 
                     const events = await BetContract.queryFilter(
                         BetContract.filters.NFTStaked(),
@@ -104,13 +105,13 @@ mongoose.connect(process.env.DB_CONFIG as string)
         };
 
         const getBattleCreateEvents = async () => {
-            let latestBlockNumber = await rpcProvider.getBlockNumber() - 10;
+            let latestBlockNumber = await provider.getBlockNumber() - 10;
 
             latestBlockNumber = await redisHandle.get('battleCreateBlock');
 
             cron.schedule('* * * * *', async () => {
                 try {
-                    const blockNumber = await rpcProvider.getBlockNumber();
+                    const blockNumber = await provider.getBlockNumber();
 
                     const events = await BetContract.queryFilter(
                         BetContract.filters.NewBattleCreated(),
@@ -142,13 +143,13 @@ mongoose.connect(process.env.DB_CONFIG as string)
         };
 
         const getABPClaimedEvent = async () => {
-            let latestBlockNumber = await rpcProvider.getBlockNumber() - 10;
+            let latestBlockNumber = await provider.getBlockNumber() - 10;
 
             latestBlockNumber = await redisHandle.get('abpClaimedBlock');
 
             cron.schedule('* * * * *', async () => {
                 try {
-                    const blockNumber = await rpcProvider.getBlockNumber();
+                    const blockNumber = await provider.getBlockNumber();
 
                     const events = await BetContract.queryFilter(
                         BetContract.filters.ABPClaimed(),
@@ -198,3 +199,4 @@ mongoose.connect(process.env.DB_CONFIG as string)
     .catch(err => {
         throw new Error(err);
     });
+*/

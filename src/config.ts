@@ -1,17 +1,21 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
-
-export const node_url = {
-    providerUrl: 'wss://eth-goerli.g.alchemy.com/v2/F4OJrReh68dcqg8nvo1QqqBAIaVLAO_Q',
-    network: 'georli',
-    rpcUrl: 'https://eth-goerli.g.alchemy.com/v2/F4OJrReh68dcqg8nvo1QqqBAIaVLAO_Q'
-};
-
 export const REDIS_CONFIG = {
-    HOST: 'redis://127.0.0.1:6379'
+    'goerli': {
+        HOST: 'redis://127.0.0.1:6379'
+    },
+    'mainnet': {
+        HOST: 'redis://127.0.0.1:6380'
+    }
 };
 
 export const JWT_CONFIG = {
     secret: process.env.JWT_SECRET || '6d4fd1034a81f2f98db778237bc71a60',
     algorithms: ['HS256' as const],
+};
+
+export const getDBConfig = (): string => {
+    const NETWORK = process.env.NETWORK || 'goerli';
+    if (NETWORK === 'mainnet') {
+        return process.env.PROD_DB_CONFIG as string;
+    }
+    return process.env.DB_CONFIG as string;
 };

@@ -1,8 +1,6 @@
-import * as dotenv from 'dotenv';
 import { nftStakedFunc, battleCreateFunc, abpClaimedFunc, bettedFunc, fulfilledFunc, finalizedFunc } from './getEventFunc';
 import { ServiceType } from '../utils/enums';
 import { BetContract, provider } from '../utils/constants';
-dotenv.config();
 
 export const installNFTStakedEvents = async () => {
     const contract = BetContract;
