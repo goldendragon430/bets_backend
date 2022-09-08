@@ -1,10 +1,5 @@
 export const REDIS_CONFIG = {
-    'goerli': {
-        HOST: 'redis://127.0.0.1:6379'
-    },
-    'mainnet': {
-        HOST: 'redis://127.0.0.1:6380'
-    }
+    HOST: 'redis://127.0.0.1:6379'
 };
 
 export const JWT_CONFIG = {
