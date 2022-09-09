@@ -221,6 +221,28 @@ export default class BattleController {
     };
 
     /**
+     * @description Add Battle Function
+     * @param req
+     * @param res
+     * @param next
+     */
+    addSolanaBattle = async (req: Request, res: Response, next: NextFunction) => {
+        const {
+            startTime,
+            endTime,
+            projectL,
+            projectR,
+            twitterID,
+        } = req.body;
+
+        try {
+            res.json({ 'success': true, 'message': '', 'data': 'Battle created' });
+        } catch (error) {
+            apiErrorHandler(error, req, res, 'Add Battle failed.');
+        }
+    };
+
+    /**
      * @description Get Leaderboard Data
      * @param req
      * @param res
