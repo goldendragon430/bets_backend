@@ -148,6 +148,7 @@ class FeaturedBattleRepository {
         const battles = await FeaturedBattle.find({
             startTime: { $lte: block.timestamp },
             endTime: { $lte: block.timestamp },
+            network: NetworkType.ETH,
             $and: [
                 { status: BattleStatus.Created },
                 { status: { $ne: BattleStatus.RequestRandomWords }, }
@@ -162,6 +163,7 @@ class FeaturedBattleRepository {
     getBattlesByFulfill = async () => {
         const battles = await FeaturedBattle.find({
             status: BattleStatus.Fulfilled,
+            network: NetworkType.ETH,
             finalizeFailedCount: { $lt: 3 },
         });
 
