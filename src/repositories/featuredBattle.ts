@@ -5,6 +5,7 @@ import { provider } from '../utils/constants';
 import { setupNFTTransferJob } from '../services/cronManager';
 import NftActivityModel from '../models/nftActivity';
 import { BigNumber } from 'ethers';
+import { startBet } from '../utils/solana';
 
 class FeaturedBattleRepository {
     constructor() {
@@ -170,23 +171,23 @@ class FeaturedBattleRepository {
     };
 
     updateBattleStatus = async (battleId: number, status: BattleStatus) => {
-        return await FeaturedBattle.updateOne(
-            { battleId: battleId },
-            { $set: { status: status } },
+        return FeaturedBattle.updateOne(
+            {battleId: battleId},
+            {$set: {status: status}},
         );
     }
 
     updateBattleFinalizeFailedCount = async (battleId: number) => {
-        return await FeaturedBattle.updateOne(
-            { battleId: battleId },
-            { $inc: { finalizeFailedCount: 1 } },
+        return FeaturedBattle.updateOne(
+            {battleId: battleId},
+            {$inc: {finalizeFailedCount: 1}},
         );
     }
 
     resetBattleFinalizeFailedCount = async (battleId: number) => {
-        return await FeaturedBattle.updateOne(
-            { battleId: battleId },
-            { finalizeFailedCount: 0 },
+        return FeaturedBattle.updateOne(
+            {battleId: battleId},
+            {finalizeFailedCount: 0},
         );
     }
 
@@ -212,6 +213,33 @@ class FeaturedBattleRepository {
             projectR: projectR,
             twitterAnnounceID: twitterID,
         });
+    }
+
+    addSolanaBattle = async (startTime: number, endTime: number, projectL_id: string, projectR_id: string, twitterID: string): Promise<number> => {
+        const projectL = await ProjectRepository.getProject(projectL_id);
+        const projectR = await ProjectRepository.getProject(projectR_id);
+
+        if (!projectL || !projectR) {
+            throw new Error('Project not found');
+        }
+
+        const solBattleCount = await FeaturedBattle.count({ network: NetworkType.SOL });
+        const battle = await FeaturedBattle.create({
+            startDate: new Date(startTime * 1000),
+            battleId: solBattleCount + 1,
+            startTime: startTime,
+            endTime: endTime,
+            battleLength: endTime - startTime,
+            status: BattleStatus.Created,
+            network: NetworkType.SOL,
+            finalizeFailedCount: 0,
+            projectL: projectL,
+            projectR: projectR,
+            twitterAnnounceID: twitterID,
+        });
+
+        await startBet(startTime, endTime, projectL?.contract, projectR?.contract, battle.battleId.toString());
+        return battle.battleId;
     }
 
     updateBattle = async (battleId: number, startTime: number, endTime: number, projectLContract: string, projectRContract: string, twitterID: string | undefined) => {

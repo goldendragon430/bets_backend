@@ -236,7 +236,9 @@ export default class BattleController {
         } = req.body;
 
         try {
-            res.json({ 'success': true, 'message': '', 'data': 'Battle created' });
+            const battle = await BattleRepository.addSolanaBattle(startTime, endTime, projectL, projectR, twitterID);
+
+            res.json({ 'success': true, 'message': '', 'data': battle });
         } catch (error) {
             apiErrorHandler(error, req, res, 'Add Battle failed.');
         }

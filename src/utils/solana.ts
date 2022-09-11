@@ -33,7 +33,7 @@ const getProvider = async () => {
     return provider;
 };
 
-exports.initBet = async () => {
+export const initBet = async () => {
     const provider = await getProvider();
     const program = new Program(idl as anchor.Idl, programID, provider);
     const [battlePubkey, battleBump] =
@@ -67,8 +67,10 @@ exports.initBet = async () => {
     }
 };
 
-exports.startBet = async (startTime, endTime, battleId) => {
+export const startBet = async (startTime: number, endTime: number, projectL: string, projectR: string, battleId: string) => {
     const provider = await getProvider();
+    const projectLPubKey = new PublicKey(projectL);
+    const projectRPubKey = new PublicKey(projectR);
     const program = new Program(idl as anchor.Idl, programID, provider);
     const newFee = 50;
     const abp_amount = new BN(3e12);
@@ -92,8 +94,8 @@ exports.startBet = async (startTime, endTime, battleId) => {
             endTime,
             newFee,
             abp_amount,
-            provider.wallet.publicKey,
-            provider.wallet.publicKey,
+            projectLPubKey,
+            projectRPubKey,
             {
                 accounts: {
                     battleAccount: battlePubkey,
@@ -109,7 +111,7 @@ exports.startBet = async (startTime, endTime, battleId) => {
     }
 };
 
-exports.closeBet = async (battleId) => {
+export const closeBet = async (battleId) => {
     const provider = await getProvider();
     const program = new Program(idl as anchor.Idl, programID, provider);
     const [battlePubkey, battleBump] =
@@ -143,7 +145,7 @@ exports.closeBet = async (battleId) => {
     }
 };
 
-exports.unStakeAll = async (userAddr, battleId) => {
+export const unStakeAll = async (userAddr, battleId) => {
     const userPubkey = new PublicKey(userAddr);
     const provider = await getProvider();
     const program = new Program(idl as anchor.Idl, programID, provider);
@@ -169,7 +171,7 @@ exports.unStakeAll = async (userAddr, battleId) => {
     });
 };
 
-exports.determineBet = async (battleId) => {
+export const determineBet = async (battleId) => {
     const provider = await getProvider();
     const program = new Program(idl as anchor.Idl, programID, provider);
     const [battlePubkey, battleBump] =
@@ -203,7 +205,7 @@ exports.determineBet = async (battleId) => {
     }
 };
 
-exports.getEndTime = async (battleId) => {
+export const getEndTime = async (battleId) => {
     const provider = await getProvider();
     const program = new Program(idl as anchor.Idl, programID, provider);
     const [bettingPubkey] =
@@ -222,14 +224,14 @@ exports.getEndTime = async (battleId) => {
     }
 };
 
-exports.getTimeStamp = async () => {
+export const getTimeStamp = async () => {
     const connection = new Connection('https://metaplex.devnet.rpcpool.com', 'processed');
     const slot = await connection.getSlot();
     const timestamp = await connection.getBlockTime(slot);
     return timestamp;
 };
 
-exports.getUserBetInfo = async (userAddr: string, battleId: string) => {
+export const getUserBetInfo = async (userAddr: string, battleId: string) => {
     const userPubkey = new PublicKey(userAddr);
     const provider = await getProvider();
     const program = new Program(idl as anchor.Idl, programID, provider);
