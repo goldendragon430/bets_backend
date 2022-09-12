@@ -238,8 +238,9 @@ export default class BattleController {
         try {
             const battle = await BattleRepository.addSolanaBattle(startTime, endTime, projectL, projectR, twitterID);
 
-            res.json({ 'success': true, 'message': '', 'data': battle });
+            res.json({ 'success': true, 'message': '', 'data': battle.id });
         } catch (error) {
+            console.log(error);
             apiErrorHandler(error, req, res, 'Add Battle failed.');
         }
     };
@@ -257,16 +258,16 @@ export default class BattleController {
 
          try {
             const battle = await BattleRepository.getBattleByQuery({
-                battleId: battleId,
+                id: battleId,
                 network: NetworkType.SOL
-            })
+            });
             if (!battle) {
                 return res.status(400).json({
                     'success': false,
                     'message': 'No battle found.'
                 });
             }
-             
+
             const result = await BattleRepository.deleteSolanaBattle(battleId);
 
             res.json({ 'success': true, 'message': '', 'data': result });

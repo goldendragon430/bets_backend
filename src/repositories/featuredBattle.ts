@@ -217,7 +217,7 @@ class FeaturedBattleRepository {
         });
     }
 
-    addSolanaBattle = async (startTime: number, endTime: number, projectL_id: string, projectR_id: string, twitterID: string): Promise<number> => {
+    addSolanaBattle = async (startTime: number, endTime: number, projectL_id: string, projectR_id: string, twitterID: string): Promise<any> => {
         const projectL = await ProjectRepository.getProject(projectL_id);
         const projectR = await ProjectRepository.getProject(projectR_id);
 
@@ -244,14 +244,14 @@ class FeaturedBattleRepository {
         });
 
         await startBet(startTime, endTime, projectL?.creator, projectR?.creator, battle.battleId.toString());
-        return battle.battleId;
+        return battle;
     }
 
-    deleteSolanaBattle = async (battleId: number): Promise<any> => {
+    deleteSolanaBattle = async (battleId: string): Promise<any> => {
         return FeaturedBattle.deleteOne({
             network: NetworkType.SOL,
-            battleId: battleId
-        })
+            id: battleId
+        });
     }
 
     updateBattle = async (battleId: number, startTime: number, endTime: number, projectLContract: string, projectRContract: string, twitterID: string | undefined) => {
