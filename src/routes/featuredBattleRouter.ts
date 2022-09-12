@@ -15,6 +15,7 @@ class FeaturedBattleRouter {
   initializeRoutes() {
     this.router.route('/add').post(passport.authenticate('jwt', { session: false }), this.userController.checkAdmin, this.BattleController.addBattle);
     this.router.route('/solana/add').post(this.BattleController.addSolanaBattle);
+    this.router.route('/solana/delete/:id').delete(this.BattleController.deleteSolanaBattle);
     // this.router.route('/solana/add').post(passport.authenticate('jwt', { session: false }), this.userController.checkAdmin, this.BattleController.addSolanaBattle);
     this.router.route('/get_active_battle_ids').get(this.BattleController.getActiveBattleIds);
     this.router.route('/get_battle_by_id/:battleId').get(this.BattleController.getBattle);

@@ -245,6 +245,37 @@ export default class BattleController {
     };
 
     /**
+     * @description Delete Solana battle function
+     * @param req
+     * @param res
+     * @param next
+     */
+    deleteSolanaBattle = async (req: Request, res: Response, next: NextFunction) => {
+        const {
+            battleId
+        } = req.body;
+
+         try {
+            const battle = await BattleRepository.getBattleByQuery({
+                battleId: battleId,
+                network: NetworkType.SOL
+            })
+            if (!battle) {
+                return res.status(400).json({
+                    'success': false,
+                    'message': 'No battle found.'
+                });
+            }
+             
+            const result = await BattleRepository.deleteSolanaBattle(battleId);
+
+            res.json({ 'success': true, 'message': '', 'data': result });
+        } catch (error) {
+            apiErrorHandler(error, req, res, 'Add Battle failed.');
+        }
+    };
+
+    /**
      * @description Get Leaderboard Data
      * @param req
      * @param res

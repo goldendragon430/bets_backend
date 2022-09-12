@@ -224,11 +224,14 @@ class FeaturedBattleRepository {
         if (!projectL || !projectR) {
             throw new Error('Project not found');
         }
+        if (!projectL.creator || !projectR.creator) {
+            throw new Error('Creator address not found');
+        }
 
-        const solBattleCount = await FeaturedBattle.count({ network: NetworkType.SOL });
+        const solBattles = await FeaturedBattle.find({ network: NetworkType.SOL }).limit(1).sort({_id: 1});
         const battle = await FeaturedBattle.create({
             startDate: new Date(startTime * 1000),
-            battleId: solBattleCount + 1,
+            battleId: solBattles.length > 0 ? solBattles[0].battleId + 1 : 1,
             startTime: startTime,
             endTime: endTime,
             battleLength: endTime - startTime,
@@ -240,8 +243,15 @@ class FeaturedBattleRepository {
             twitterAnnounceID: twitterID,
         });
 
-        await startBet(startTime, endTime, projectL?.contract, projectR?.contract, battle.battleId.toString());
+        await startBet(startTime, endTime, projectL?.creator, projectR?.creator, battle.battleId.toString());
         return battle.battleId;
+    }
+
+    deleteSolanaBattle = async (battleId: number): Promise<any> => {
+        return FeaturedBattle.deleteOne({
+            network: NetworkType.SOL,
+            battleId: battleId
+        })
     }
 
     updateBattle = async (battleId: number, startTime: number, endTime: number, projectLContract: string, projectRContract: string, twitterID: string | undefined) => {
