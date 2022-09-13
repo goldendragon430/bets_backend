@@ -1,12 +1,14 @@
 {
     "ignore": [
+        ".git",
+        "dist",
         "**/*.test.ts",
         "**/*.spec.ts",
         "node_modules"
     ],
     "watch": [
-        "src"
+        "./src"
     ],
-    "exec": "npm run compile && npm start",
+    "exec": "npm start",
     "ext": "ts"
 }
