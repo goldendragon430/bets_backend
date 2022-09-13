@@ -66,7 +66,7 @@ class NFTActivityRepository {
         blockNumber: number,
         serviceType: ServiceType,
     ) => {
-        const battle = await FeaturedBattleRepository.getBattleByBattleId(battleId)
+        const battle = await FeaturedBattleRepository.getBattleByBattleId(battleId);
 
         let contractAddress = '';
         if (battle) {
