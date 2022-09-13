@@ -8,7 +8,7 @@ import * as cors from 'cors';
 import rateLimiter from './middlewares/rateLimit';
 import { unCoughtErrorHandler } from './handlers/errorHandler';
 import Routes from './routes';
-import { installNFTStakedEvents } from './services/events';
+import { installBetEvents } from './services/events';
 import redisHandle from './utils/redis';
 import { setupCronJobMap } from './services/cronManager';
 import { getDBConfig } from './config';
@@ -23,7 +23,7 @@ export default class Server {
         this.config(app);
         this.connect();
         this.initRedis();
-        installNFTStakedEvents();
+        installBetEvents();
         new Routes(app);
     }
 

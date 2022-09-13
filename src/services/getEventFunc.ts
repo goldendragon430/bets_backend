@@ -10,19 +10,19 @@ export const nftTransferFunc = async (contractAddress: string, from: string, to:
     try {
         const activity = await NFTActivityRepository.getNFTActivity(event.transactionHash);
         if (!activity) {
-            await NFTActivityRepository.addNFTActivity(0, contractAddress, ActivityType.Transfer, from, to, tokenId.toNumber(), event.transactionHash, event.blockNumber, serviceType);
+            await NFTActivityRepository.addTransferActivity(contractAddress, from, to, tokenId.toNumber(), event.transactionHash, event.blockNumber, serviceType);
         }
     } catch (e) {
         console.error('NFT Transfer Event Err: ', e);
     }
 };
 
-export const nftStakedFunc = async (battleId: BigNumber, collectionAddress: string, user: string, tokenIds: Array<BigNumber>, event: any, serviceType: ServiceType) => {
+export const nftStakedFunc = async (battleId: BigNumber, side: boolean, user: string, tokenIds: Array<BigNumber>, event: any, serviceType: ServiceType) => {
     try {
         const activity = await NFTActivityRepository.getNFTActivity(event.transactionHash);
         if (!activity) {
             for (const tokenId of tokenIds) {
-                await NFTActivityRepository.addNFTActivity(battleId.toNumber(), collectionAddress, ActivityType.Staked, user, user, tokenId.toNumber(), event.transactionHash, event.blockNumber, serviceType);
+                await NFTActivityRepository.addNFTActivity(battleId.toNumber(), side, ActivityType.Staked, user, user, tokenId.toNumber(), event.transactionHash, event.blockNumber, serviceType);
             }
         }
     } catch (e) {
@@ -30,7 +30,7 @@ export const nftStakedFunc = async (battleId: BigNumber, collectionAddress: stri
     }
 };
 
-export const battleCreateFunc = async (battleId: BigNumber, startTime: BigNumber, endTime: BigNumber, teamACollectionAddress: string, teamBCollectionAddress: string, twitterID: string = '') => {
+export const battleCreateFunc = async (battleId: BigNumber, startTime: BigNumber, endTime: BigNumber, teamACollectionAddress: string, teamBCollectionAddress: string, twitterID?: string | undefined) => {
     try {
         const battle = await FeaturedBattleRepository.getBattleByQuery({ battleId: battleId });
         if (!battle) {

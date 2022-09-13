@@ -6,11 +6,13 @@ const Schema = mongoose.Schema;
 const featuredBattleSchema = new Schema({
     projectL: {
         type: Schema.Types.ObjectId,
-        ref: 'project'
+        required: true,
+        ref: 'project',
     },
     projectR: {
         type: Schema.Types.ObjectId,
-        ref: 'project'
+        required: true,
+        ref: 'project',
     },
     battleId: {
         type: Number,

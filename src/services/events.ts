@@ -2,7 +2,7 @@ import { nftStakedFunc, battleCreateFunc, abpClaimedFunc, bettedFunc, fulfilledF
 import { ServiceType } from '../utils/enums';
 import { BetContract, provider } from '../utils/constants';
 
-export const installNFTStakedEvents = () => {
+export const installBetEvents = () => {
     const contract = BetContract;
 
     contract.on('NFTStaked', async (battleId, collectionAddress, user, tokenIds) => {
@@ -13,7 +13,7 @@ export const installNFTStakedEvents = () => {
             for (const ev of events) {
                 if (ev.args) {
                     const battleId = ev.args.battleId;
-                    const collectionAddress = ev.args.collectionAddress;
+                    const side = ev.args.side;
                     const user = ev.args.user;
                     const tokenIds = ev.args.tokenIds;
 
