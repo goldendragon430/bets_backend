@@ -47,11 +47,12 @@ class FeaturedBattleRepository {
         });
     };
 
-    getActiveBattleIds = async () => {
+    getActiveBattleIds = async (network: NetworkType) => {
         const blockNumber = await provider.getBlockNumber();
         const block = await provider.getBlock(blockNumber);
 
         const battles = await FeaturedBattle.find({
+            network: network,
             startTime: { $lte: block.timestamp },
             endTime: { $gte: block.timestamp },
         });
@@ -101,6 +102,7 @@ class FeaturedBattleRepository {
                         blockNumber: '$blockNumber',
                         contractAddress: '$contractAddress',
                         activity: '$activity',
+                        createdAt: '$createdAt',
                         amount: '$amountInDecimal',
                         from: '$from'
                     },
@@ -124,6 +126,8 @@ class FeaturedBattleRepository {
             return {
                 txHash: activity._id.transactionHash,
                 user: activity._id.from,
+                side: activity._id.contractAddress === battle.projectL?.contract, // true: left, false: right
+                timestamp: new Date(activity._id.createdAt).getTime(),
                 amount: amount,
                 teamName: projectName,
                 subTeamName: projectSubName,
@@ -133,7 +137,7 @@ class FeaturedBattleRepository {
     }
 
     getActiveBattles = async () => {
-        const battleIds = await this.getActiveBattleIds();
+        const battleIds = await this.getActiveBattleIds(NetworkType.ETH);
         return await Promise.all(
             battleIds.map(async (battleId) => {
                 return await this.getBattle(battleId);

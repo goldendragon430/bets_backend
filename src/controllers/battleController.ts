@@ -37,8 +37,12 @@ export default class BattleController {
      * @param next
      */
     getActiveBattleIds = async (req: Request, res: Response, next: NextFunction) => {
+        const { network } = req.params;
         try {
-            const activeBattleIds = await BattleRepository.getActiveBattleIds();
+            if (network && !(network in NetworkType)) {
+                return res.status(400).json({ 'success': false, 'message': 'Invalid network.' });
+            }
+            const activeBattleIds = await BattleRepository.getActiveBattleIds(NetworkType[network] || NetworkType.ETH);
 
             res.json({ 'success': true, 'message': '', 'data': activeBattleIds });
         } catch (error) {
@@ -153,8 +157,9 @@ export default class BattleController {
      * @param next
      */
     getNFTStakedStatus = async (req: Request, res: Response, next: NextFunction) => {
+        const { tokenIds, contractAddress, battleId } = req.body;
+
         try {
-            const { tokenIds, contractAddress, battleId } = req.body;
 
             const battle = await BattleRepository.getBattle(battleId);
 

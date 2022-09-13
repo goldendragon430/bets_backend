@@ -1,7 +1,7 @@
 import { BigNumber, ethers } from 'ethers';
 import NFTActivity from '../models/nftActivity';
 import FeaturedBattleRepository from './featuredBattle';
-import { ActivityType, ServiceType } from '../utils/enums';
+import { ActivityType, NetworkType, ServiceType } from '../utils/enums';
 
 class NFTActivityRepository {
     constructor() { }
@@ -68,7 +68,7 @@ class NFTActivityRepository {
     ) => {
 
         if (activity === ActivityType.Transfer) {
-            const activeBattleIds = await FeaturedBattleRepository.getActiveBattleIds();
+            const activeBattleIds = await FeaturedBattleRepository.getActiveBattleIds(NetworkType.ETH);
 
             const stakedList = await NFTActivity.find({
                 contractAddress,
