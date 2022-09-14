@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "INO Api",
   "scripts": {
-    "start": "npm run compile && node ./dist/server.js",
+    "start": "ts-node server.ts",
+    "start:prod": "npm run compile && node ./dist/server.js",
     "compile": "npm run transpile",
     "dev": "nodemon",
     "serve": "nodemon --delay 500ms server.js",

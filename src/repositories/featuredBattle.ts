@@ -19,7 +19,7 @@ class FeaturedBattleRepository {
         return FeaturedBattle.findOne(where);
     }
 
-    getBattle = async (battle_id) => {
+    getBattle = async (battle_id): Promise<any> => {
         const battle = await FeaturedBattle.findById(battle_id);
         if (!battle) {
             return undefined;
@@ -34,7 +34,7 @@ class FeaturedBattleRepository {
     };
 
     getBattleByBattleId = async (battleId: number) => {
-        const battle = await FeaturedBattle.findOne({ battleId });
+        const battle = await FeaturedBattle.findOne({ battleId, network: NetworkType.ETH });
         if (!battle) {
             return undefined;
         }
@@ -221,43 +221,6 @@ class FeaturedBattleRepository {
         });
     }
 
-    addSolanaBattle = async (startTime: number, endTime: number, projectL_id: string, projectR_id: string, twitterID: string): Promise<any> => {
-        const projectL = await ProjectRepository.getProject(projectL_id);
-        const projectR = await ProjectRepository.getProject(projectR_id);
-
-        if (!projectL || !projectR) {
-            throw new Error('Project not found');
-        }
-        if (!projectL.creator || !projectR.creator) {
-            throw new Error('Creator address not found');
-        }
-
-        const solBattles = await FeaturedBattle.find({ network: NetworkType.SOL }).limit(1).sort({_id: 1});
-        const battle = await FeaturedBattle.create({
-            startDate: new Date(startTime * 1000),
-            battleId: solBattles.length > 0 ? solBattles[0].battleId + 1 : 1,
-            startTime: startTime,
-            endTime: endTime,
-            battleLength: endTime - startTime,
-            status: BattleStatus.Created,
-            network: NetworkType.SOL,
-            finalizeFailedCount: 0,
-            projectL: projectL,
-            projectR: projectR,
-            twitterAnnounceID: twitterID,
-        });
-
-        await startBet(startTime, endTime, projectL?.creator, projectR?.creator, battle.battleId.toString());
-        return battle;
-    }
-
-    deleteSolanaBattle = async (battleId: string): Promise<any> => {
-        return FeaturedBattle.deleteOne({
-            network: NetworkType.SOL,
-            id: battleId
-        });
-    }
-
     updateBattle = async (battleId: number, startTime: number, endTime: number, projectLContract: string, projectRContract: string, twitterID: string | undefined) => {
         const projectL = await ProjectRepository.getProjectByContract(projectLContract);
         const projectR = await ProjectRepository.getProjectByContract(projectRContract);
@@ -289,6 +252,43 @@ class FeaturedBattleRepository {
                 $set: updateData
             }
         );
+    }
+
+    addSolanaBattle = async (startTime: number, endTime: number, projectL_id: string, projectR_id: string, twitterID: string): Promise<any> => {
+        const projectL = await ProjectRepository.getProject(projectL_id);
+        const projectR = await ProjectRepository.getProject(projectR_id);
+
+        if (!projectL || !projectR) {
+            throw new Error('Project not found');
+        }
+        if (!projectL.creator || !projectR.creator) {
+            throw new Error('Creator address not found');
+        }
+
+        const solBattles: Array<any> = await FeaturedBattle.find({ network: NetworkType.SOL }).limit(1).sort({_id: 1});
+        const battle: any = await FeaturedBattle.create({
+            startDate: new Date(startTime * 1000),
+            battleId: solBattles.length > 0 ? solBattles[0].battleId + 1 : 1,
+            startTime: startTime,
+            endTime: endTime,
+            battleLength: endTime - startTime,
+            status: BattleStatus.Created,
+            network: NetworkType.SOL,
+            finalizeFailedCount: 0,
+            projectL: projectL,
+            projectR: projectR,
+            twitterAnnounceID: twitterID,
+        });
+
+        await startBet(startTime, endTime, projectL?.creator, projectR?.creator, battle.battleId.toString());
+        return battle;
+    }
+
+    deleteSolanaBattle = async (battleId: string): Promise<any> => {
+        return FeaturedBattle.deleteOne({
+            network: NetworkType.SOL,
+            id: battleId
+        });
     }
 
     // false -> ProjectL, true -> ProjectR

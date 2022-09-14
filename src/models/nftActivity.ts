@@ -13,7 +13,14 @@ const nftActivitySchema = new Schema({
         type: Number,
         required: true,
     },
-    contractAddress: String,
+    side: {
+        type: Boolean,
+        required: true,
+    },
+    contractAddress: {
+        type: String,
+        required: true,
+    },
     from: String,
     to: String,
     amount: String,

@@ -149,9 +149,9 @@
       },
       {
         "indexed": false,
-        "internalType": "address",
-        "name": "collectionAddress",
-        "type": "address"
+        "internalType": "bool",
+        "name": "side",
+        "type": "bool"
       },
       {
         "indexed": false,

@@ -222,7 +222,7 @@ export const setupCronJobMap = async (): Promise<void> => {
         for (const battleId of battleIds) {
             try {
                 try {
-                    const { projectL, projectR } = await BattleRepository.getUnstakeInfos(battleId);
+                    const { projectL, projectR } = await BattleRepository.getUnstakeInfos(battleId as number);
                     if (projectL.users.length > 0) {
                         const unstakeTx = await BetContract.connect(adminSigner).unstakeNftFromUser(battleId, projectL.side, projectL.users, projectL.tokenIds, projectL.userTokenIdLengths);
                         await unstakeTx.wait();
@@ -237,7 +237,7 @@ export const setupCronJobMap = async (): Promise<void> => {
                 const tx = await BetContract.connect(adminSigner).requestRandomWords(battleId);
                 await tx.wait();
                 console.log(`In ${battleId} battle requested random words in attached transaction Hash`, tx.hash);
-                await BattleRepository.updateBattleStatus(battleId, BattleStatus.RequestRandomWords);
+                await BattleRepository.updateBattleStatus(battleId as number, BattleStatus.RequestRandomWords);
             } catch (e) {
                 console.error(`Error while requesting random words for battle ID ${battleId}`);
             }
@@ -253,9 +253,9 @@ export const setupCronJobMap = async (): Promise<void> => {
                 const tx = await BetContract.connect(adminSigner).finalizeBattle(battleId);
                 await tx.wait();
                 console.log(`In ${battleId} battle finalized in attached transaction Hash`, tx.hash);
-                await BattleRepository.resetBattleFinalizeFailedCount(battleId);
+                await BattleRepository.resetBattleFinalizeFailedCount(battleId as number);
             } catch (e) {
-                await BattleRepository.updateBattleFinalizeFailedCount(battleId);
+                await BattleRepository.updateBattleFinalizeFailedCount(battleId as number);
                 console.error(`Error while finalizing for battle ID ${battleId}`);
             }
         }

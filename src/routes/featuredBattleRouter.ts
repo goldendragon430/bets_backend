@@ -5,7 +5,7 @@ import passport from '../utils/passport';
 
 class FeaturedBattleRouter {
   router = Router();
-  BattleController = new BattleController();
+  BattleController = new BattleController(); sdf;
   userController = new UserController();
 
   constructor() {
