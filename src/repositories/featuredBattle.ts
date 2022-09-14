@@ -106,6 +106,7 @@ class FeaturedBattleRepository {
                     activity: { $first: '$activity' },
                     createdAt: { $first: '$createdAt' },
                     amount: { $first: '$amount' },
+                    amountInDecimal: { $first: '$amountInDecimal' },
                     from: { $first: '$from' },
                     count: { $sum: 1 }
                 }
@@ -122,7 +123,7 @@ class FeaturedBattleRepository {
             } else if (activity.activity === ActivityType.Unstaked) {
                 amount = 1;
             } else if (activity.activity === ActivityType.Betted) {
-                amount = activity.amount;
+                amount = activity.amountInDecimal;
             }
             return {
                 txHash: activity._id.transactionHash,
