@@ -6,12 +6,12 @@ import { ActivityType, NetworkType, ServiceType } from '../utils/enums';
 class NFTActivityRepository {
     constructor() { }
 
-    getStakedStatus = async (tokenIds: Array<string>, contractAddress: string, battleId: number) => {
+    getStakedStatus = async (tokenIds: Array<string>, side: boolean, battleId: number) => {
         const status: Array<{ tokenId: string, status: boolean }> = [];
         for (const tokenId of tokenIds) {
             const activity = await NFTActivity.findOne({
                 tokenId,
-                contractAddress,
+                side,
                 battleId,
                 activity: ActivityType.Staked
             });
