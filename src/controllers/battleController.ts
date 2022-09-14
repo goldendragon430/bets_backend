@@ -157,7 +157,7 @@ export default class BattleController {
      * @param next
      */
     getNFTStakedStatus = async (req: Request, res: Response, next: NextFunction) => {
-        const { tokenIds, contractAddress, battleId } = req.body;
+        const { tokenIds, side, battleId } = req.body;
 
         try {
 
@@ -167,7 +167,7 @@ export default class BattleController {
                 return res.status(400).json({ 'success': false, 'message': 'No battle found.' });
             }
 
-            const status = await nftActivityRepository.getStakedStatus(tokenIds as Array<string>, contractAddress, battle.battleId);
+            const status = await nftActivityRepository.getStakedStatus(tokenIds as Array<string>, side, battle.battleId);
 
             res.json({ 'success': true, 'message': '', 'data': status });
         } catch (error) {

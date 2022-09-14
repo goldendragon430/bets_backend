@@ -17,7 +17,7 @@ export const installBetEvents = () => {
                     const user = ev.args.user;
                     const tokenIds = ev.args.tokenIds;
 
-                    await nftStakedFunc(battleId, collectionAddress, user, tokenIds, ev, ServiceType.Contract);
+                    await nftStakedFunc(battleId, side, user, tokenIds, ev, ServiceType.Contract);
                 }
             }
         }
