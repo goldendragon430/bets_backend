@@ -5,7 +5,7 @@ import { BetContract, provider } from '../utils/constants';
 export const installBetEvents = () => {
     const contract = BetContract;
 
-    contract.on('NFTStaked', async (battleId, collectionAddress, user, tokenIds) => {
+    contract.on('NFTStaked', async (battleId, side, user, tokenIds) => {
         const blockNumber = await provider.getBlockNumber();
         const events = await contract.queryFilter(contract.filters.NFTStaked(), (blockNumber - 10));
 

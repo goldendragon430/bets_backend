@@ -100,6 +100,7 @@ class FeaturedBattleRepository {
                     _id: {
                         transactionHash: '$transactionHash',
                         blockNumber: '$blockNumber',
+                        side: '$side',
                         contractAddress: '$contractAddress',
                         activity: '$activity',
                         createdAt: '$createdAt',
@@ -126,7 +127,8 @@ class FeaturedBattleRepository {
             return {
                 txHash: activity._id.transactionHash,
                 user: activity._id.from,
-                side: activity._id.contractAddress === battle.projectL?.contract, // true: left, false: right
+                side: activity._id.side,
+                // side: activity._id.contractAddress === battle.projectL?.contract, // true: left, false: right
                 timestamp: new Date(activity._id.createdAt).getTime(),
                 amount: amount,
                 teamName: projectName,

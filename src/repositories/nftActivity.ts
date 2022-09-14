@@ -25,22 +25,22 @@ class NFTActivityRepository {
 
     getActiveTotalNftStakedAmount = async (battle: any) => {
         const collectionAStakedCount = await NFTActivity.count({
-            contractAddress: battle.projectL?.contract,
+            side: false,
             battleId: battle.battleId,
             activity: ActivityType.Staked
         });
         const collectionBStakedCount = await NFTActivity.count({
-            contractAddress: battle.projectR?.contract,
+            side: true,
             battleId: battle.battleId,
             activity: ActivityType.Staked
         });
         const collectionAUnstakedCount = await NFTActivity.count({
-            contractAddress: battle.projectL?.contract,
+            side: false,
             battleId: battle.battleId,
             activity: ActivityType.Unstaked
         });
         const collectionBUnstakedCount = await NFTActivity.count({
-            contractAddress: battle.projectR?.contract,
+            side: true,
             battleId: battle.battleId,
             activity: ActivityType.Unstaked
         });
