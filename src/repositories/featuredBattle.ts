@@ -99,14 +99,14 @@ class FeaturedBattleRepository {
                 $group: {
                     _id: {
                         transactionHash: '$transactionHash',
-                        blockNumber: '$blockNumber',
-                        side: '$side',
-                        contractAddress: '$contractAddress',
-                        activity: '$activity',
-                        createdAt: '$createdAt',
-                        amount: '$amountInDecimal',
-                        from: '$from'
+                        blockNumber: '$blockNumber'
                     },
+                    side: { $first: '$side' },
+                    contractAddress: { $first: '$contractAddress' },
+                    activity: { $first: '$activity' },
+                    createdAt: { $first: '$createdAt' },
+                    amount: { $first: '$amount' },
+                    from: { $first: '$from' },
                     count: { $sum: 1 }
                 }
             },
@@ -114,26 +114,25 @@ class FeaturedBattleRepository {
         ]);
 
         return activities.map((activity) => {
-            const projectName = activity._id.contractAddress === battle.projectL?.contract ? battle.projectL?.name : battle.projectR?.name;
-            const projectSubName = activity._id.contractAddress === battle.projectL?.contract ? battle.projectL?.subName : battle.projectR?.subName;
+            const projectName = activity.contractAddress === battle.projectL?.contract ? battle.projectL?.name : battle.projectR?.name;
+            const projectSubName = activity.contractAddress === battle.projectL?.contract ? battle.projectL?.subName : battle.projectR?.subName;
             let amount = 0;
-            if (activity._id.activity === ActivityType.Staked) {
+            if (activity.activity === ActivityType.Staked) {
                 amount = activity.count;
-            } else if (activity._id.activity === ActivityType.Unstaked) {
+            } else if (activity.activity === ActivityType.Unstaked) {
                 amount = 1;
-            } else if (activity._id.activity === ActivityType.Betted) {
-                amount = activity._id.amount;
+            } else if (activity.activity === ActivityType.Betted) {
+                amount = activity.amount;
             }
             return {
                 txHash: activity._id.transactionHash,
-                user: activity._id.from,
-                side: activity._id.side,
-                // side: activity._id.contractAddress === battle.projectL?.contract, // true: left, false: right
-                timestamp: new Date(activity._id.createdAt).getTime(),
+                user: activity.from,
+                side: activity.side, // false -> ProjectL, true -> ProjectR
+                timestamp: new Date(activity.createdAt).getTime(),
                 amount: amount,
                 teamName: projectName,
                 subTeamName: projectSubName,
-                action: activity._id.activity,
+                action: activity.activity,
             };
         });
     }
