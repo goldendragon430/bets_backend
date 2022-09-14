@@ -55,7 +55,7 @@ export const abpClaimedFunc = async (battleId: BigNumber, user: string, amount: 
     }
 };
 
-export const bettedFunc = async (battleId: BigNumber, user: string, amount: BigNumber, side: false, event: any) => {
+export const bettedFunc = async (battleId: BigNumber, user: string, amount: BigNumber, side: boolean, event: any) => {
     try {
         const activity = await NFTActivityRepository.getNFTActivity(event.transactionHash);
         if (!activity) {

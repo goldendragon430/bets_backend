@@ -141,6 +141,7 @@ class NFTActivityRepository {
 
         const nftActivityInstance = new NFTActivity({
             battleId,
+            side,
             contractAddress,
             activity: ActivityType.Betted,
             from,
