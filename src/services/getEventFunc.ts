@@ -3,7 +3,7 @@ import ClaimActivityRepository from '../repositories/claimActivity';
 import FulfillActivityRepository from '../repositories/fulfillActivity';
 import FinalizeActivityRepository from '../repositories/finalizeActivity';
 import FeaturedBattleRepository from '../repositories/featuredBattle';
-import { ActivityType, ServiceType } from '../utils/enums';
+import { ActivityType, NetworkType, ServiceType } from '../utils/enums';
 import { BigNumber } from 'ethers';
 
 export const nftTransferFunc = async (contractAddress: string, from: string, to: string, tokenId: BigNumber, event: any, serviceType: ServiceType) => {
@@ -32,7 +32,7 @@ export const nftStakedFunc = async (battleId: BigNumber, side: boolean, user: st
 
 export const battleCreateFunc = async (battleId: BigNumber, startTime: BigNumber, endTime: BigNumber, teamACollectionAddress: string, teamBCollectionAddress: string, twitterID?: string | undefined) => {
     try {
-        const battle = await FeaturedBattleRepository.getBattleByQuery({ battleId: battleId });
+        const battle = await FeaturedBattleRepository.getBattleByQuery({ battleId: battleId, network: NetworkType.ETH });
         if (!battle) {
             await FeaturedBattleRepository.addBattle(battleId.toNumber(), startTime.toNumber(), endTime.toNumber(), teamACollectionAddress, teamBCollectionAddress, twitterID);
         } else {
