@@ -1,6 +1,6 @@
 import * as cron from 'node-cron';
 import BattleRepository from '../repositories/featuredBattle';
-import ProjectRepository from '../repositories/project'
+import ProjectRepository from '../repositories/project';
 import { BetContract, adminSigner, getERC721Contract, provider } from '../utils/constants';
 import { ServiceType, BattleStatus, NetworkType } from '../utils/enums';
 import redisHandle from '../utils/redis';

@@ -1,5 +1,5 @@
 import { BigNumber } from 'ethers';
-import * as api from 'api';
+import axios from 'axios';
 import NFTActivityRepository from '../repositories/nftActivity';
 import ClaimActivityRepository from '../repositories/claimActivity';
 import FulfillActivityRepository from '../repositories/fulfillActivity';
@@ -8,9 +8,6 @@ import FeaturedBattleRepository from '../repositories/featuredBattle';
 import RefundSetRepository from '../repositories/refundSet';
 import ProjectRepository from '../repositories/project';
 import { ActivityType, NetworkType, ServiceType } from '../utils/enums';
-import axios from 'axios';
-
-const sdk = api('@opensea/v1.0#10fy4ug30l7qohm4q');
 
 export const nftTransferFunc = async (contractAddress: string, from: string, to: string, tokenId: BigNumber, event: any, serviceType: ServiceType) => {
     try {
