@@ -337,7 +337,6 @@ class FeaturedBattleRepository {
         let tokenIdsL = [];
         let tokenLengthL = [];
         Object.keys(userInfoL).map((userAddress) => {
-            console.log(userInfoL[userAddress]);
             tokenIdsL = tokenIdsL.concat(userInfoL[userAddress].tokenIds);
             tokenLengthL = tokenLengthL.concat(userInfoL[userAddress].tokenIds.length);
             return userInfoL[userAddress].tokenIds;

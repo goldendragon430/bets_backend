@@ -5,10 +5,22 @@ class ClaimActivityRepository {
     constructor() { }
 
     getLeaderboard = async () => {
-        const activities = await ClaimActivity.aggregate([{ $group: { _id: '$user', sumA: { $sum: '$amountInDecimal' } } }, { $sort: { sumA: -1 } }]);
+        const activities = await ClaimActivity.aggregate(
+            [
+                {
+                    $group: {
+                        _id: '$user',
+                        battleId: { $last: '$battleId' },
+                        sumA: { $sum: '$amountInDecimal' }
+                    }
+                },
+                { $sort: { sumA: -1 } }
+            ]
+        );
         const leaderboard = activities.map(activity => {
             return {
                 user: activity._id,
+                battleId: activity.battleId,
                 amount: activity.sumA
             };
         }).sort((a, b) => {
