@@ -1,11 +1,16 @@
+import { BigNumber } from 'ethers';
+import * as api from 'api';
 import NFTActivityRepository from '../repositories/nftActivity';
 import ClaimActivityRepository from '../repositories/claimActivity';
 import FulfillActivityRepository from '../repositories/fulfillActivity';
 import FinalizeActivityRepository from '../repositories/finalizeActivity';
 import FeaturedBattleRepository from '../repositories/featuredBattle';
 import RefundSetRepository from '../repositories/refundSet';
+import ProjectRepository from '../repositories/project';
 import { ActivityType, NetworkType, ServiceType } from '../utils/enums';
-import { BigNumber } from 'ethers';
+import axios from 'axios';
+
+const sdk = api('@opensea/v1.0#10fy4ug30l7qohm4q');
 
 export const nftTransferFunc = async (contractAddress: string, from: string, to: string, tokenId: BigNumber, event: any, serviceType: ServiceType) => {
     try {
@@ -104,5 +109,14 @@ export const refundFunc = async (battleId: BigNumber, flag: boolean, event: any)
         }
     } catch (e) {
         console.error('RefundSet Event Err: ', e);
+    }
+};
+
+export const syncProjectFromOpensea = async (slug: string) => {
+    try {
+        const { data } = await axios.get(`https://api.opensea.io/api/v1/collection/${slug}/stats`);
+        await ProjectRepository.updateProject(slug, data.stats.floor_price, data.stats.num_owners);
+    } catch (e) {
+        console.error('While syncing data from opensea: ', e);
     }
 };

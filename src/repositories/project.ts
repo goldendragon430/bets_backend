@@ -24,6 +24,13 @@ class ProjectRepository {
         return ProjectModel.findOne({ contract: contractAddress });
     }
 
+    updateProject = async (slug: string, floor_price: number, num_owners: number) => {
+        return ProjectModel.updateOne(
+            { slug: slug },
+            { $set: { floor_price: floor_price, num_owners: num_owners } },
+        );
+    }
+
     addProject = async(
         name: string,
         subName: string,

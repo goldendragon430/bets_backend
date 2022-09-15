@@ -1,10 +1,10 @@
 import * as cron from 'node-cron';
 import BattleRepository from '../repositories/featuredBattle';
-import { provider } from '../utils/constants';
-import { BetContract, adminSigner, getERC721Contract } from '../utils/constants';
-import { ServiceType, BattleStatus } from '../utils/enums';
+import ProjectRepository from '../repositories/project'
+import { BetContract, adminSigner, getERC721Contract, provider } from '../utils/constants';
+import { ServiceType, BattleStatus, NetworkType } from '../utils/enums';
 import redisHandle from '../utils/redis';
-import { abpClaimedFunc, battleCreateFunc, bettedFunc, finalizedFunc, fulfilledFunc, nftStakedFunc, nftTransferFunc } from './getEventFunc';
+import { abpClaimedFunc, battleCreateFunc, bettedFunc, finalizedFunc, fulfilledFunc, nftStakedFunc, nftTransferFunc, syncProjectFromOpensea } from './getEventFunc';
 
 // hash map to map keys to jobs
 const jobMap: Map<string, cron.ScheduledTask> = new Map();
@@ -261,6 +261,27 @@ export const setupCronJobMap = async (): Promise<void> => {
         }
     }, { scheduled: false }).start();
 
+    const sleep = () => {
+        return new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+        });
+    };
+
+    const requestOpenseaJob = cron.schedule('0 0 * * *', async () => {
+        const projects = await ProjectRepository.getProjects(NetworkType.ETH);
+        for (const project of projects) {
+            if (project.slug) {
+                try {
+                    await syncProjectFromOpensea(project.slug);
+                    console.log(`Synced ${project.slug}`);
+                } catch (e) {
+                    console.log(`While syncing ${project.slug} got error: ${e}`);
+                }
+                await sleep();
+            }
+        }
+    }, { scheduled: false }).start();
+
     jobMap.set('nftStakedJob', nftStakedJob);
     jobMap.set('bettedJob', bettedJob);
     jobMap.set('battleCreateJob', battleCreateJob);
@@ -269,6 +290,7 @@ export const setupCronJobMap = async (): Promise<void> => {
     jobMap.set('FinalizeJob', FinalizeJob);
     jobMap.set('requestRandomTriggerJob', requestRandomTriggerJob);
     jobMap.set('finalizeTriggerJob', finalizeTriggerJob);
+    jobMap.set('requestOpenseaJob', requestOpenseaJob);
 
     const activeBattles = await BattleRepository.getActiveBattles();
     activeBattles.map(async (activeBattle) => {

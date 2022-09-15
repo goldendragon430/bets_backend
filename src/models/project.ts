@@ -22,6 +22,8 @@ const projectSchema = new Schema({
         required: true,
     },
     collectionSize: Number,
+    num_owners: Number,
+    floor_price: Number,
     twitterID: {
         type: String,
         required: true,
@@ -37,6 +39,7 @@ const projectSchema = new Schema({
     openSeaLink: String,
     magicEdenLink: String,
     discordLink: String,
+    slug: String,
 },
 { timestamps: true });
 
