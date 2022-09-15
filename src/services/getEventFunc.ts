@@ -3,6 +3,7 @@ import ClaimActivityRepository from '../repositories/claimActivity';
 import FulfillActivityRepository from '../repositories/fulfillActivity';
 import FinalizeActivityRepository from '../repositories/finalizeActivity';
 import FeaturedBattleRepository from '../repositories/featuredBattle';
+import RefundSetRepository from '../repositories/refundSet';
 import { ActivityType, NetworkType, ServiceType } from '../utils/enums';
 import { BigNumber } from 'ethers';
 
@@ -86,7 +87,6 @@ export const fulfilledFunc = async (battleId: BigNumber, timestamp: BigNumber, e
 
 export const finalizedFunc = async (battleId: BigNumber, side: boolean, chanceA: BigNumber, chanceB: BigNumber, bingo: BigNumber, event: any) => {
     try {
-        console.log(battleId, side, chanceA, chanceB, bingo, event);
         const activity = await FinalizeActivityRepository.getFinalizeActivity(event.transactionHash);
         if (!activity) {
             await FinalizeActivityRepository.addFinalizeActivity(battleId.toNumber(), side, chanceA.toNumber(), chanceB.toNumber(), bingo.toNumber(), event.transactionHash, event.blockNumber);
@@ -95,3 +95,14 @@ export const finalizedFunc = async (battleId: BigNumber, side: boolean, chanceA:
         console.error('Finalize Event Err: ', e);
     }
 };
+
+export const refundFunc = async (battleId: BigNumber, flag: boolean, event: any) => {
+    try {
+        const activity = await RefundSetRepository.getRefundSet(event.transactionHash);
+        if (!activity) {
+            await RefundSetRepository.addRefundSet(battleId.toNumber(), flag, event.transactionHash, event.blockNumber);
+        }
+    } catch (e) {
+        console.error('RefundSet Event Err: ', e);
+    }
+}

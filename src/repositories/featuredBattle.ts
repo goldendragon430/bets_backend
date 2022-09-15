@@ -148,16 +148,17 @@ class FeaturedBattleRepository {
     };
 
     getBattlesByCreated = async () => {
-        const blockNumber = await provider.getBlockNumber();
-        const block = await provider.getBlock(blockNumber);
+        const now = new Date().getTime();
+        const currentTimestamp = Math.floor(now / 1000);
 
         const battles = await FeaturedBattle.find({
-            startTime: { $lte: block.timestamp },
-            endTime: { $lte: block.timestamp },
+            startTime: { $lte: currentTimestamp },
+            endTime: { $lte: currentTimestamp },
             network: NetworkType.ETH,
             $and: [
                 { status: BattleStatus.Created },
-                { status: { $ne: BattleStatus.RequestRandomWords }, }
+                { status: { $ne: BattleStatus.RequestRandomWords }, },
+                { status: { $ne: BattleStatus.RefundSet }, }
             ],
         });
 
@@ -238,7 +239,6 @@ class FeaturedBattleRepository {
             startTime: startTime,
             endTime: endTime,
             battleLength: battleLength,
-            status: BattleStatus.Created,
             network: NetworkType.ETH,
             finalizeFailedCount: 0,
             projectL: projectL,
