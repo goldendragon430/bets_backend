@@ -105,4 +105,4 @@ export const refundFunc = async (battleId: BigNumber, flag: boolean, event: any)
     } catch (e) {
         console.error('RefundSet Event Err: ', e);
     }
-}
+};
