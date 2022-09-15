@@ -1,11 +1,11 @@
-import { nftStakedFunc, battleCreateFunc, abpClaimedFunc, bettedFunc, fulfilledFunc, finalizedFunc } from './getEventFunc';
+import { nftStakedFunc, battleCreateFunc, abpClaimedFunc, bettedFunc, fulfilledFunc, finalizedFunc, refundFunc } from './getEventFunc';
 import { ServiceType } from '../utils/enums';
 import { BetContract, provider } from '../utils/constants';
 
-export const installNFTStakedEvents = async () => {
+export const installBetEvents = () => {
     const contract = BetContract;
 
-    contract.on('NFTStaked', async (battleId, collectionAddress, user, tokenIds) => {
+    contract.on('NFTStaked', async (battleId, side, user, tokenIds) => {
         const blockNumber = await provider.getBlockNumber();
         const events = await contract.queryFilter(contract.filters.NFTStaked(), (blockNumber - 10));
 
@@ -13,11 +13,11 @@ export const installNFTStakedEvents = async () => {
             for (const ev of events) {
                 if (ev.args) {
                     const battleId = ev.args.battleId;
-                    const collectionAddress = ev.args.collectionAddress;
+                    const side = ev.args.side;
                     const user = ev.args.user;
                     const tokenIds = ev.args.tokenIds;
 
-                    await nftStakedFunc(battleId, collectionAddress, user, tokenIds, ev, ServiceType.Contract);
+                    await nftStakedFunc(battleId, side, user, tokenIds, ev, ServiceType.Contract);
                 }
             }
         }
@@ -92,6 +92,22 @@ export const installNFTStakedEvents = async () => {
                     const side = ev.args.side;
 
                     await bettedFunc(battleId, user, amount, side, ev);
+                }
+            }
+        }
+    });
+
+    contract.on('RefundSet', async (battleId, flag) => {
+        const blockNumber = await provider.getBlockNumber();
+        const events = await contract.queryFilter(contract.filters.RefundSet(), (blockNumber - 10));
+
+        if (events.length > 0) {
+            for (const ev of events) {
+                if (ev.args) {
+                    const battleId = ev.args.battleId;
+                    const flag = ev.args.flag;
+
+                    await refundFunc(battleId, flag, ev);
                 }
             }
         }

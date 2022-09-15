@@ -5,6 +5,7 @@ import { provider } from '../utils/constants';
 import { setupNFTTransferJob } from '../services/cronManager';
 import NftActivityModel from '../models/nftActivity';
 import { BigNumber } from 'ethers';
+import { startBet } from '../utils/solana';
 
 class FeaturedBattleRepository {
     constructor() {
@@ -18,7 +19,7 @@ class FeaturedBattleRepository {
         return FeaturedBattle.findOne(where);
     }
 
-    getBattle = async (battle_id) => {
+    getBattle = async (battle_id): Promise<any> => {
         const battle = await FeaturedBattle.findById(battle_id);
         if (!battle) {
             return undefined;
@@ -33,7 +34,7 @@ class FeaturedBattleRepository {
     };
 
     getBattleByBattleId = async (battleId: number) => {
-        const battle = await FeaturedBattle.findOne({ battleId });
+        const battle = await FeaturedBattle.findOne({ battleId, network: NetworkType.ETH });
         if (!battle) {
             return undefined;
         }
@@ -46,11 +47,12 @@ class FeaturedBattleRepository {
         });
     };
 
-    getActiveBattleIds = async () => {
+    getActiveBattleIds = async (network: NetworkType) => {
         const blockNumber = await provider.getBlockNumber();
         const block = await provider.getBlock(blockNumber);
 
         const battles = await FeaturedBattle.find({
+            network: network,
             startTime: { $lte: block.timestamp },
             endTime: { $gte: block.timestamp },
         });
@@ -97,12 +99,15 @@ class FeaturedBattleRepository {
                 $group: {
                     _id: {
                         transactionHash: '$transactionHash',
-                        blockNumber: '$blockNumber',
-                        contractAddress: '$contractAddress',
-                        activity: '$activity',
-                        amount: '$amountInDecimal',
-                        from: '$from'
+                        blockNumber: '$blockNumber'
                     },
+                    side: { $first: '$side' },
+                    contractAddress: { $first: '$contractAddress' },
+                    activity: { $first: '$activity' },
+                    createdAt: { $first: '$createdAt' },
+                    amount: { $first: '$amount' },
+                    amountInDecimal: { $first: '$amountInDecimal' },
+                    from: { $first: '$from' },
                     count: { $sum: 1 }
                 }
             },
@@ -110,29 +115,31 @@ class FeaturedBattleRepository {
         ]);
 
         return activities.map((activity) => {
-            const projectName = activity._id.contractAddress === battle.projectL?.contract ? battle.projectL?.name : battle.projectR?.name;
-            const projectSubName = activity._id.contractAddress === battle.projectL?.contract ? battle.projectL?.subName : battle.projectR?.subName;
+            const projectName = activity.contractAddress === battle.projectL?.contract ? battle.projectL?.name : battle.projectR?.name;
+            const projectSubName = activity.contractAddress === battle.projectL?.contract ? battle.projectL?.subName : battle.projectR?.subName;
             let amount = 0;
-            if (activity._id.activity === ActivityType.Staked) {
+            if (activity.activity === ActivityType.Staked) {
                 amount = activity.count;
-            } else if (activity._id.activity === ActivityType.Unstaked) {
+            } else if (activity.activity === ActivityType.Unstaked) {
                 amount = 1;
-            } else if (activity._id.activity === ActivityType.Betted) {
-                amount = activity._id.amount;
+            } else if (activity.activity === ActivityType.Betted) {
+                amount = activity.amountInDecimal;
             }
             return {
                 txHash: activity._id.transactionHash,
-                user: activity._id.from,
+                user: activity.from,
+                side: activity.side, // false -> ProjectL, true -> ProjectR
+                timestamp: new Date(activity.createdAt).getTime(),
                 amount: amount,
                 teamName: projectName,
                 subTeamName: projectSubName,
-                action: activity._id.activity,
+                action: activity.activity,
             };
         });
     }
 
     getActiveBattles = async () => {
-        const battleIds = await this.getActiveBattleIds();
+        const battleIds = await this.getActiveBattleIds(NetworkType.ETH);
         return await Promise.all(
             battleIds.map(async (battleId) => {
                 return await this.getBattle(battleId);
@@ -141,15 +148,17 @@ class FeaturedBattleRepository {
     };
 
     getBattlesByCreated = async () => {
-        const blockNumber = await provider.getBlockNumber();
-        const block = await provider.getBlock(blockNumber);
+        const now = new Date().getTime();
+        const currentTimestamp = Math.floor(now / 1000);
 
         const battles = await FeaturedBattle.find({
-            startTime: { $lte: block.timestamp },
-            endTime: { $lte: block.timestamp },
+            startTime: { $lte: currentTimestamp },
+            endTime: { $lte: currentTimestamp },
+            network: NetworkType.ETH,
             $and: [
                 { status: BattleStatus.Created },
-                { status: { $ne: BattleStatus.RequestRandomWords }, }
+                { status: { $ne: BattleStatus.RequestRandomWords }, },
+                { status: { $ne: BattleStatus.RefundSet }, }
             ],
         });
 
@@ -161,6 +170,7 @@ class FeaturedBattleRepository {
     getBattlesByFulfill = async () => {
         const battles = await FeaturedBattle.find({
             status: BattleStatus.Fulfilled,
+            network: NetworkType.ETH,
             finalizeFailedCount: { $lt: 3 },
         });
 
@@ -170,23 +180,23 @@ class FeaturedBattleRepository {
     };
 
     updateBattleStatus = async (battleId: number, status: BattleStatus) => {
-        return await FeaturedBattle.updateOne(
-            { battleId: battleId },
-            { $set: { status: status } },
+        return FeaturedBattle.updateOne(
+            {battleId: battleId},
+            {$set: {status: status}},
         );
     }
 
     updateBattleFinalizeFailedCount = async (battleId: number) => {
-        return await FeaturedBattle.updateOne(
-            { battleId: battleId },
-            { $inc: { finalizeFailedCount: 1 } },
+        return FeaturedBattle.updateOne(
+            {battleId: battleId},
+            {$inc: {finalizeFailedCount: 1}},
         );
     }
 
     resetBattleFinalizeFailedCount = async (battleId: number) => {
-        return await FeaturedBattle.updateOne(
-            { battleId: battleId },
-            { finalizeFailedCount: 0 },
+        return FeaturedBattle.updateOne(
+            {battleId: battleId},
+            {finalizeFailedCount: 0},
         );
     }
 
@@ -229,7 +239,6 @@ class FeaturedBattleRepository {
             startTime: startTime,
             endTime: endTime,
             battleLength: battleLength,
-            status: BattleStatus.Created,
             network: NetworkType.ETH,
             finalizeFailedCount: 0,
             projectL: projectL,
@@ -245,6 +254,43 @@ class FeaturedBattleRepository {
                 $set: updateData
             }
         );
+    }
+
+    addSolanaBattle = async (startTime: number, endTime: number, projectL_id: string, projectR_id: string, twitterID: string): Promise<any> => {
+        const projectL = await ProjectRepository.getProject(projectL_id);
+        const projectR = await ProjectRepository.getProject(projectR_id);
+
+        if (!projectL || !projectR) {
+            throw new Error('Project not found');
+        }
+        if (!projectL.creator || !projectR.creator) {
+            throw new Error('Creator address not found');
+        }
+
+        const solBattles: Array<any> = await FeaturedBattle.find({ network: NetworkType.SOL }).limit(1).sort({_id: 1});
+        const battle: any = await FeaturedBattle.create({
+            startDate: new Date(startTime * 1000),
+            battleId: solBattles.length > 0 ? solBattles[0].battleId + 1 : 1,
+            startTime: startTime,
+            endTime: endTime,
+            battleLength: endTime - startTime,
+            status: BattleStatus.Created,
+            network: NetworkType.SOL,
+            finalizeFailedCount: 0,
+            projectL: projectL,
+            projectR: projectR,
+            twitterAnnounceID: twitterID,
+        });
+
+        await startBet(startTime, endTime, projectL?.creator, projectR?.creator, battle.battleId.toString());
+        return battle;
+    }
+
+    deleteSolanaBattle = async (battleId: string): Promise<any> => {
+        return FeaturedBattle.deleteOne({
+            network: NetworkType.SOL,
+            id: battleId
+        });
     }
 
     // false -> ProjectL, true -> ProjectR
@@ -291,7 +337,6 @@ class FeaturedBattleRepository {
         let tokenIdsL = [];
         let tokenLengthL = [];
         Object.keys(userInfoL).map((userAddress) => {
-            console.log(userInfoL[userAddress]);
             tokenIdsL = tokenIdsL.concat(userInfoL[userAddress].tokenIds);
             tokenLengthL = tokenLengthL.concat(userInfoL[userAddress].tokenIds.length);
             return userInfoL[userAddress].tokenIds;

@@ -1,10 +1,10 @@
 import * as cron from 'node-cron';
 import BattleRepository from '../repositories/featuredBattle';
-import { provider } from '../utils/constants';
-import { BetContract, adminSigner, getERC721Contract } from '../utils/constants';
-import { ServiceType, BattleStatus } from '../utils/enums';
+import ProjectRepository from '../repositories/project';
+import { BetContract, adminSigner, getERC721Contract, provider } from '../utils/constants';
+import { ServiceType, BattleStatus, NetworkType } from '../utils/enums';
 import redisHandle from '../utils/redis';
-import { abpClaimedFunc, battleCreateFunc, bettedFunc, finalizedFunc, fulfilledFunc, nftStakedFunc, nftTransferFunc } from './getEventFunc';
+import { abpClaimedFunc, battleCreateFunc, bettedFunc, finalizedFunc, fulfilledFunc, nftStakedFunc, nftTransferFunc, syncProjectFromOpensea } from './getEventFunc';
 
 // hash map to map keys to jobs
 const jobMap: Map<string, cron.ScheduledTask> = new Map();
@@ -222,7 +222,7 @@ export const setupCronJobMap = async (): Promise<void> => {
         for (const battleId of battleIds) {
             try {
                 try {
-                    const { projectL, projectR } = await BattleRepository.getUnstakeInfos(battleId);
+                    const { projectL, projectR } = await BattleRepository.getUnstakeInfos(battleId as number);
                     if (projectL.users.length > 0) {
                         const unstakeTx = await BetContract.connect(adminSigner).unstakeNftFromUser(battleId, projectL.side, projectL.users, projectL.tokenIds, projectL.userTokenIdLengths);
                         await unstakeTx.wait();
@@ -237,7 +237,7 @@ export const setupCronJobMap = async (): Promise<void> => {
                 const tx = await BetContract.connect(adminSigner).requestRandomWords(battleId);
                 await tx.wait();
                 console.log(`In ${battleId} battle requested random words in attached transaction Hash`, tx.hash);
-                await BattleRepository.updateBattleStatus(battleId, BattleStatus.RequestRandomWords);
+                await BattleRepository.updateBattleStatus(battleId as number, BattleStatus.RequestRandomWords);
             } catch (e) {
                 console.log(e);
                 console.error(`Error while requesting random words for battle ID ${battleId}`);
@@ -254,10 +254,31 @@ export const setupCronJobMap = async (): Promise<void> => {
                 const tx = await BetContract.connect(adminSigner).finalizeBattle(battleId);
                 await tx.wait();
                 console.log(`In ${battleId} battle finalized in attached transaction Hash`, tx.hash);
-                await BattleRepository.resetBattleFinalizeFailedCount(battleId);
+                await BattleRepository.resetBattleFinalizeFailedCount(battleId as number);
             } catch (e) {
-                await BattleRepository.updateBattleFinalizeFailedCount(battleId);
+                await BattleRepository.updateBattleFinalizeFailedCount(battleId as number);
                 console.error(`Error while finalizing for battle ID ${battleId}`);
+            }
+        }
+    }, { scheduled: false }).start();
+
+    const sleep = () => {
+        return new Promise((resolve) => {
+            setTimeout(resolve, 2000);
+        });
+    };
+
+    const requestOpenseaJob = cron.schedule('0 0 * * *', async () => {
+        const projects = await ProjectRepository.getProjects(NetworkType.ETH);
+        for (const project of projects) {
+            if (project.slug) {
+                try {
+                    await syncProjectFromOpensea(project.slug);
+                    console.log(`Synced ${project.slug}`);
+                } catch (e) {
+                    console.log(`While syncing ${project.slug} got error: ${e}`);
+                }
+                await sleep();
             }
         }
     }, { scheduled: false }).start();
@@ -270,6 +291,7 @@ export const setupCronJobMap = async (): Promise<void> => {
     jobMap.set('FinalizeJob', FinalizeJob);
     jobMap.set('requestRandomTriggerJob', requestRandomTriggerJob);
     jobMap.set('finalizeTriggerJob', finalizeTriggerJob);
+    jobMap.set('requestOpenseaJob', requestOpenseaJob);
 
     const activeBattles = await BattleRepository.getActiveBattles();
     activeBattles.map(async (activeBattle) => {

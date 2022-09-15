@@ -21,4 +21,5 @@ export enum BattleStatus {
     RequestRandomWords = 'RequestRandomWords',
     Fulfilled = 'Fulfilled',
     Finalized = 'Finalized',
+    RefundSet = 'RefundSet',
 }

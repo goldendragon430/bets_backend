@@ -1,28 +1,31 @@
+import { BigNumber } from 'ethers';
+import axios from 'axios';
 import NFTActivityRepository from '../repositories/nftActivity';
 import ClaimActivityRepository from '../repositories/claimActivity';
 import FulfillActivityRepository from '../repositories/fulfillActivity';
 import FinalizeActivityRepository from '../repositories/finalizeActivity';
 import FeaturedBattleRepository from '../repositories/featuredBattle';
-import { ActivityType, ServiceType } from '../utils/enums';
-import { BigNumber } from 'ethers';
+import RefundSetRepository from '../repositories/refundSet';
+import ProjectRepository from '../repositories/project';
+import { ActivityType, NetworkType, ServiceType } from '../utils/enums';
 
 export const nftTransferFunc = async (contractAddress: string, from: string, to: string, tokenId: BigNumber, event: any, serviceType: ServiceType) => {
     try {
         const activity = await NFTActivityRepository.getNFTActivity(event.transactionHash);
         if (!activity) {
-            await NFTActivityRepository.addNFTActivity(0, contractAddress, ActivityType.Transfer, from, to, tokenId.toNumber(), event.transactionHash, event.blockNumber, serviceType);
+            await NFTActivityRepository.addTransferActivity(contractAddress, from, to, tokenId.toNumber(), event.transactionHash, event.blockNumber, serviceType);
         }
     } catch (e) {
         console.error('NFT Transfer Event Err: ', e);
     }
 };
 
-export const nftStakedFunc = async (battleId: BigNumber, collectionAddress: string, user: string, tokenIds: Array<BigNumber>, event: any, serviceType: ServiceType) => {
+export const nftStakedFunc = async (battleId: BigNumber, side: boolean, user: string, tokenIds: Array<BigNumber>, event: any, serviceType: ServiceType) => {
     try {
         const activity = await NFTActivityRepository.getNFTActivity(event.transactionHash);
         if (!activity) {
             for (const tokenId of tokenIds) {
-                await NFTActivityRepository.addNFTActivity(battleId.toNumber(), collectionAddress, ActivityType.Staked, user, user, tokenId.toNumber(), event.transactionHash, event.blockNumber, serviceType);
+                await NFTActivityRepository.addNFTActivity(battleId.toNumber(), side, ActivityType.Staked, user, user, tokenId.toNumber(), event.transactionHash, event.blockNumber, serviceType);
             }
         }
     } catch (e) {
@@ -30,9 +33,9 @@ export const nftStakedFunc = async (battleId: BigNumber, collectionAddress: stri
     }
 };
 
-export const battleCreateFunc = async (battleId: BigNumber, startTime: BigNumber, endTime: BigNumber, teamACollectionAddress: string, teamBCollectionAddress: string, twitterID: string = '') => {
+export const battleCreateFunc = async (battleId: BigNumber, startTime: BigNumber, endTime: BigNumber, teamACollectionAddress: string, teamBCollectionAddress: string, twitterID?: string | undefined) => {
     try {
-        const battle = await FeaturedBattleRepository.getBattleByQuery({ battleId: battleId });
+        const battle = await FeaturedBattleRepository.getBattleByQuery({ battleId: battleId, network: NetworkType.ETH });
         if (!battle) {
             await FeaturedBattleRepository.addBattle(battleId.toNumber(), startTime.toNumber(), endTime.toNumber(), teamACollectionAddress, teamBCollectionAddress, twitterID);
         } else {
@@ -55,7 +58,7 @@ export const abpClaimedFunc = async (battleId: BigNumber, user: string, amount: 
     }
 };
 
-export const bettedFunc = async (battleId: BigNumber, user: string, amount: BigNumber, side: false, event: any) => {
+export const bettedFunc = async (battleId: BigNumber, user: string, amount: BigNumber, side: boolean, event: any) => {
     try {
         const activity = await NFTActivityRepository.getNFTActivity(event.transactionHash);
         if (!activity) {
@@ -86,12 +89,31 @@ export const fulfilledFunc = async (battleId: BigNumber, timestamp: BigNumber, e
 
 export const finalizedFunc = async (battleId: BigNumber, side: boolean, chanceA: BigNumber, chanceB: BigNumber, bingo: BigNumber, event: any) => {
     try {
-        console.log(battleId, side, chanceA, chanceB, bingo, event);
         const activity = await FinalizeActivityRepository.getFinalizeActivity(event.transactionHash);
         if (!activity) {
             await FinalizeActivityRepository.addFinalizeActivity(battleId.toNumber(), side, chanceA.toNumber(), chanceB.toNumber(), bingo.toNumber(), event.transactionHash, event.blockNumber);
         }
     } catch (e) {
         console.error('Finalize Event Err: ', e);
+    }
+};
+
+export const refundFunc = async (battleId: BigNumber, flag: boolean, event: any) => {
+    try {
+        const activity = await RefundSetRepository.getRefundSet(event.transactionHash);
+        if (!activity) {
+            await RefundSetRepository.addRefundSet(battleId.toNumber(), flag, event.transactionHash, event.blockNumber);
+        }
+    } catch (e) {
+        console.error('RefundSet Event Err: ', e);
+    }
+};
+
+export const syncProjectFromOpensea = async (slug: string) => {
+    try {
+        const { data } = await axios.get(`https://api.opensea.io/api/v1/collection/${slug}/stats`);
+        await ProjectRepository.updateProject(slug, data.stats.floor_price, data.stats.num_owners);
+    } catch (e) {
+        console.error('While syncing data from opensea: ', e);
     }
 };

@@ -1,51 +1,66 @@
-import project from '../models/project';
+import ProjectModel from '../models/project';
 import { NetworkType } from '../utils/enums';
 
 class ProjectRepository {
     constructor() {}
 
     getProjects = async (network: NetworkType) => {
-        return project.find({ network: network });
+        return ProjectModel.find({ network: network });
+    }
+
+    getProjectByQuery = async (where: any) => {
+        return ProjectModel.findOne(where);
     }
 
     getProject = async (id) => {
-        return project.findOne({ _id: id });
+        return ProjectModel.findOne({ _id: id });
     }
 
     getProjectById = async (id) => {
-        return project.findOne({ _id: id });
+        return ProjectModel.findOne({ _id: id });
     }
 
     getProjectByContract = async (contractAddress: string) => {
-        return project.findOne({ contract: contractAddress });
+        return ProjectModel.findOne({ contract: contractAddress });
+    }
+
+    updateProject = async (slug: string, floor_price: number, num_owners: number) => {
+        return ProjectModel.updateOne(
+            { slug: slug },
+            { $set: { floor_price: floor_price, num_owners: num_owners } },
+        );
     }
 
     addProject = async(
         name: string,
         subName: string,
+        network: NetworkType,
         contract: string,
         collectionSize: number,
         twitterID: string,
-        metadataFilter: string,
+        creator,
         logo: string,
         headerImage: string,
         openSeaLink: string,
         magicEdenLink: string,
+        discordLink: string,
     ) => {
-        const projectInstance = new project({
+        const project = new ProjectModel({
             name,
             subName,
+            network,
             contract,
             collectionSize,
             twitterID,
-            metadataFilter,
+            creator,
             logo,
             headerImage,
             openSeaLink,
             magicEdenLink,
+            discordLink,
         });
 
-        return projectInstance.save();
+        return project.save();
     }
 }
 

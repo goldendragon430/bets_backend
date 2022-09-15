@@ -8,7 +8,10 @@ const projectSchema = new Schema({
         type: String,
         required: true,
     },
-    subName: String,
+    subName: {
+        type: String,
+        required: true,
+    },
     network: {
         type: String,
         enum: [NetworkType.ETH, NetworkType.SOL, NetworkType.ADA],
@@ -19,6 +22,8 @@ const projectSchema = new Schema({
         required: true,
     },
     collectionSize: Number,
+    num_owners: Number,
+    floor_price: Number,
     twitterID: {
         type: String,
         required: true,
@@ -27,10 +32,14 @@ const projectSchema = new Schema({
     metadataFilter: String,
     comment: String,
     logo: String,
-    headerImage: String,
+    headerImage: {
+        type: String,
+        required: true,
+    },
     openSeaLink: String,
     magicEdenLink: String,
     discordLink: String,
+    slug: String,
 },
 { timestamps: true });
 

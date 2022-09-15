@@ -37,8 +37,12 @@ export default class BattleController {
      * @param next
      */
     getActiveBattleIds = async (req: Request, res: Response, next: NextFunction) => {
+        const { network } = req.params;
         try {
-            const activeBattleIds = await BattleRepository.getActiveBattleIds();
+            if (network && !(network in NetworkType)) {
+                return res.status(400).json({ 'success': false, 'message': 'Invalid network.' });
+            }
+            const activeBattleIds = await BattleRepository.getActiveBattleIds(NetworkType[network] || NetworkType.ETH);
 
             res.json({ 'success': true, 'message': '', 'data': activeBattleIds });
         } catch (error) {
@@ -153,8 +157,9 @@ export default class BattleController {
      * @param next
      */
     getNFTStakedStatus = async (req: Request, res: Response, next: NextFunction) => {
+        const { tokenIds, side, battleId } = req.body;
+
         try {
-            const { tokenIds, contractAddress, battleId } = req.body;
 
             const battle = await BattleRepository.getBattle(battleId);
 
@@ -162,7 +167,7 @@ export default class BattleController {
                 return res.status(400).json({ 'success': false, 'message': 'No battle found.' });
             }
 
-            const status = await nftActivityRepository.getStakedStatus(tokenIds as Array<string>, contractAddress, battle.battleId);
+            const status = await nftActivityRepository.getStakedStatus(tokenIds as Array<string>, side, battle.battleId);
 
             res.json({ 'success': true, 'message': '', 'data': status });
         } catch (error) {
@@ -215,6 +220,62 @@ export default class BattleController {
             await battleCreateFunc(event?.args?.battleId, event?.args?.startTime, event?.args?.endTime, event?.args?.teamACollectionAddress, event?.args?.teamBCollectionAddress, twitterID);
 
             res.json({ 'success': true, 'message': '', 'data': 'Battle created' });
+        } catch (error) {
+            apiErrorHandler(error, req, res, 'Add Battle failed.');
+        }
+    };
+
+    /**
+     * @description Add Battle Function
+     * @param req
+     * @param res
+     * @param next
+     */
+    addSolanaBattle = async (req: Request, res: Response, next: NextFunction) => {
+        const {
+            startTime,
+            endTime,
+            projectL,
+            projectR,
+            twitterID,
+        } = req.body;
+
+        try {
+            const battle = await BattleRepository.addSolanaBattle(startTime, endTime, projectL, projectR, twitterID);
+
+            res.json({ 'success': true, 'message': '', 'data': battle.id });
+        } catch (error) {
+            console.log(error);
+            apiErrorHandler(error, req, res, 'Add Battle failed.');
+        }
+    };
+
+    /**
+     * @description Delete Solana battle function
+     * @param req
+     * @param res
+     * @param next
+     */
+    deleteSolanaBattle = async (req: Request, res: Response, next: NextFunction) => {
+        const {
+            battleId
+        } = req.body;
+
+         try {
+            const battle = await BattleRepository.getBattleByQuery({
+                id: battleId,
+                network: NetworkType.SOL
+            });
+            if (!battle) {
+                return res.status(400).json({
+                    'success': false,
+                    'message': 'No battle found.'
+                });
+            }
+
+            const result = await BattleRepository.deleteSolanaBattle(battleId);
+
+            res.json({ 'success': true, 'message': '', 'data': result });
         } catch (error) {
             apiErrorHandler(error, req, res, 'Add Battle failed.');
         }
