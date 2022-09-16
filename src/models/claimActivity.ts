@@ -1,4 +1,5 @@
 import * as mongoose from 'mongoose';
+import { RewardType } from '../utils/enums';
 
 const Schema = mongoose.Schema;
 
@@ -14,6 +15,11 @@ const claimActivitySchema = new Schema({
     amount: {
         type: String,
         required: true,
+    },
+    rewardType: {
+        type: String,
+        enum: [RewardType.ABP, RewardType.ETH],
+        default: RewardType.ABP,
     },
     amountInDecimal: {
         type: Number,

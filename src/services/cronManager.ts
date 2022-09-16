@@ -2,9 +2,9 @@ import * as cron from 'node-cron';
 import BattleRepository from '../repositories/featuredBattle';
 import ProjectRepository from '../repositories/project';
 import { BetContract, adminSigner, getERC721Contract, provider } from '../utils/constants';
-import { ServiceType, BattleStatus, NetworkType } from '../utils/enums';
+import { ServiceType, BattleStatus, NetworkType, RewardType } from '../utils/enums';
 import redisHandle from '../utils/redis';
-import { abpClaimedFunc, battleCreateFunc, bettedFunc, finalizedFunc, fulfilledFunc, nftStakedFunc, nftTransferFunc, syncProjectFromOpensea } from './getEventFunc';
+import { rewardClaimedFunc, battleCreateFunc, bettedFunc, finalizedFunc, fulfilledFunc, nftStakedFunc, nftTransferFunc, syncProjectFromOpensea } from './getEventFunc';
 
 // hash map to map keys to jobs
 const jobMap: Map<string, cron.ScheduledTask> = new Map();
@@ -24,6 +24,7 @@ export const setupCronJobMap = async (): Promise<void> => {
     latestBlockNumber = await redisHandle.initVaule('bettedJobBlock', latestBlockNumber);
     latestBlockNumber = await redisHandle.initVaule('battleCreateBlock', latestBlockNumber);
     latestBlockNumber = await redisHandle.initVaule('abpClaimedBlock', latestBlockNumber);
+    latestBlockNumber = await redisHandle.initVaule('ethClaimedBlock', latestBlockNumber);
     latestBlockNumber = await redisHandle.initVaule('nftTransferBlock', latestBlockNumber);
     latestBlockNumber = await redisHandle.initVaule('fulfilledBlock', latestBlockNumber);
     latestBlockNumber = await redisHandle.initVaule('finalizedBlock', latestBlockNumber);
@@ -142,7 +143,7 @@ export const setupCronJobMap = async (): Promise<void> => {
                         const user = ev.args.user;
                         const amount = ev.args.amount;
 
-                        await abpClaimedFunc(battleId, user, amount, ev);
+                        await rewardClaimedFunc(battleId, user, amount, RewardType.ABP, ev);
                     }
                 }
             }
@@ -151,6 +152,36 @@ export const setupCronJobMap = async (): Promise<void> => {
             await redisHandle.set('abpClaimedBlock', blockNumber);
         } catch (e) {
             console.log('getABPClaimedEvent error: ', e);
+        }
+    }, { scheduled: false }).start();
+
+    const ETHClaimJob = cron.schedule('4-59/5 * * * *', async () => {
+        try {
+            const ethClaimedBlockNumber = await redisHandle.get('ethClaimedBlock');
+            const blockNumber = await provider.getBlockNumber();
+
+            const events = await BetContract.queryFilter(
+                BetContract.filters.RewardClaimed(),
+                ethClaimedBlockNumber,
+                blockNumber
+            );
+
+            if (events.length > 0) {
+                for (const ev of events) {
+                    if (ev.args) {
+                        const battleId = ev.args.battleId;
+                        const user = ev.args.user;
+                        const amount = ev.args.amount;
+
+                        await rewardClaimedFunc(battleId, user, amount, RewardType.ETH, ev);
+                    }
+                }
+            }
+            console.log(`${events.length} ETH Claimed events found on contract ${BetContract.address}`);
+
+            await redisHandle.set('ethClaimedBlock', blockNumber);
+        } catch (e) {
+            console.log('getETHClaimedEvent error: ', e);
         }
     }, { scheduled: false }).start();
 
@@ -286,6 +317,7 @@ export const setupCronJobMap = async (): Promise<void> => {
     jobMap.set('bettedJob', bettedJob);
     jobMap.set('battleCreateJob', battleCreateJob);
     jobMap.set('ABPClaimJob', ABPClaimJob);
+    jobMap.set('ETHClaimJob', ETHClaimJob);
     jobMap.set('FulfillJob', FulfillJob);
     jobMap.set('FinalizeJob', FinalizeJob);
     jobMap.set('requestRandomTriggerJob', requestRandomTriggerJob);
@@ -338,4 +370,10 @@ export const setupNFTTransferJob = (nftAddress: string) => {
     }, { scheduled: false }).start();
 
     jobMap.set(nftAddress, nftTransferJob);
+};
+
+export const removeFromHashMap = (key: string) => {
+    if (jobMap.has(key)) {
+        jobMap.delete(key);
+    }
 };

@@ -1,4 +1,5 @@
 import { BigNumber, ethers } from 'ethers';
+import { RewardType } from '../utils/enums';
 import ClaimActivity from '../models/claimActivity';
 
 class ClaimActivityRepository {
@@ -37,6 +38,7 @@ class ClaimActivityRepository {
         battleId: number,
         user: string,
         amount: BigNumber,
+        rewardType: RewardType,
         transactionHash: string,
         blockNumber: number,
     ) => {
@@ -44,6 +46,7 @@ class ClaimActivityRepository {
             battleId,
             user,
             amount: amount.toString(),
+            rewardType,
             amountInDecimal: parseFloat(ethers.utils.formatEther(amount)),
             transactionHash,
             blockNumber,

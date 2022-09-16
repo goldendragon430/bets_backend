@@ -6,7 +6,7 @@ const NETWORK = process.env.NETWORK || 'goerli';
 const PRIVATE_KEY = NETWORK === 'goerli' ? (process.env.PRIVATE_KEY || '') : (process.env.PRIVATE_KEY_MAINNET || '');
 
 const BET_CONTRACT_ADDRESS = {
-    'goerli': '0x4b0EaA2E00564C05E3923F2CD6085d5672ea6757',
+    'goerli': '0xD09A36166D90E245b52909eCB275b752e01Da7EC',
     'mainnet': '0x1936168149EDa833881AfD97839eCE09d6c0CE3e'
 };
 

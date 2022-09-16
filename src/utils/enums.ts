@@ -23,3 +23,8 @@ export enum BattleStatus {
     Finalized = 'Finalized',
     RefundSet = 'RefundSet',
 }
+
+export enum RewardType {
+    ABP,
+    ETH,
+}

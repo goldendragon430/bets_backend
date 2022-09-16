@@ -7,7 +7,7 @@ import FinalizeActivityRepository from '../repositories/finalizeActivity';
 import FeaturedBattleRepository from '../repositories/featuredBattle';
 import RefundSetRepository from '../repositories/refundSet';
 import ProjectRepository from '../repositories/project';
-import { ActivityType, NetworkType, ServiceType } from '../utils/enums';
+import { ActivityType, NetworkType, RewardType, ServiceType } from '../utils/enums';
 
 export const nftTransferFunc = async (contractAddress: string, from: string, to: string, tokenId: BigNumber, event: any, serviceType: ServiceType) => {
     try {
@@ -47,14 +47,14 @@ export const battleCreateFunc = async (battleId: BigNumber, startTime: BigNumber
     }
 };
 
-export const abpClaimedFunc = async (battleId: BigNumber, user: string, amount: BigNumber, event: any) => {
+export const rewardClaimedFunc = async (battleId: BigNumber, user: string, amount: BigNumber, type: RewardType, event: any) => {
     try {
         const activity = await ClaimActivityRepository.getClaimActivity(event.transactionHash);
         if (!activity) {
-            await ClaimActivityRepository.addClaimActivity(battleId.toNumber(), user, amount, event.transactionHash, event.blockNumber);
+            await ClaimActivityRepository.addClaimActivity(battleId.toNumber(), user, amount, type, event.transactionHash, event.blockNumber);
         }
     } catch (e) {
-        console.error('ABP Claim Event Err: ', e);
+        console.error('Reward Claim Event Err: ', e);
     }
 };
 
