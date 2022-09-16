@@ -23,9 +23,9 @@ export const installBetEvents = () => {
         }
     });
 
-    contract.on('NewBattleCreated', async (battleId, startTime, endTime, teamACollectionAddress, teamBCollectionAddress) => {
-        await battleCreateFunc(battleId, startTime, endTime, teamACollectionAddress, teamBCollectionAddress);
-    });
+    // contract.on('NewBattleCreated', async (battleId, startTime, endTime, teamACollectionAddress, teamBCollectionAddress) => {
+    //     await battleCreateFunc(battleId, startTime, endTime, teamACollectionAddress, teamBCollectionAddress);
+    // });
 
     contract.on('ABPClaimed', async (battleId, user, amount) => {
         const blockNumber = await provider.getBlockNumber();
