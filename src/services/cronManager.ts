@@ -270,6 +270,7 @@ export const setupCronJobMap = async (): Promise<void> => {
                 console.log(`In ${battleId} battle requested random words in attached transaction Hash`, tx.hash);
                 await BattleRepository.updateBattleStatus(battleId as number, BattleStatus.RequestRandomWords);
             } catch (e) {
+                console.log(e);
                 console.error(`Error while requesting random words for battle ID ${battleId}`);
             }
         }
