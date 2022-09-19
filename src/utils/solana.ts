@@ -27,8 +27,8 @@ const getProvider = async () => {
 
     const provider = new AnchorProvider(
         connection, wallet, {
-            preflightCommitment: 'processed'
-        },
+        preflightCommitment: 'processed'
+    },
     );
     return provider;
 };
@@ -130,26 +130,22 @@ export const determineBet = async (battleId: string) => {
             [Buffer.from(utils.bytes.utf8.encode(ESCROW_VAULT_SEED))],
             program.programId
         );
-    try {
-        await program.rpc.determineBet(
-            battleBump,
-            bettingBump,
-            vaultBump,
-            battleId,
-            {
-                accounts: {
-                    battleAccount: battlePubkey,
-                    escrowAccount: vaultPubkey,
-                    bettingAccount: bettingPubkey,
-                    admin: provider.wallet.publicKey,
-                    systemProgram: web3.SystemProgram.programId,
-                    rent: web3.SYSVAR_RENT_PUBKEY,
-                }
+    await program.rpc.determineBet(
+        battleBump,
+        bettingBump,
+        vaultBump,
+        battleId,
+        {
+            accounts: {
+                battleAccount: battlePubkey,
+                escrowAccount: vaultPubkey,
+                bettingAccount: bettingPubkey,
+                admin: provider.wallet.publicKey,
+                systemProgram: web3.SystemProgram.programId,
+                rent: web3.SYSVAR_RENT_PUBKEY,
             }
-        );
-    } catch (err) {
-        console.log('determineBet tx error: ', err);
-    }
+        }
+    );
 };
 
 export const getEndTime = async (battleId) => {

@@ -12,6 +12,10 @@ const projectSchema = new Schema({
         type: String,
         required: true,
     },
+    displayName: {
+        type: String,
+        required: true,
+    },
     network: {
         type: String,
         enum: [NetworkType.ETH, NetworkType.SOL, NetworkType.ADA],

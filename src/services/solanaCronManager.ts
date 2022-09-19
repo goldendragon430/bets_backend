@@ -15,8 +15,12 @@ export const setupSolanaCronJobMap = async (): Promise<void> => {
             console.log('determine Battle Ids', battleIds);
 
             for (const battleId of battleIds) {
-                await determineBet(battleId.toString());
-                await BattleRepository.updateBattleStatus(battleId, BattleStatus.Determine, NetworkType.SOL);
+                try {
+                    await determineBet(battleId.toString());
+                    await BattleRepository.updateBattleStatus(battleId, BattleStatus.Determine, NetworkType.SOL);
+                } catch (error) {
+                    console.log('determineBet error', error);
+                }
             }
         } catch (e) {
             console.error('determineJob Error: ', e);
