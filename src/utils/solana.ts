@@ -7,11 +7,11 @@ import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
   Keypair,
-} from '@solana/web3.js'
+} from '@solana/web3.js';
 import * as idl from '../abis/solana/idl.json';
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
 
-const network = 'devnet'
+const network = 'devnet';
 
 const opts = {
   preflightCommitment: 'processed',
@@ -26,9 +26,9 @@ const keypair = Keypair.fromSecretKey(bs58.decode(ADMIN_KEY));
 const wallet = new Wallet(keypair);
 
 const strTou8Arry = (s: string) => {
-  var enc = new TextEncoder();
+  const enc = new TextEncoder();
   return enc.encode(s);
-}
+};
 
 async function getProvider() {
     const network = 'https://metaplex.devnet.rpcpool.com'; // https://api.devnet.solana.com
@@ -94,10 +94,10 @@ export async function getUserBettingPDA(battleId: string) {
 export async function getUserBetInfo(battleId: string) {
   const provider = await getProvider();
   const program = new Program(idl as any, programID, provider);
-  if(!provider.wallet.publicKey) return [];
+  if (!provider.wallet.publicKey) return [];
   const [userBettingPubkey] = await getUserBettingPDA(battleId);
-  try{
-    let userBetInfo = await program.account.userBetAccount.fetch(userBettingPubkey);
+  try {
+    const userBetInfo = await program.account.userBetAccount.fetch(userBettingPubkey);
     return userBetInfo;
   } catch (err) {
     return [];
@@ -120,8 +120,8 @@ export async function getBetInfo(battleId: string) {
   const provider = await getProvider();
   const program = new Program(idl as any, programID, provider);
   const [bettingPubkey] = await getBettingPDA(battleId);
-  try{
-    let betInfo = await program.account.bettingAccount.fetch(bettingPubkey);
+  try {
+    const betInfo = await program.account.bettingAccount.fetch(bettingPubkey);
     return betInfo;
   } catch (err) {
     return [];
@@ -143,7 +143,7 @@ export async function _bet( battleId: string, bet_side: any, bet_amount: any) {
       battleId,
       bet_side,
       amount,
-      { 
+      {
         accounts: {
           userAccount: provider.wallet.publicKey,
           bettingAccount: bettingPubkey,
@@ -202,13 +202,13 @@ export async function _withdraw(amount: number) {
   );
 }
 
-export const startBet = async (battleId:string, startTime: number, endTime: number, collectionA?: string, collectionB?: string, fee?: number, abp_amount?: number) => {
+export const startBet = async (battleId: string, startTime: number, endTime: number, collectionA?: string, collectionB?: string, fee?: number, abp_amount?: number) => {
   const provider = await getProvider();
   const program = new Program(idl as any, programID, provider);
   const pfee = fee ? fee : 50;
   const pabp_amount = abp_amount ? new BN(abp_amount).mul(new BN(1e9)) : new BN(3e12);
   const pColA = collectionA ? new PublicKey(collectionA) : provider.wallet.publicKey;
-  const pColB = collectionB? new PublicKey(collectionB) : provider.wallet.publicKey;
+  const pColB = collectionB ? new PublicKey(collectionB) : provider.wallet.publicKey;
   const [battlePubkey, battleBump] = await getBattlePDA();
   const [bettingPubkey, bettingBump] = await getBettingPDA(battleId);
   try {
@@ -228,7 +228,7 @@ export const startBet = async (battleId:string, startTime: number, endTime: numb
           bettingAccount: bettingPubkey,
           admin: provider.wallet.publicKey,
           systemProgram: web3.SystemProgram.programId,
-          rent: web3.SYSVAR_RENT_PUBKEY, 
+          rent: web3.SYSVAR_RENT_PUBKEY,
         }
       }
     );
@@ -237,7 +237,7 @@ export const startBet = async (battleId:string, startTime: number, endTime: numb
     console.log(e);
     return false;
   }
-}
+};
 
 export const determineBet = async (battleId: string) => {
   const provider = await getProvider();
@@ -265,7 +265,7 @@ export const determineBet = async (battleId: string) => {
   } catch (e) {
     console.log(e);
   }
-}
+};
 
 export async function _close_battle(battleId: string) {
   const provider = await getProvider();
@@ -286,9 +286,9 @@ export async function _close_battle(battleId: string) {
           rent: web3.SYSVAR_RENT_PUBKEY,
         }
       }
-    )
+    );
   } catch (e) {
-    console.log(e)
+    console.log(e);
   }
 }
 
@@ -311,7 +311,7 @@ export async function _stake(battleId: string, remainingAccounts: any, teamId: a
   return transaction;
 }
 
-export async function _unStake(battleId:string, remainingAccounts: any, teamId: any) {
+export async function _unStake(battleId: string, remainingAccounts: any, teamId: any) {
   const provider = await getProvider();
   const program = new Program(idl as any, programID, provider);
   const [bettingPubkey, bettingBump] = await getBettingPDA(battleId);
@@ -333,14 +333,14 @@ export const executeAllTransactions = async (
   wallet: Wallet,
   transactions: Transaction[],
 ) => {
-  if (transactions.length === 0) return []
+  if (transactions.length === 0) return [];
 
-  const recentBlockhash = (await connection.getRecentBlockhash('max')).blockhash
-  for (let tx of transactions) {
-    tx.feePayer = wallet.publicKey
-    tx.recentBlockhash = recentBlockhash
+  const recentBlockhash = (await connection.getRecentBlockhash('max')).blockhash;
+  for (const tx of transactions) {
+    tx.feePayer = wallet.publicKey;
+    tx.recentBlockhash = recentBlockhash;
   }
-  await wallet.signAllTransactions(transactions)
+  await wallet.signAllTransactions(transactions);
 
   const txIds = await Promise.all(
     transactions.map(async (tx, index) => {
@@ -348,13 +348,13 @@ export const executeAllTransactions = async (
         const txid = await sendAndConfirmRawTransaction(
           connection,
           tx.serialize(),
-        )
-        return txid
+        );
+        return txid;
       } catch (e) {
         console.log(e);
-        return null
+        return null;
       }
     })
-  )
-  return txIds
-}
+  );
+  return txIds;
+};
