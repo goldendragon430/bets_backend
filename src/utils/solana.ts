@@ -111,66 +111,6 @@ export const startBet = async (startTime: number, endTime: number, projectL: str
     }
 };
 
-export const closeBet = async (battleId) => {
-    const provider = await getProvider();
-    const program = new Program(idl as anchor.Idl, programID, provider);
-    const [battlePubkey, battleBump] =
-        await PublicKey.findProgramAddress(
-            [Buffer.from(utils.bytes.utf8.encode(BET_INFO_SEED))],
-            program.programId
-        );
-    const [bettingPubkey, bettingBump] =
-        await PublicKey.findProgramAddress(
-            [Buffer.from(utils.bytes.utf8.encode(BET_INFO_SEED)),
-            Buffer.from(strTou8Arry(battleId).buffer)],
-            program.programId
-        );
-    try {
-        await program.rpc.closeBet(
-            battleBump,
-            bettingBump,
-            battleId,
-            {
-                accounts: {
-                    battleAccount: battlePubkey,
-                    bettingAccount: bettingPubkey,
-                    admin: provider.wallet.publicKey,
-                    systemProgram: web3.SystemProgram.programId,
-                    rent: web3.SYSVAR_RENT_PUBKEY,
-                }
-            }
-        );
-    } catch (err) {
-        console.log('closeBet tx error: ', err);
-    }
-};
-
-export const unStakeAll = async (userAddr, battleId) => {
-    const userPubkey = new PublicKey(userAddr);
-    const provider = await getProvider();
-    const program = new Program(idl as anchor.Idl, programID, provider);
-    const [bettingPubkey, bettingBump] =
-        await PublicKey.findProgramAddress(
-            [Buffer.from(utils.bytes.utf8.encode(BET_INFO_SEED)),
-            Buffer.from(strTou8Arry(battleId).buffer)],
-            program.programId
-        );
-    const [userBettingPubkey, userBettingBump] =
-        await PublicKey.findProgramAddress(
-            [Buffer.from(utils.bytes.utf8.encode(BET_INFO_SEED)),
-            Buffer.from(strTou8Arry(battleId).buffer),
-            provider.wallet.publicKey.toBuffer()],
-            program.programId
-        );
-    await program.rpc.unstakeAdmin(bettingBump, battleId, {
-        accounts: {
-            nftToAuthority: provider.wallet.publicKey,
-            bettingAccount: bettingPubkey,
-            userBettingAccount: userBettingPubkey,
-        },
-    });
-};
-
 export const determineBet = async (battleId: string) => {
     const provider = await getProvider();
     const program = new Program(idl as anchor.Idl, programID, provider);
@@ -185,14 +125,21 @@ export const determineBet = async (battleId: string) => {
             Buffer.from(strTou8Arry(battleId).buffer)],
             program.programId
         );
+    const [vaultPubkey, vaultBump] =
+        await PublicKey.findProgramAddress(
+            [Buffer.from(utils.bytes.utf8.encode(ESCROW_VAULT_SEED))],
+            program.programId
+        );
     try {
         await program.rpc.determineBet(
             battleBump,
             bettingBump,
+            vaultBump,
             battleId,
             {
                 accounts: {
                     battleAccount: battlePubkey,
+                    escrowAccount: vaultPubkey,
                     bettingAccount: bettingPubkey,
                     admin: provider.wallet.publicKey,
                     systemProgram: web3.SystemProgram.programId,
