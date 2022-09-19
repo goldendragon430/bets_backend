@@ -278,7 +278,7 @@ class FeaturedBattleRepository {
             twitterAnnounceID: twitterID,
         });
 
-        await startBet(startTime, endTime, projectL?.creator, projectR?.creator, battle.battleId.toString());
+        await startBet(battle.battleId.toString(), startTime, endTime, projectL?.creator, projectR?.creator);
         return battle;
     }
 
