@@ -11,7 +11,7 @@ export const setupSolanaCronJobMap = async (): Promise<void> => {
     const determineJob = cron.schedule('1-59/5 * * * *', async () => {
         try {
             const battles = await BattleRepository.getBattlesByStatus(BattleStatus.Created, NetworkType.SOL);
-            const battleIds = battles.map((item) => item.battleId);
+            const battleIds = [...new Set(battles.map((item) => item.battleId))];
             console.log('determine Battle Ids', battleIds);
 
             for (const battleId of battleIds) {
