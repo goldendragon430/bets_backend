@@ -177,7 +177,7 @@ class FeaturedBattleRepository {
 
     updateBattleStatus = async (battleId: number, status: BattleStatus, network: NetworkType = NetworkType.ETH) => {
         return FeaturedBattle.updateOne(
-            {battleId: battleId},
+            {battleId: battleId, network: network},
             {$set: {status: status}},
         );
     }
