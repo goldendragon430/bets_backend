@@ -245,7 +245,7 @@ export default class BattleController {
 
          try {
             const battle = await BattleRepository.getBattleByQuery({
-                id: id,
+                _id: id,
                 network: NetworkType.SOL
             });
             if (!battle) {

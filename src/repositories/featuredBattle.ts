@@ -285,7 +285,7 @@ class FeaturedBattleRepository {
     deleteSolanaBattle = async (battleId: string): Promise<any> => {
         return FeaturedBattle.deleteOne({
             network: NetworkType.SOL,
-            id: battleId
+            _id: battleId
         });
     }
 
