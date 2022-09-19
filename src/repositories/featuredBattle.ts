@@ -245,7 +245,7 @@ class FeaturedBattleRepository {
         }
 
         await FeaturedBattle.updateOne(
-            { battleId: battleId },
+            { battleId: battleId, network: NetworkType.ETH },
             {
                 $set: updateData
             }
