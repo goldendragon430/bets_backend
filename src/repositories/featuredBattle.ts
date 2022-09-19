@@ -11,10 +11,6 @@ class FeaturedBattleRepository {
     constructor() {
     }
 
-    getFeaturedBattles = async () => {
-        return FeaturedBattle.find({});
-    };
-
     getBattleByQuery = async (where: any) => {
         return FeaturedBattle.findOne(where);
     }
@@ -179,7 +175,7 @@ class FeaturedBattleRepository {
         });
     };
 
-    updateBattleStatus = async (battleId: number, status: BattleStatus) => {
+    updateBattleStatus = async (battleId: number, status: BattleStatus, network: NetworkType = NetworkType.ETH) => {
         return FeaturedBattle.updateOne(
             {battleId: battleId},
             {$set: {status: status}},
@@ -384,6 +380,13 @@ class FeaturedBattleRepository {
                 userTokenIdLengths: tokenLengthR
             }
         };
+    }
+
+    getBattlesByStatus = async (status: BattleStatus, network: NetworkType): Promise<Array<any>> => {
+        return FeaturedBattle.find({
+            status: status,
+            network: network
+        });
     }
 }
 

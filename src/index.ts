@@ -6,12 +6,13 @@ import * as multer from 'multer';
 import * as cors from 'cors';
 
 import rateLimiter from './middlewares/rateLimit';
-import { unCoughtErrorHandler } from './handlers/errorHandler';
 import Routes from './routes';
-import { installBetEvents } from './services/events';
 import redisHandle from './utils/redis';
-import { setupCronJobMap } from './services/cronManager';
 import { getDBConfig } from './config';
+import { unCoughtErrorHandler } from './handlers/errorHandler';
+import { installBetEvents } from './services/events';
+import { setupCronJobMap } from './services/cronManager';
+import { setupSolanaCronJobMap } from './services/solanaCronManager';
 
 // app.enable('trust proxy') // only if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
 
@@ -35,6 +36,10 @@ export default class Server {
                     .then(() => {
                         console.log('setupCronJobMap done');
                     });
+                setupSolanaCronJobMap()
+                    .then(() => {
+                        console.log('setupSolanaCronJobMap done');
+                    });
             })
             .catch(err => {
                 throw new Error(err);
@@ -44,13 +49,13 @@ export default class Server {
 
     public config(app: Application): void {
         app.use(morgan('dev'));
-        app.use(urlencoded({extended: true}));
+        app.use(urlencoded({ extended: true }));
         app.use(json());
         app.use(helmet());
         app.use(cors());
         app.use(rateLimiter()); //  apply to all requests
         app.use(unCoughtErrorHandler);
-        app.use(multer({dest: './uploads/'}).any());
+        app.use(multer({ dest: './uploads/' }).any());
     }
 
     public initRedis(): void {

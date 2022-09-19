@@ -103,7 +103,7 @@ class NFTActivityRepository {
         const stakedList = await NFTActivity.find({
             contractAddress,
             activity: ActivityType.Staked,
-            battleId: { $in: activeBattleIds },
+            _id: { $in: activeBattleIds },
             from,
             tokenId,
         });

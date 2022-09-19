@@ -171,7 +171,7 @@ export const unStakeAll = async (userAddr, battleId) => {
     });
 };
 
-export const determineBet = async (battleId) => {
+export const determineBet = async (battleId: string) => {
     const provider = await getProvider();
     const program = new Program(idl as anchor.Idl, programID, provider);
     const [battlePubkey, battleBump] =

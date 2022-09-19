@@ -18,24 +18,6 @@ export default class BattleController {
      * @param res
      * @param next
      */
-    getBattles = async (req: Request, res: Response, next: NextFunction) => {
-        const { } = req.body;
-
-        try {
-            const battles = await BattleRepository.getFeaturedBattles();
-
-            res.json({ 'success': true, 'message': '', 'data': battles });
-        } catch (error) {
-            apiErrorHandler(error, req, res, 'Get Tx failed.');
-        }
-    };
-
-    /**
-     * @description Get Battles Function
-     * @param req
-     * @param res
-     * @param next
-     */
     getActiveBattleIds = async (req: Request, res: Response, next: NextFunction) => {
         const { network } = req.params;
         try {
