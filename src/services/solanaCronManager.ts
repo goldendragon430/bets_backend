@@ -1,5 +1,5 @@
 import * as cron from 'node-cron';
-import { determineBet } from 'src/utils/solana';
+import { determineBet } from '../utils/solana';
 import BattleRepository from '../repositories/featuredBattle';
 import { BattleStatus, NetworkType } from '../utils/enums';
 import redisHandle from '../utils/redis';
