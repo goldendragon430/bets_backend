@@ -9,7 +9,7 @@ import {
   Keypair,
 } from '@solana/web3.js'
 import * as idl from '../abis/solana/idl.json';
-import bs58 from 'bs58';
+import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
 
 const network = 'devnet'
 
