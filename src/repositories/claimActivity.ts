@@ -6,26 +6,74 @@ class ClaimActivityRepository {
     constructor() { }
 
     getLeaderboard = async () => {
-        const activities = await ClaimActivity.aggregate(
+        const abpActivities = await ClaimActivity.aggregate(
             [
                 {
-                    $group: {
-                        _id: '$user',
-                        battleId: { $last: '$battleId' },
-                        sumA: { $sum: '$amountInDecimal' }
+                    $match: {
+                        rewardType: "0"
                     }
                 },
-                { $sort: { sumA: -1 } }
+                {
+                    $group: {
+                        _id: {
+                            user: '$user',
+                        },
+                        user: {
+                            $first: '$user'
+                        },
+                        battleId: {
+                            $last: '$battleId'
+                        },
+                        sumA: {
+                            $sum: '$amountInDecimal'
+                        }
+                    }
+                },
+                { $sort: { sumA: - 1 } }
             ]
         );
-        const leaderboard = activities.map(activity => {
+
+        const ethActivites = await ClaimActivity.aggregate(
+            [
+                {
+                    $match: {
+                        rewardType: "1"
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            user: '$user',
+                        },
+                        user: {
+                            $first: '$user'
+                        },
+                        battleId: {
+                            $last: '$battleId'
+                        },
+                        sumA: {
+                            $sum: '$amountInDecimal'
+                        }
+                    }
+                },
+                { $sort: { sumA: - 1 } }
+            ]
+        );
+
+        const userLists = [...new Set([...abpActivities.map((item) => item.user), ...ethActivites.map((item) => item.user)])];
+        const activities = userLists.map((item) => {
+            const abpActivity = abpActivities.find((activity) => activity.user === item);
+            const ethActivity = ethActivites.find((activity) => activity.user === item);
             return {
-                user: activity._id,
-                battleId: activity.battleId,
-                amount: activity.sumA
-            };
-        }).sort((a, b) => {
-            return b.amount - a.amount;
+                user: item,
+                battleId: abpActivity?.battleId || ethActivity?.battleId,
+                abpAmount: abpActivity?.sumA || 0,  // abp
+                ethAmount: ethActivity?.sumA || 0,  // eth
+            }
+        })
+
+        const leaderboard = activities.sort((a, b) => {
+            return b.abpAmount - a.abpAmount;
         });
         return leaderboard;
     }
