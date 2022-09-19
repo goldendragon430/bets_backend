@@ -241,7 +241,7 @@ export default class BattleController {
     deleteSolanaBattle = async (req: Request, res: Response, next: NextFunction) => {
         const {
             battleId
-        } = req.body;
+        } = req.params;
 
          try {
             const battle = await BattleRepository.getBattleByQuery({
