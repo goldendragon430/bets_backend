@@ -240,12 +240,12 @@ export default class BattleController {
      */
     deleteSolanaBattle = async (req: Request, res: Response, next: NextFunction) => {
         const {
-            battleId
+            id
         } = req.params;
 
          try {
             const battle = await BattleRepository.getBattleByQuery({
-                id: battleId,
+                id: id,
                 network: NetworkType.SOL
             });
             if (!battle) {
@@ -255,7 +255,7 @@ export default class BattleController {
                 });
             }
 
-            const result = await BattleRepository.deleteSolanaBattle(battleId);
+            const result = await BattleRepository.deleteSolanaBattle(id);
 
             res.json({ 'success': true, 'message': '', 'data': result });
         } catch (error) {
