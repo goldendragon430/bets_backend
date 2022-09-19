@@ -177,22 +177,22 @@ class FeaturedBattleRepository {
 
     updateBattleStatus = async (battleId: number, status: BattleStatus, network: NetworkType = NetworkType.ETH) => {
         return FeaturedBattle.updateOne(
-            {battleId: battleId, network: network},
-            {$set: {status: status}},
+            { battleId: battleId, network: network },
+            { $set: { status: status } },
         );
     }
 
     updateBattleFinalizeFailedCount = async (battleId: number) => {
         return FeaturedBattle.updateOne(
-            {battleId: battleId},
-            {$inc: {finalizeFailedCount: 1}},
+            { battleId: battleId, network: NetworkType.ETH },
+            { $inc: { finalizeFailedCount: 1 } },
         );
     }
 
     resetBattleFinalizeFailedCount = async (battleId: number) => {
         return FeaturedBattle.updateOne(
-            {battleId: battleId},
-            {finalizeFailedCount: 0},
+            { battleId: battleId, network: NetworkType.ETH },
+            { finalizeFailedCount: 0 },
         );
     }
 
@@ -263,7 +263,7 @@ class FeaturedBattleRepository {
             throw new Error('Creator address not found');
         }
 
-        const solBattles: Array<any> = await FeaturedBattle.find({ network: NetworkType.SOL }).limit(1).sort({_id: 1});
+        const solBattles: Array<any> = await FeaturedBattle.find({ network: NetworkType.SOL }).limit(1).sort({ _id: 1 });
         const battle: any = await FeaturedBattle.create({
             startDate: new Date(startTime * 1000),
             battleId: solBattles.length > 0 ? solBattles[0].battleId + 1 : 1,

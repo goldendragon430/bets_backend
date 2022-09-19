@@ -10,7 +10,7 @@ class ClaimActivityRepository {
             [
                 {
                     $match: {
-                        rewardType: "0"
+                        rewardType: '0'
                     }
                 },
                 {
@@ -37,7 +37,7 @@ class ClaimActivityRepository {
             [
                 {
                     $match: {
-                        rewardType: "1"
+                        rewardType: '1'
                     }
                 },
                 {
@@ -69,8 +69,8 @@ class ClaimActivityRepository {
                 battleId: abpActivity?.battleId || ethActivity?.battleId,
                 abpAmount: abpActivity?.sumA || 0,  // abp
                 ethAmount: ethActivity?.sumA || 0,  // eth
-            }
-        })
+            };
+        });
 
         const leaderboard = activities.sort((a, b) => {
             return b.abpAmount - a.abpAmount;
