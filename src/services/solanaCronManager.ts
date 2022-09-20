@@ -10,14 +10,13 @@ const jobMap: Map<string, cron.ScheduledTask> = new Map();
 export const setupSolanaCronJobMap = async (): Promise<void> => {
     const determineJob = cron.schedule('1-59/5 * * * *', async () => {
         try {
-            const battles = await BattleRepository.getBattlesByStatus(BattleStatus.Created, NetworkType.SOL);
-            const battleIds = [...new Set(battles.map((item) => item.battleId))];
+            const battleIds = await BattleRepository.getSolanaEndedBattles();
             console.log('determine Battle Ids', battleIds);
 
             for (const battleId of battleIds) {
                 try {
-                    await determineBet(battleId.toString());
-                    await BattleRepository.updateBattleStatus(battleId, BattleStatus.Determine, NetworkType.SOL);
+                    await determineBet(battleId);
+                    await BattleRepository.updateBattleStatus(parseInt(battleId), BattleStatus.Determine, NetworkType.SOL);
                 } catch (error) {
                     console.log('determineBet error', error);
                 }

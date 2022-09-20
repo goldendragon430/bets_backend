@@ -5,7 +5,7 @@ import { provider } from '../utils/constants';
 import { setupNFTTransferJob } from '../services/cronManager';
 import NftActivityModel from '../models/nftActivity';
 import { BigNumber } from 'ethers';
-import { startBet } from '../utils/solana';
+import { getEndTime, getTimeStamp, startBet } from '../utils/solana';
 
 class FeaturedBattleRepository {
     constructor() {
@@ -387,6 +387,19 @@ class FeaturedBattleRepository {
             status: status,
             network: network
         });
+    }
+
+    getSolanaEndedBattles = async (): Promise<Array<string>> => { 
+        const battles = await this.getBattlesByStatus(BattleStatus.Created, NetworkType.SOL);
+        const timestamp = await getTimeStamp();
+        const battleIds: Array<string> = []
+        for (const battle of battles) {
+            const battleEndTime = await getEndTime(battle.battleId.toString());
+            if (battleEndTime > timestamp) {
+                battleIds.push(battle.battleId.toString());
+            }
+        }
+        return battleIds;
     }
 }
 
