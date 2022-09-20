@@ -263,7 +263,7 @@ class FeaturedBattleRepository {
             throw new Error('Creator address not found');
         }
 
-        const solBattles: Array<any> = await FeaturedBattle.find({ network: NetworkType.SOL }).limit(1).sort({ _id: 1 });
+        const solBattles: Array<any> = await FeaturedBattle.find({ network: NetworkType.SOL }).limit(1).sort({ _id: -1 });
         const battle: any = await FeaturedBattle.create({
             startDate: new Date(startTime * 1000),
             battleId: solBattles.length > 0 ? solBattles[0].battleId + 1 : 1,
