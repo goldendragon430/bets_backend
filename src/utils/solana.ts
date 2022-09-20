@@ -122,7 +122,7 @@ export const determineBet = async (battleId: string) => {
     );
 };
 
-export const getEndTime = async (battleId: string) => {
+export const getEndTime = async (battleId: string): Promise<number> => {
     const provider = await getProvider();
     const program = new Program(idl as anchor.Idl, programID, provider);
     const [bettingPubkey] =

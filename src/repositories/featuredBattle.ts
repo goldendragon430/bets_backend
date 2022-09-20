@@ -395,9 +395,9 @@ class FeaturedBattleRepository {
         const battleIds: Array<string> = [];
         for (const battle of battles) {
             const battleEndTime = await getEndTime(battle._id.toString());
-            if (battleEndTime > timestamp) {
-                battleIds.push(battle._id.toString());
-            }
+            // if (battleEndTime > timestamp) {
+            battleIds.push(battle._id.toString());
+            // }
         }
         return battleIds;
     }
