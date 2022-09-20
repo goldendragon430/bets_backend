@@ -104,26 +104,22 @@ export const determineBet = async (battleId: string) => {
     const [battlePubkey, battleBump] = await getBattlePDA();
     const [bettingPubkey, bettingBump] = await getBettingPDA(battleId);
     const [vaultPubkey, vaultBump] = await getVaultPDA();
-    try {
-        await program.rpc.determineBet(
-            battleBump,
-            bettingBump,
-            vaultBump,
-            battleId,
-            {
-                accounts: {
-                    battleAccount: battlePubkey,
-                    escrowAccount: vaultPubkey,
-                    bettingAccount: bettingPubkey,
-                    admin: provider.wallet.publicKey,
-                    systemProgram: web3.SystemProgram.programId,
-                    rent: web3.SYSVAR_RENT_PUBKEY,
-                }
+    await program.rpc.determineBet(
+        battleBump,
+        bettingBump,
+        vaultBump,
+        battleId,
+        {
+            accounts: {
+                battleAccount: battlePubkey,
+                escrowAccount: vaultPubkey,
+                bettingAccount: bettingPubkey,
+                admin: provider.wallet.publicKey,
+                systemProgram: web3.SystemProgram.programId,
+                rent: web3.SYSVAR_RENT_PUBKEY,
             }
-        );
-    } catch (e) {
-        console.log(e);
-    }
+        }
+    );
 };
 
 export const getEndTime = async (battleId: string) => {
