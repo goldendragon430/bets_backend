@@ -8,7 +8,7 @@ import redisHandle from '../utils/redis';
 const jobMap: Map<string, cron.ScheduledTask> = new Map();
 
 export const setupSolanaCronJobMap = async (): Promise<void> => {
-    const determineJob = cron.schedule('1-59/5 * * * *', async () => {
+    const determineJob = cron.schedule('* * * * *', async () => {
         try {
             const battleIds = await BattleRepository.getSolanaEndedBattles();
             console.log('determine Battle Ids', battleIds);
