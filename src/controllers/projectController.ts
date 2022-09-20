@@ -57,6 +57,7 @@ export default class ProjectController {
         const {
             name,
             subName,
+            displayName,
             network,
             contract,
             collectionSize,
@@ -85,6 +86,7 @@ export default class ProjectController {
             const addedProject = await ProjectRepository.addProject(
                 name,
                 subName,
+                displayName,
                 NetworkType[network],
                 contract,
                 collectionSize,

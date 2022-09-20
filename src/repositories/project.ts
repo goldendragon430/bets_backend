@@ -34,11 +34,12 @@ class ProjectRepository {
     addProject = async(
         name: string,
         subName: string,
+        displayName: string,
         network: NetworkType,
         contract: string,
         collectionSize: number,
         twitterID: string,
-        creator,
+        creator: string,
         logo: string,
         headerImage: string,
         openSeaLink: string,
@@ -48,6 +49,7 @@ class ProjectRepository {
         const project = new ProjectModel({
             name,
             subName,
+            displayName,
             network,
             contract,
             collectionSize,
