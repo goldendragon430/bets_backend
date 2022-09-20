@@ -389,10 +389,10 @@ class FeaturedBattleRepository {
         });
     }
 
-    getSolanaEndedBattles = async (): Promise<Array<string>> => { 
+    getSolanaEndedBattles = async (): Promise<Array<string>> => {
         const battles = await this.getBattlesByStatus(BattleStatus.Created, NetworkType.SOL);
         const timestamp = await getTimeStamp();
-        const battleIds: Array<string> = []
+        const battleIds: Array<string> = [];
         for (const battle of battles) {
             const battleEndTime = await getEndTime(battle.battleId.toString());
             if (battleEndTime > timestamp) {

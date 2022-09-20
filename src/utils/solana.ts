@@ -27,8 +27,8 @@ const getProvider = async () => {
 
     const provider = new AnchorProvider(
         connection, wallet, {
-            preflightCommitment: 'processed'
-        },
+        preflightCommitment: 'processed'
+    },
     );
     return provider;
 };
@@ -37,67 +37,67 @@ export async function getBattlePDA() {
     const provider = await getProvider();
     const program = new Program(idl as any, programID, provider);
     return await PublicKey.findProgramAddress(
-      [Buffer.from(utils.bytes.utf8.encode(BET_INFO_SEED))],
-      program.programId
+        [Buffer.from(utils.bytes.utf8.encode(BET_INFO_SEED))],
+        program.programId
     );
-  }
-  
-  export async function getVaultPDA() {
+}
+
+export async function getVaultPDA() {
     const provider = await getProvider();
     const program = new Program(idl as any, programID, provider);
     return await PublicKey.findProgramAddress(
-      [Buffer.from(utils.bytes.utf8.encode(ESCROW_VAULT_SEED))],
-      program.programId
+        [Buffer.from(utils.bytes.utf8.encode(ESCROW_VAULT_SEED))],
+        program.programId
     );
-  }
-  
-  export async function getBettingPDA(battleId: string) {
+}
+
+export async function getBettingPDA(battleId: string) {
     const provider = await getProvider();
     const program = new Program(idl as any, programID, provider);
     return await PublicKey.findProgramAddress(
-      [Buffer.from(utils.bytes.utf8.encode(BET_INFO_SEED)),
+        [Buffer.from(utils.bytes.utf8.encode(BET_INFO_SEED)),
         Buffer.from(strTou8Arry(battleId).buffer)],
-      program.programId
+        program.programId
     );
-  }
-  
-  export async function startBet(battleId:string, startTime: number, endTime: number, collectionA?: string, collectionB?: string, fee?: number, abp_amount?: number) {
+}
+
+export async function startBet(battleId: string, startTime: number, endTime: number, collectionA?: string, collectionB?: string, fee?: number, abp_amount?: number) {
     const provider = await getProvider();
     const program = new Program(idl as any, programID, provider);
     const pfee = fee ? fee : 50;
     const pabp_amount = abp_amount ? new BN(abp_amount).mul(new BN(1e9)) : new BN(3e12);
     const pColA = collectionA ? new PublicKey(collectionA) : provider.wallet.publicKey;
-    const pColB = collectionB? new PublicKey(collectionB) : provider.wallet.publicKey;
+    const pColB = collectionB ? new PublicKey(collectionB) : provider.wallet.publicKey;
     const [battlePubkey, battleBump] = await getBattlePDA();
     const [bettingPubkey, bettingBump] = await getBettingPDA(battleId);
     try {
-      await program.rpc.startBet(
-        battleBump,
-        bettingBump,
-        battleId,
-        startTime,
-        endTime,
-        pfee,
-        pabp_amount,
-        pColA,
-        pColB,
-        {
-          accounts: {
-            battleAccount: battlePubkey,
-            bettingAccount: bettingPubkey,
-            admin: provider.wallet.publicKey,
-            systemProgram: web3.SystemProgram.programId,
-            rent: web3.SYSVAR_RENT_PUBKEY, 
-          }
-        }
-      );
-      return true;
+        await program.rpc.startBet(
+            battleBump,
+            bettingBump,
+            battleId,
+            startTime,
+            endTime,
+            pfee,
+            pabp_amount,
+            pColA,
+            pColB,
+            {
+                accounts: {
+                    battleAccount: battlePubkey,
+                    bettingAccount: bettingPubkey,
+                    admin: provider.wallet.publicKey,
+                    systemProgram: web3.SystemProgram.programId,
+                    rent: web3.SYSVAR_RENT_PUBKEY,
+                }
+            }
+        );
+        return true;
     } catch (e) {
-      console.log(e);
-      return false;
+        console.log(e);
+        return false;
     }
-  }
-  
+}
+
 export const determineBet = async (battleId: string) => {
     const provider = await getProvider();
     const program = new Program(idl as any, programID, provider);
@@ -105,24 +105,24 @@ export const determineBet = async (battleId: string) => {
     const [bettingPubkey, bettingBump] = await getBettingPDA(battleId);
     const [vaultPubkey, vaultBump] = await getVaultPDA();
     try {
-      await program.rpc.determineBet(
-        battleBump,
-        bettingBump,
-        vaultBump,
-        battleId,
-        {
-          accounts: {
-            battleAccount: battlePubkey,
-            escrowAccount: vaultPubkey,
-            bettingAccount: bettingPubkey,
-            admin: provider.wallet.publicKey,
-            systemProgram: web3.SystemProgram.programId,
-            rent: web3.SYSVAR_RENT_PUBKEY,
-          }
-        }
-      );
+        await program.rpc.determineBet(
+            battleBump,
+            bettingBump,
+            vaultBump,
+            battleId,
+            {
+                accounts: {
+                    battleAccount: battlePubkey,
+                    escrowAccount: vaultPubkey,
+                    bettingAccount: bettingPubkey,
+                    admin: provider.wallet.publicKey,
+                    systemProgram: web3.SystemProgram.programId,
+                    rent: web3.SYSVAR_RENT_PUBKEY,
+                }
+            }
+        );
     } catch (e) {
-      console.log(e);
+        console.log(e);
     }
 };
 
