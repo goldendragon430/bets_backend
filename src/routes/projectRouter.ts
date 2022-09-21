@@ -14,7 +14,7 @@ class ProjectRouter {
 
     initializeRoutes() {
         this.router.route('/get/:network?').get(this.ProjectController.getProjects);
-        this.router.route('/:id').get(this.ProjectController.getProject);
+        this.router.route('/get_project/:id').get(this.ProjectController.getProject);
         this.router.route('/add').post(passport.authenticate('jwt', { session: false }), this.userController.checkAdmin, this.ProjectController.addProject);
         this.router.route('/sync').get(passport.authenticate('jwt', { session: false }), this.userController.checkAdmin, this.ProjectController.syncProject);
     }
