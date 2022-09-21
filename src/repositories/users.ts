@@ -1,4 +1,4 @@
-import UserModel from '../models/users';
+import UserModel, { INFTMetadata } from '../models/users';
 import playerWallet from '../models/playerWallet';
 
 class UsersRepository {
@@ -32,14 +32,14 @@ class UsersRepository {
       return {
         username: user.username,
         address: address,
-        image: user.image
+        selectedNFT: user.selectedNFT
       };
     }
     await this.createUser(address);
     return {
       username: address,
       address: address,
-      image: ''
+      selectedNFT: null
     };
   }
 
@@ -58,9 +58,14 @@ class UsersRepository {
     return await user.save();
   }
 
-  updateProfile = async (user: any, username: string, image: string) => {
+  updateProfile = async (user: any, username: string, contract: string, tokenId: string, image: string) => {
+    const metadata: INFTMetadata = {
+      contract,
+      tokenId,
+      image
+    };
     user.username = username;
-    user.image = image;
+    user.selectedNFT = metadata;
     return await user.save();
   }
 

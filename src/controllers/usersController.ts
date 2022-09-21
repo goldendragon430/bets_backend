@@ -248,7 +248,7 @@ export default class UsersController {
      */
     updateProfile = async (req: Request, res: Response, next: NextFunction) => {
         const {address} = req.params;
-        const {username, image} = req.body;
+        const {username, contract, tokenId, image} = req.body;
 
         try {
             if (!ethers.utils.isAddress(address)) {
@@ -267,7 +267,7 @@ export default class UsersController {
                 });
             }
 
-            await UserRepository.updateProfile(user, username, image);
+            await UserRepository.updateProfile(user, username, contract, tokenId, image);
 
             return res.status(200).json({
                 'success': true,
