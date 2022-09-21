@@ -128,7 +128,7 @@ export default class ProjectController {
                 }
             }
 
-            res.json({'success': true, 'message': 'Synced the project data successfully', 'data': null});
+            res.json({'success': true, 'message': `${projects.length} Projects are synced successfully`, 'data': null});
         } catch (error) {
             console.log(error);
             apiErrorHandler(error, req, res, 'Add Project failed.');
