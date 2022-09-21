@@ -17,6 +17,7 @@ class ProjectRouter {
         this.router.route('/get_project/:id').get(this.ProjectController.getProject);
         this.router.route('/add').post(passport.authenticate('jwt', { session: false }), this.userController.checkAdmin, this.ProjectController.addProject);
         this.router.route('/sync').get(passport.authenticate('jwt', { session: false }), this.userController.checkAdmin, this.ProjectController.syncProject);
+        this.router.route('/delete/:id').delete(passport.authenticate('jwt', { session: false }), this.userController.checkAdmin, this.ProjectController.deleteProject);
     }
 }
 export default new ProjectRouter().router;

@@ -1,4 +1,5 @@
 import ProjectModel from '../models/project';
+import FeaturedBattleRepository from './featuredBattle';
 import { NetworkType } from '../utils/enums';
 
 class ProjectRepository {
@@ -63,6 +64,15 @@ class ProjectRepository {
         });
 
         return project.save();
+    }
+
+    isUsingBattle = async (id: string): Promise<boolean> => {
+        const activeBattles = await FeaturedBattleRepository.getActiveBattles();
+        return activeBattles.filter((battle) => (battle.projectL.id.toString() === id || battle.projectR.id.toString() === id)).length > 0;
+    }
+
+    deleteProject = async (id: string) => {
+        return ProjectModel.deleteOne({ _id: id });
     }
 }
 

@@ -135,6 +135,37 @@ export default class ProjectController {
         }
     }
 
+    /**
+     * @description Delete project data function
+     * @param req
+     * @param res
+     * @param next
+     */
+    deleteProject = async (req: Request, res: Response, next: NextFunction) => {
+        const { id } = req.params;
+        try {
+            const project = await ProjectRepository.getProject(id);
+            if (!project) {
+                return res.status(400).json({
+                    'success': false,
+                    'message': 'Project not found.',
+                });
+            }
+            const isBeingUsed = await ProjectRepository.isUsingBattle(id);
+            if (isBeingUsed) {
+                return res.status(400).json({
+                    'success': false,
+                    'message': 'This project is being used in active battle.',
+                });
+            }
+            await ProjectRepository.deleteProject(id);
+            res.json({'success': true, 'message': 'Deleted Project successfully', 'data': null});
+        } catch (error) {
+            console.log(error);
+            apiErrorHandler(error, req, res, 'Add Project failed.');
+        }
+    }
+
     googleSheetLoadFromUrl = async (sheetNameParam = 'ETH SOL List') => {
         const base = `https://docs.google.com/spreadsheets/d/1dOzbFEuQzDGw0SeHKCSyuWOYq0ogv9d7upO_KarnUK8/gviz/tq?`;
         const sheetName = sheetNameParam;
