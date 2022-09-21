@@ -26,6 +26,23 @@ class UsersRepository {
     }
   }
 
+  getUserProfile = async (address: string) => {
+    const user = await this.getUser(address);
+    if (user) {
+      return {
+        username: user.username,
+        address: address,
+        image: user.image
+      };
+    }
+    await this.createUser(address);
+    return {
+      username: address,
+      address: address,
+      image: ''
+    };
+  }
+
   createUser = async (address: string) => {
     const nonce = Math.floor(Math.random() * 1000000);
     const user = new UserModel({
@@ -34,15 +51,17 @@ class UsersRepository {
       nonce: nonce,
     });
 
-    const savedUser = await user.save();
-
-    return savedUser;
+    return await user.save();
   }
 
   updateUser = async (user: any) => {
-    const savedUser = await user.save();
+    return await user.save();
+  }
 
-    return savedUser;
+  updateProfile = async (user: any, username: string, image: string) => {
+    user.username = username;
+    user.image = image;
+    return await user.save();
   }
 
   addUser = async (username: string) => {

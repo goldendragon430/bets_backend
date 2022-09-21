@@ -8,6 +8,7 @@ const usersSchema = new Schema({
         type: String,
         required: true,
     },
+    image: String,
     nonce: Number,
     signature: String,
     isAdmin: {
