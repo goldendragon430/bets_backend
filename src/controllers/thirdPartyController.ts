@@ -20,13 +20,25 @@ export default class ThirdPartyController {
         res: Response,
         next: NextFunction
     ) => {
-        const { tweet_id } = req.query;
+        const { keyword } = req.query;
         try {
-            const tweet = await this.twitterClient.tweets.tweetsFullarchiveSearch({
-                query: `#AlphaBetsBattle`,
+            const tweet = await this.twitterClient.tweets.tweetsRecentSearch({
+                query: `#${keyword}`,
                 max_results: 100,
-                'tweet.fields': ['author_id', 'created_at'],
-                expansions: ['author_id'],
+                'tweet.fields': ['attachments', 'author_id', 'created_at'],
+                expansions: ['attachments.media_keys', 'author_id'],
+                'media.fields': [
+                    'alt_text',
+                    'duration_ms',
+                    'height',
+                    'media_key',
+                    'preview_image_url',
+                    'public_metrics',
+                    'type',
+                    'url',
+                    'variants',
+                    'width'
+                ],
                 'user.fields': ['name', 'username', 'profile_image_url'],
             });
 
@@ -36,7 +48,7 @@ export default class ThirdPartyController {
                 data: tweet,
             });
         } catch (error) {
-            console.log(error)
+            console.log(error);
             apiErrorHandler(error, req, res, 'Get Twitter Thread failed.');
         }
     };
