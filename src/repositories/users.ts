@@ -39,7 +39,7 @@ class UsersRepository {
     return {
       username: address,
       address: address,
-      selectedNFT: null
+      selectedNFT: {}
     };
   }
 

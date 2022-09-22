@@ -106,11 +106,14 @@ export default class UsersController {
                 });
             }
 
-            const msg = `Nonce: ${user.nonce}`;
-            const msgHex = ethers.utils.arrayify(ethers.utils.hashMessage(msg));
-
-            // Check if signature is valid
-            const recoveredAddress = ethers.utils.recoverAddress(msgHex, signature);
+            if (!user.nonce) {
+                return res.status(400).json({
+                    'success': false,
+                    'message': 'User not registered.',
+                    'data': ''
+                });
+            }
+            const recoveredAddress = this.recoverAddress(user.nonce, signature);
 
             if (recoveredAddress.toLowerCase() === address.toLowerCase()) {
                 user.nonce = Math.floor(Math.random() * 1000000);
@@ -248,7 +251,7 @@ export default class UsersController {
      */
     updateProfile = async (req: Request, res: Response, next: NextFunction) => {
         const {address} = req.params;
-        const {username, contract, tokenId, image} = req.body;
+        const {username, contract, tokenId, image, signature} = req.body;
 
         try {
             if (!ethers.utils.isAddress(address)) {
@@ -267,15 +270,40 @@ export default class UsersController {
                 });
             }
 
-            await UserRepository.updateProfile(user, username, contract, tokenId, image);
+            if (!user.nonce) {
+                return res.status(400).json({
+                    'success': false,
+                    'message': 'User not registered.',
+                    'data': ''
+                });
+            }
+            const recoveredAddress = this.recoverAddress(user.nonce, signature);
+            if (recoveredAddress.toLowerCase() === address.toLowerCase()) {
+                user.nonce = Math.floor(Math.random() * 1000000);
+                await UserRepository.updateUser(user);
+                await UserRepository.updateProfile(user, username, contract, tokenId, image);
 
-            return res.status(200).json({
-                'success': true,
-                'message': 'Updated Profile',
-                'data': user,
+                return res.status(200).json({
+                    'success': true,
+                    'message': 'Updated Profile',
+                    'data': user,
+                });
+            }
+
+            return res.status(401).json({
+                'success': false,
+                'message': 'Invalid credentials',
+                'data': undefined,
             });
         } catch (error) {
             apiErrorHandler(error, req, res, 'Update profile failed.');
         }
     };
+
+    recoverAddress = (nonce: number, signature: string): string => {
+        const msg = `Nonce: ${nonce}`;
+        const msgHex = ethers.utils.arrayify(ethers.utils.hashMessage(msg));
+        // Check if signature is valid
+        return ethers.utils.recoverAddress(msgHex, signature);
+    }
 }

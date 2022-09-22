@@ -22,8 +22,8 @@ export default class ThirdPartyController {
     ) => {
         const { tweet_id } = req.query;
         try {
-            const tweet = await this.twitterClient.tweets.tweetsRecentSearch({
-                query: `conversation_id:${tweet_id}`,
+            const tweet = await this.twitterClient.tweets.tweetsFullarchiveSearch({
+                query: `#AlphaBetsBattle`,
                 max_results: 100,
                 'tweet.fields': ['author_id', 'created_at'],
                 expansions: ['author_id'],
@@ -36,6 +36,7 @@ export default class ThirdPartyController {
                 data: tweet,
             });
         } catch (error) {
+            console.log(error)
             apiErrorHandler(error, req, res, 'Get Twitter Thread failed.');
         }
     };
