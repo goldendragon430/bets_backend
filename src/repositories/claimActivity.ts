@@ -97,7 +97,7 @@ class ClaimActivityRepository {
                 battleId: abpActivity?.battleId || ethActivity?.battleId,
                 abpAmount: abpActivity?.sumA || 0,  // abp
                 ethAmount: ethActivity?.sumA || 0,  // eth
-                userInfo: abpActivity.userList || ethActivity.userList,
+                // userInfo: abpActivity.userList || ethActivity.userList,
             };
         });
 
