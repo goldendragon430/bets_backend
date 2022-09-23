@@ -1,5 +1,7 @@
 import UserModel, { INFTMetadata } from '../models/users';
 import playerWallet from '../models/playerWallet';
+import FeaturedBattle from './featuredBattle';
+import ClaimActivity from './claimActivity';
 
 class UsersRepository {
   constructor() {}
@@ -28,10 +30,20 @@ class UsersRepository {
 
   getUserProfile = async (address: string) => {
     const user = await this.getUser(address);
+    const onGoingBattleCount = await FeaturedBattle.getProgressBattleCountByAddress(address);
+    const totalETHAmount = await ClaimActivity.getTotalETHAmountByAddress(address);
+    const battleWonCount = await ClaimActivity.getBattleWonCountByAddress(address);
+    const abpRank = await ClaimActivity.getABPRankByAddress(address);
+    const winnerRank = await ClaimActivity.getWinnerRankByAddress(address);
     if (user) {
       return {
         username: user.username,
         address: address,
+        battlesInProgress: onGoingBattleCount,
+        totalEthEarned: totalETHAmount,
+        battlesWon: battleWonCount,
+        abpRank: abpRank,
+        winnerRank: winnerRank,
         selectedNFT: user.selectedNFT
       };
     }
@@ -39,6 +51,11 @@ class UsersRepository {
     return {
       username: address,
       address: address,
+      battlesInProgress: onGoingBattleCount,
+      totalEthEarned: totalETHAmount,
+      battlesWon: battleWonCount,
+      abpRank: abpRank,
+      winnerRank: winnerRank,
       selectedNFT: {}
     };
   }

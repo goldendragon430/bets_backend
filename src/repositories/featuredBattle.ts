@@ -44,17 +44,32 @@ class FeaturedBattleRepository {
     };
 
     getActiveBattleIds = async (network: NetworkType) => {
-        const blockNumber = await provider.getBlockNumber();
-        const block = await provider.getBlock(blockNumber);
+        const now = new Date().getTime();
+        const currentTimestamp = Math.floor(now / 1000);
 
         const battles = await FeaturedBattle.find({
             network: network,
-            startTime: { $lte: block.timestamp },
-            endTime: { $gte: block.timestamp },
+            startTime: { $lte: currentTimestamp },
+            endTime: { $gte: currentTimestamp },
         });
 
         return battles.map((battle) => {
             return battle.id;
+        });
+    };
+
+    getBattleIdsByStatus = async () => {
+        const now = new Date().getTime();
+        const currentTimestamp = Math.floor(now / 1000);
+
+        const battles = await FeaturedBattle.find({
+            network: NetworkType.ETH,
+            startTime: { $lte: currentTimestamp },
+            endTime: { $gte: currentTimestamp },
+        });
+
+        return battles.map((battle) => {
+            return battle.battleId;
         });
     };
 
@@ -400,6 +415,14 @@ class FeaturedBattleRepository {
             }
         }
         return battleIds;
+    }
+
+    getProgressBattleCountByAddress = async (address: string): Promise<number> => {
+        const battleIds = await this.getBattleIdsByStatus();
+        return NftActivityModel.count({
+            battleId: {$in: battleIds},
+            from: address
+        });
     }
 }
 

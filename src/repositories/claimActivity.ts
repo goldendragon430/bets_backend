@@ -29,7 +29,21 @@ class ClaimActivityRepository {
                         }
                     }
                 },
-                { $sort: { sumA: - 1 } }
+                { $sort: { sumA: - 1 } },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'user',
+                        foreignField: 'address',
+                        as: 'userList',
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$userList',
+                        preserveNullAndEmptyArrays: true
+                    }
+                }
             ]
         );
 
@@ -56,7 +70,21 @@ class ClaimActivityRepository {
                         }
                     }
                 },
-                { $sort: { sumA: - 1 } }
+                { $sort: { sumA: - 1 } },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'user',
+                        foreignField: 'address',
+                        as: 'userList',
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$userList',
+                        preserveNullAndEmptyArrays: true
+                    }
+                }
             ]
         );
 
@@ -69,13 +97,13 @@ class ClaimActivityRepository {
                 battleId: abpActivity?.battleId || ethActivity?.battleId,
                 abpAmount: abpActivity?.sumA || 0,  // abp
                 ethAmount: ethActivity?.sumA || 0,  // eth
+                userInfo: item.userList,
             };
         });
 
-        const leaderboard = activities.sort((a, b) => {
+        return activities.sort((a, b) => {
             return b.abpAmount - a.abpAmount;
         });
-        return leaderboard;
     }
 
     getClaimActivity = async (txHash: string) => {
@@ -101,6 +129,112 @@ class ClaimActivityRepository {
         });
 
         return claimActivityInstance.save();
+    }
+
+    getTotalETHAmountByAddress = async (address: string) => {
+        const activities = await ClaimActivity.aggregate(
+            [
+                {
+                    $match: {
+                        user: address,
+                        rewardType: '1'
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            user: '$user',
+                        },
+                        sumA: {
+                            $sum: '$amountInDecimal'
+                        }
+                    }
+                }
+            ]
+        );
+
+        return activities[0]?.sumA || 0;
+    }
+
+    getBattleWonCountByAddress = async (address: string) => {
+        const activities = await ClaimActivity.aggregate(
+            [
+                {
+                    $match: {
+                        user: address,
+                        rewardType: '1'
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            user: '$user',
+                        },
+                        count: {
+                            $sum: 1
+                        }
+                    }
+                }
+            ]
+        );
+
+        return activities[0]?.count || 0;
+    }
+
+    getABPRankByAddress = async (address: string) => {
+        const activities = await ClaimActivity.aggregate(
+            [
+                {
+                    $match: {
+                        rewardType: '0'
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            user: '$user',
+                        },
+                        user: {
+                            $first: '$user'
+                        },
+                        sumA: {
+                            $sum: '$amountInDecimal'
+                        }
+                    }
+                },
+                { $sort: { sumA: - 1 } },
+            ]
+        );
+
+        return activities.findIndex((item) => item.user === address) + 1;
+    }
+
+    getWinnerRankByAddress = async (address: string) => {
+        const activities = await ClaimActivity.aggregate(
+            [
+                {
+                    $match: {
+                        rewardType: '1'
+                    }
+                },
+                {
+                    $group: {
+                        _id: {
+                            user: '$user',
+                        },
+                        user: {
+                            $first: '$user'
+                        },
+                        count: {
+                            $sum: 1
+                        }
+                    }
+                },
+                { $sort: { count: - 1 } },
+            ]
+        );
+
+        return activities.findIndex((item) => item.user === address) + 1;
     }
 }
 
