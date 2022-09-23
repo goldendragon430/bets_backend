@@ -122,7 +122,21 @@ class FeaturedBattleRepository {
                     count: { $sum: 1 }
                 }
             },
-            { $sort: { '_id.blockNumber': 1 } }
+            { $sort: { '_id.blockNumber': 1 } },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'from',
+                    foreignField: 'address',
+                    as: 'userInfo',
+                }
+            },
+            {
+                $unwind: {
+                    path: '$userInfo',
+                    preserveNullAndEmptyArrays: true
+                }
+            }
         ]);
 
         return activities.map((activity) => {
@@ -145,6 +159,7 @@ class FeaturedBattleRepository {
                 teamName: projectName,
                 subTeamName: projectSubName,
                 action: activity.activity,
+                userInfo: activity.userInfo,
             };
         });
     }
