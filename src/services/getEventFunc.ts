@@ -112,7 +112,7 @@ export const refundFunc = async (battleId: BigNumber, flag: boolean, event: any)
 export const syncProjectFromOpensea = async (slug: string) => {
     try {
         const { data } = await axios.get(`https://api.opensea.io/api/v1/collection/${slug}/stats`);
-        await ProjectRepository.updateProject(slug, data.stats.floor_price, data.stats.num_owners);
+        await ProjectRepository.updateProjectBySlug(slug, data.stats.floor_price, data.stats.num_owners);
     } catch (e) {
         console.error('While syncing data from opensea: ', e);
     }

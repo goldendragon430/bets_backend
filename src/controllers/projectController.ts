@@ -109,6 +109,67 @@ export default class ProjectController {
     }
 
     /**
+     * @description Update Project Function
+     * @param req
+     * @param res
+     * @param next
+     */
+    updateProject = async (req: Request, res: Response, next: NextFunction) => {
+        const { id } = req.params;
+        const {
+            name,
+            subName,
+            displayName,
+            network,
+            contract,
+            collectionSize,
+            twitterID,
+            creator,
+            logo,
+            headerImage,
+            openSeaLink,
+            magicEdenLink,
+            discordLink,
+        } = req.body;
+
+        try {
+            if (network && !(network in NetworkType)) {
+                return res.status(400).json({ 'success': false, 'message': 'Invalid network.' });
+            }
+
+            const project = await ProjectRepository.getProject(id);
+            if (!project) {
+                return res.status(400).json({
+                    'success': false,
+                    'message': 'Project not found.',
+                });
+            }
+
+            const updatedProject = await ProjectRepository.updateProjectById(
+                id,
+                name,
+                subName,
+                displayName,
+                NetworkType[network],
+                contract,
+                collectionSize,
+                twitterID,
+                creator,
+                logo,
+                headerImage,
+                openSeaLink,
+                magicEdenLink,
+                discordLink,
+            );
+
+            res.json({'success': true, 'message': '', 'data': updatedProject});
+        } catch (error) {
+            console.log(error);
+            apiErrorHandler(error, req, res, 'Add Project failed.');
+        }
+    }
+
+    /**
      * @description Sync Project data with google sheet Function
      * @param req
      * @param res
