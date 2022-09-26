@@ -41,6 +41,7 @@ const projectSchema = new Schema({
     magicEdenLink: String,
     discordLink: String,
     slug: String,
+    mintHashList: String,
 },
 { timestamps: true });
 

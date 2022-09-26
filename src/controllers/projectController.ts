@@ -251,10 +251,11 @@ export default class ProjectController {
                 const creator = rowData.c[7] != undefined ? rowData.c[7].v : ''; // Creator
                 const logoImage = rowData.c[10] != undefined ? rowData.c[10].v : ''; // Logo Image
                 const headerImage = rowData.c[11] != undefined ? rowData.c[11].v : ''; // Header Image
-                const openseaLink = rowData.c[12] != undefined ? rowData.c[12].v : ''; // Opensea Link
+                const openseaLink = rowData.c[12] != undefined ? rowData.c[12].v : ''; // Opensea link
                 const magicEdenLink = rowData.c[13] != undefined ? rowData.c[13].v : ''; // MagicEden link
-                const discordLink = rowData.c[14] != undefined ? rowData.c[14].v : ''; // MagicEden link
-                const slug = rowData.c[14] != undefined ? rowData.c[14].v : ''; // Opensea Slug
+                const discordLink = rowData.c[14] != undefined ? rowData.c[14].v : ''; // Discord link
+                const slug = rowData.c[15] != undefined ? rowData.c[15].v : ''; // Slug
+                const mintHashList = rowData.c[17] != undefined ? rowData.c[17].v : ''; // MintHashList link
 
                 data.push({
                     name: name,
@@ -271,6 +272,7 @@ export default class ProjectController {
                     magicEdenLink: magicEdenLink,
                     discordLink: discordLink,
                     slug: slug,
+                    mintHashList: mintHashList,
                 });
             });
             return data;

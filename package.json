@@ -11,7 +11,6 @@
     "cron": "ts-node src/scripts/cron/index.ts",
     "seed": "ts-node src/scripts/seeder.ts",
     "sync_events": "ts-node src/scripts/past_events_sync.ts",
-    "sync_opensea": "ts-node src/scripts/sync_projects_opensea.ts",
     "watch": "tsc -w",
     "transpile": "tsc",
     "lint": "tslint -c tslint.json -p tsconfig.json"
