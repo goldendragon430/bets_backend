@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { apiErrorHandler } from '../handlers/errorHandler';
 import BattleRepository from '../repositories/featuredBattle';
+import ProjectRepository from '../repositories/project';
 import nftActivityRepository from '../repositories/nftActivity';
 import ClaimActivityRepository from '../repositories/claimActivity';
 import { NetworkType } from '../utils/enums';
@@ -276,6 +277,37 @@ export default class BattleController {
             res.json({ 'success': true, 'message': '', 'data': leaderboard });
         } catch (error) {
             apiErrorHandler(error, req, res, 'Get Tx failed.');
+        }
+    };
+
+    /**
+     * @description Staking NFT item on Solana
+     * @param req
+     * @param res
+     * @param next
+     */
+    stakeForSolana = async (req: Request, res: Response, next: NextFunction) => {
+        const { projectId, hash } = req.body;
+
+        try {
+            const project = await ProjectRepository.getProject(projectId);
+
+            if (!project) {
+                return res.status(400).json({
+                    'success': false,
+                    'message': 'No project found.'
+                });
+            }
+
+            if (!project.mintHashList) {
+                return res.json({ 'success': true, 'message': '', 'data': false });
+            }
+            const valid = await ProjectRepository.validateInHashMintList(project.mintHashList, hash);
+
+            res.json({ 'success': true, 'message': '', 'data': valid });
+        } catch (error) {
+            console.log(error);
+            apiErrorHandler(error, req, res, 'stakeForSolana failed.');
         }
     };
 }

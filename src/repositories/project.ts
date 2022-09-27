@@ -1,6 +1,8 @@
 import ProjectModel from '../models/project';
 import FeaturedBattleRepository from './featuredBattle';
 import { NetworkType } from '../utils/enums';
+import * as path from 'path';
+import * as fs from 'fs';
 
 class ProjectRepository {
     constructor() {
@@ -113,6 +115,13 @@ class ProjectRepository {
     deleteProject = async (id: string) => {
         return ProjectModel.deleteOne({_id: id});
     };
+
+    validateInHashMintList = async (mintHashListPath: string, hash: string): Promise<boolean> => {
+        const jsonPath = path.resolve(__dirname, '../static/HashListJSON', mintHashListPath);
+        const content = fs.readFileSync(jsonPath);
+        const data = JSON.parse(content.toString());
+        return data.filter((item) => item === hash).length > 0;
+    }
 }
 
 export default new ProjectRepository();
