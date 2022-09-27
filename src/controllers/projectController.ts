@@ -255,7 +255,8 @@ export default class ProjectController {
                 const magicEdenLink = rowData.c[13] != undefined ? rowData.c[13].v : ''; // MagicEden link
                 const discordLink = rowData.c[14] != undefined ? rowData.c[14].v : ''; // Discord link
                 const slug = rowData.c[15] != undefined ? rowData.c[15].v : ''; // Slug
-                const mintHashList = rowData.c[17] != undefined ? rowData.c[17].v : ''; // MintHashList link
+                // const mintHashList = rowData.c[17] != undefined ? rowData.c[17].v : ''; // MintHashList link
+                const mintHashList = rowData.c[18] != undefined ? rowData.c[18].v : ''; // MintHashList Filename
 
                 data.push({
                     name: name,
