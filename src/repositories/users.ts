@@ -60,6 +60,21 @@ class UsersRepository {
     };
   }
 
+  getSolanaUserProfile = async (address: string) => {
+    const user = await this.getUser(address);
+    if (user) {
+      return {
+        username: user.username,
+        address: address,
+      };
+    }
+    await this.createUser(address);
+    return {
+      username: address,
+      address: address
+    };
+  }
+
   createUser = async (address: string) => {
     const nonce = Math.floor(Math.random() * 1000000);
     const user = new UserModel({

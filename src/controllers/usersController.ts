@@ -1,9 +1,11 @@
 import { ethers } from 'ethers';
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import { apiErrorHandler } from '../handlers/errorHandler';
 import UserRepository from '../repositories/users';
 import { JWT_CONFIG } from '../config';
+import { validateAddress } from '../utils/solana';
+import { NetworkType } from '../utils/enums';
 
 export default class UsersController {
     constructor() {
@@ -224,14 +226,20 @@ export default class UsersController {
         const {address} = req.params;
 
         try {
-            if (!ethers.utils.isAddress(address)) {
+            if (!ethers.utils.isAddress(address) || validateAddress(address)) {
                 return res.status(400).json({
                     'success': false,
                     'message': 'Invalid address.',
                     'data': ''
                 });
             }
-            const user = await UserRepository.getUserProfile(address);
+            const network = validateAddress(address) ? NetworkType.SOL : NetworkType.ETH;
+            let user;
+            if (network === NetworkType.ETH) {
+                user = await UserRepository.getUserProfile(address);
+            } else {
+                user = await UserRepository.getSolanaUserProfile(address);
+            }
 
             return res.status(200).json({
                 'success': true,
