@@ -17,6 +17,7 @@ class FeaturedBattleRouter {
     this.router.route('/solana/add').post(this.BattleController.addSolanaBattle);
     this.router.route('/solana/delete/:id').delete(this.BattleController.deleteSolanaBattle);
     this.router.route('/solana/stake').post(this.BattleController.stakeForSolana);
+    this.router.route('/solana/get_live_feeds/:battleId').get(this.BattleController.getSolanaLiveFeeds);
     // this.router.route('/solana/add').post(passport.authenticate('jwt', { session: false }), this.userController.checkAdmin, this.BattleController.addSolanaBattle);
     this.router.route('/get_active_battle_ids/:network?').get(this.BattleController.getActiveBattleIds);
     this.router.route('/get_battle_by_id/:battleId').get(this.BattleController.getBattle);

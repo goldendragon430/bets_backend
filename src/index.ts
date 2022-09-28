@@ -11,6 +11,7 @@ import redisHandle from './utils/redis';
 import { getDBConfig } from './config';
 import { unCoughtErrorHandler } from './handlers/errorHandler';
 import { installBetEvents } from './services/events';
+import { installSolanaEvents } from './services/solanaEvents';
 import { setupCronJobMap } from './services/cronManager';
 import { setupSolanaCronJobMap } from './services/solanaCronManager';
 
@@ -25,6 +26,7 @@ export default class Server {
         this.connect();
         this.initRedis();
         installBetEvents();
+        installSolanaEvents();
         new Routes(app);
     }
 

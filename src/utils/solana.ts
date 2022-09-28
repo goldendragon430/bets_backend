@@ -2,6 +2,8 @@ import * as solanaWeb3 from '@solana/web3.js';
 import * as anchor from '@project-serum/anchor';
 import * as idl from '../abis/solana/idl.json';
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
+// TODO: should be removed when launching
+import * as TestIDL from '../abis/solana/testidl.json';
 
 const { Connection, PublicKey, Keypair, SystemProgram } = solanaWeb3;
 const { Program, web3, utils, AnchorProvider, BN, Wallet } = anchor;
@@ -18,23 +20,33 @@ const strTou8Arry = (s: string) => {
     return enc.encode(s);
 };
 
-const getProvider = async () => {
+const getProvider = () => {
     /* create the provider and return it to the caller */
     /* network set to local network for now */
 
     const network = 'https://metaplex.devnet.rpcpool.com'; // https://api.devnet.solana.com
     const connection = new Connection(network, 'processed');
 
-    const provider = new AnchorProvider(
+    return new AnchorProvider(
         connection, wallet, {
-        preflightCommitment: 'processed'
-    },
+            preflightCommitment: 'processed'
+        },
     );
-    return provider;
 };
 
+const getSolanaProvider = () => {
+    const network = 'https://api.devnet.solana.com';
+    const connection = new Connection(network, 'processed');
+
+    return new AnchorProvider(
+        connection, wallet, {
+            preflightCommitment: 'processed'
+        },
+    );
+}
+
 export async function getBattlePDA() {
-    const provider = await getProvider();
+    const provider = getProvider();
     const program = new Program(idl as any, programID, provider);
     return await PublicKey.findProgramAddress(
         [Buffer.from(utils.bytes.utf8.encode(BET_INFO_SEED))],
@@ -43,7 +55,7 @@ export async function getBattlePDA() {
 }
 
 export async function getVaultPDA() {
-    const provider = await getProvider();
+    const provider = getProvider();
     const program = new Program(idl as any, programID, provider);
     return await PublicKey.findProgramAddress(
         [Buffer.from(utils.bytes.utf8.encode(ESCROW_VAULT_SEED))],
@@ -52,7 +64,7 @@ export async function getVaultPDA() {
 }
 
 export async function getBettingPDA(battleId: string) {
-    const provider = await getProvider();
+    const provider = getProvider();
     const program = new Program(idl as any, programID, provider);
     return await PublicKey.findProgramAddress(
         [Buffer.from(utils.bytes.utf8.encode(BET_INFO_SEED)),
@@ -62,7 +74,7 @@ export async function getBettingPDA(battleId: string) {
 }
 
 export async function startBet(battleId: string, startTime: number, endTime: number, collectionA?: string, collectionB?: string, fee?: number, abp_amount?: number) {
-    const provider = await getProvider();
+    const provider = getProvider();
     const program = new Program(idl as any, programID, provider);
     const pfee = fee ? fee : 50;
     const pabp_amount = abp_amount ? new BN(abp_amount).mul(new BN(1e9)) : new BN(3e12);
@@ -99,7 +111,7 @@ export async function startBet(battleId: string, startTime: number, endTime: num
 }
 
 export const determineBet = async (battleId: string) => {
-    const provider = await getProvider();
+    const provider = getProvider();
     const program = new Program(idl as any, programID, provider);
     const [battlePubkey, battleBump] = await getBattlePDA();
     const [bettingPubkey, bettingBump] = await getBettingPDA(battleId);
@@ -123,7 +135,7 @@ export const determineBet = async (battleId: string) => {
 };
 
 export const getEndTime = async (battleId: string): Promise<number> => {
-    const provider = await getProvider();
+    const provider = getProvider();
     const program = new Program(idl as anchor.Idl, programID, provider);
     const [bettingPubkey] =
         await PublicKey.findProgramAddress(
@@ -146,4 +158,15 @@ export const getTimeStamp = async (): Promise<number> => {
     const slot = await connection.getSlot();
     const timestamp = await connection.getBlockTime(slot);
     return timestamp || 0;
+};
+
+export const getProgram = () => {
+    const provider = getProvider();
+    return new Program(idl as any, programID, provider);
+};
+
+export const getTestProgram = () => {
+    const provider = getSolanaProvider();
+    const programID = new PublicKey(TestIDL.metadata.address);
+    return new Program(TestIDL as any, programID, provider);
 };

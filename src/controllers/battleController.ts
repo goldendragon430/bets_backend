@@ -3,6 +3,7 @@ import { apiErrorHandler } from '../handlers/errorHandler';
 import BattleRepository from '../repositories/featuredBattle';
 import ProjectRepository from '../repositories/project';
 import nftActivityRepository from '../repositories/nftActivity';
+import SolanaActivityRepository from '../repositories/solanaActivity';
 import ClaimActivityRepository from '../repositories/claimActivity';
 import { NetworkType } from '../utils/enums';
 import { provider } from '../utils/constants';
@@ -276,7 +277,7 @@ export default class BattleController {
 
             res.json({ 'success': true, 'message': '', 'data': leaderboard });
         } catch (error) {
-            apiErrorHandler(error, req, res, 'Get Tx failed.');
+            apiErrorHandler(error, req, res, 'getLeaderboard failed.');
         }
     };
 
@@ -306,8 +307,34 @@ export default class BattleController {
 
             res.json({ 'success': true, 'message': '', 'data': valid });
         } catch (error) {
-            console.log(error);
             apiErrorHandler(error, req, res, 'stakeForSolana failed.');
+        }
+    };
+
+    /**
+     * @description Get Live feed data for Solana battle
+     * @param req
+     * @param res
+     * @param next
+     */
+    getSolanaLiveFeeds = async (req: Request, res: Response, next: NextFunction) => {
+        const { battleId } = req.params;
+
+        try {
+            const battle = await BattleRepository.getBattle(battleId);
+
+            if (!battle) {
+                return res.status(400).json({
+                    'success': false,
+                    'message': 'No battle found.'
+                });
+            }
+
+            const liveFeeds = await SolanaActivityRepository.getLiveFeeds(battle);
+
+            res.json({ 'success': true, 'message': '', 'data': liveFeeds });
+        } catch (error) {
+            apiErrorHandler(error, req, res, 'getSolanaLiveFeeds failed.');
         }
     };
 }

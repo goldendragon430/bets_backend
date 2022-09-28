@@ -1,6 +1,7 @@
 import { BigNumber } from 'ethers';
 import axios from 'axios';
 import NFTActivityRepository from '../repositories/nftActivity';
+import SolanaActivityRepository from '../repositories/solanaActivity';
 import ClaimActivityRepository from '../repositories/claimActivity';
 import FulfillActivityRepository from '../repositories/fulfillActivity';
 import FinalizeActivityRepository from '../repositories/finalizeActivity';
@@ -8,6 +9,7 @@ import FeaturedBattleRepository from '../repositories/featuredBattle';
 import RefundSetRepository from '../repositories/refundSet';
 import ProjectRepository from '../repositories/project';
 import { ActivityType, NetworkType, RewardType, ServiceType } from '../utils/enums';
+import { BN } from '@project-serum/anchor';
 
 export const nftTransferFunc = async (contractAddress: string, from: string, to: string, tokenId: BigNumber, event: any, serviceType: ServiceType) => {
     try {
@@ -115,5 +117,29 @@ export const syncProjectFromOpensea = async (slug: string) => {
         await ProjectRepository.updateProjectBySlug(slug, data.stats.floor_price, data.stats.num_owners);
     } catch (e) {
         console.error('While syncing data from opensea: ', e);
+    }
+};
+
+export const solanaStakedFunc = async (battleId: string, side: boolean, user: string, tokenIds: Array<string>, signature: string, slot: number) => {
+    try {
+        const activity = await SolanaActivityRepository.getSolanaActivity(signature);
+        if (!activity) {
+            for (const tokenId of tokenIds) {
+                await SolanaActivityRepository.addStakedActivity(battleId, side, user, tokenId, signature, slot);
+            }
+        }
+    } catch (e) {
+        console.error('Solana Staked Event Err: ', e);
+    }
+};
+
+export const solanaBettedFunc = async (battleId: string, user: string, amount: BN, side: boolean, signature: string, slot: number) => {
+    try {
+        const activity = await SolanaActivityRepository.getSolanaActivity(signature);
+        if (!activity) {
+            await SolanaActivityRepository.addBettedActivity(battleId, user, amount, side, signature, slot);
+        }
+    } catch (e) {
+        console.error('Solana Staked Event Err: ', e);
     }
 };
