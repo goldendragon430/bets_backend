@@ -16,6 +16,7 @@ export function apiErrorHandler(
   message: string,
 ) {
   const error: object = { Message: message, Request: req, Stack: err };
+  console.error(error);
   res.json({
     'success': false,
     'name': 'Request Error',
