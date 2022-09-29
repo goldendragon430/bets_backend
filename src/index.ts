@@ -36,11 +36,11 @@ export default class Server {
                 console.log('Connected to Database');
                 setupCronJobMap()
                     .then(() => {
-                        console.log('setupCronJobMap done');
-                    });
-                setupSolanaCronJobMap()
-                    .then(() => {
-                        console.log('setupSolanaCronJobMap done');
+                        setupSolanaCronJobMap()
+                            .then(() => {
+                                console.log('setupCronJobMap done');
+                                console.log('setupSolanaCronJobMap done');
+                            });
                     });
             })
             .catch(err => {

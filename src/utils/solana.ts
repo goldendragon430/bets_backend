@@ -20,6 +20,9 @@ const strTou8Arry = (s: string) => {
     return enc.encode(s);
 };
 
+const network = 'https://api.devnet.solana.com'; // https://api.devnet.solana.com
+const connection = new Connection(network, 'confirmed');
+
 const getProvider = () => {
     /* create the provider and return it to the caller */
     /* network set to local network for now */
@@ -176,5 +179,34 @@ export const validateAddress = (address: string) => {
         return true;
     } catch (e) {
         return false;
+    }
+};
+
+export const getTransactions = async () => {
+    try {
+        const pubKey = new PublicKey(idl.metadata.address);
+        const txList = await connection.getSignaturesForAddress(pubKey);
+
+        const signatureList = txList.map(transaction => transaction.signature);
+        const transactionDetails = await connection.getParsedTransactions(signatureList);
+
+        txList.forEach((transaction, i) => {
+            if (transaction && transactionDetails[i]) {
+                const date = new Date((transaction.blockTime || 0) * 1000);
+                const transactionInstructions = transactionDetails[i]?.transaction.message.instructions;
+                console.log(`Transaction No: ${i + 1}`);
+                console.log(`Signature: ${transaction.signature}`);
+                console.log(`Time: ${date}`);
+                // @ts-ignore
+                console.log(`Status: ${transaction.confirmationStatus}`);
+                transactionInstructions?.forEach((instruction, n) => {
+                    // @ts-ignore
+                    console.log(`---Program Instructions ${n + 1}: ${instruction?.program ? instruction?.program + ':' : ''} ${instruction.programId.toString()}`);
+                });
+                console.log(('-').repeat(20));
+            }
+        });
+    } catch (e) {
+        console.error(e);
     }
 };

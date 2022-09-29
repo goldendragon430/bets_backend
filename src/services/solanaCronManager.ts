@@ -1,8 +1,7 @@
 import * as cron from 'node-cron';
-import { determineBet } from '../utils/solana';
+import { determineBet, getTransactions } from '../utils/solana';
 import BattleRepository from '../repositories/featuredBattle';
 import { BattleStatus, NetworkType } from '../utils/enums';
-import redisHandle from '../utils/redis';
 
 // hash map to map keys to jobs
 const jobMap: Map<string, cron.ScheduledTask> = new Map();
@@ -26,5 +25,10 @@ export const setupSolanaCronJobMap = async (): Promise<void> => {
         }
     }, { scheduled: false }).start();
 
+    const transactionJob = cron.schedule('* * * * *', async () => {
+        await getTransactions();
+    }, { scheduled: false });
+
     jobMap.set('determineJob', determineJob);
+    // jobMap.set('transactionJob', transactionJob);
 };
