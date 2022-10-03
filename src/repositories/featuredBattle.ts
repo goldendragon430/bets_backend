@@ -212,6 +212,13 @@ class FeaturedBattleRepository {
         );
     }
 
+    updateBattleStatusById = async (id: string, status: BattleStatus, network: NetworkType = NetworkType.ETH) => {
+        return FeaturedBattle.updateOne(
+            { _id: id, network: network },
+            { $set: { status: status } },
+        );
+    }
+
     updateBattleFinalizeFailedCount = async (battleId: number) => {
         return FeaturedBattle.updateOne(
             { battleId: battleId, network: NetworkType.ETH },
@@ -421,11 +428,10 @@ class FeaturedBattleRepository {
 
     getSolanaEndedBattles = async (): Promise<Array<string>> => {
         const battles = await this.getBattlesByStatus(BattleStatus.Created, NetworkType.SOL);
-        const timestamp = await getTimeStamp();
+        const timestamp = (new Date().getTime()) / 1000;
         const battleIds: Array<string> = [];
         for (const battle of battles) {
-            const battleEndTime = await getEndTime(battle._id.toString());
-            if (battleEndTime > timestamp) {
+            if (battle.endTime < timestamp) {
                 battleIds.push(battle._id.toString());
             }
         }
