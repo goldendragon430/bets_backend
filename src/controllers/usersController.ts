@@ -226,7 +226,7 @@ export default class UsersController {
         const {address} = req.params;
 
         try {
-            if (!ethers.utils.isAddress(address) || validateAddress(address)) {
+            if (!ethers.utils.isAddress(address) && !validateAddress(address)) {
                 return res.status(400).json({
                     'success': false,
                     'message': 'Invalid address.',

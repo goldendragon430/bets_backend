@@ -29,7 +29,7 @@ export const setupSolanaCronJobMap = async (): Promise<void> => {
     }, { scheduled: false }).start();
 
     const transactionJob = cron.schedule('* * * * *', async () => {
-        await getTransactions();
+        // await getTransactions();
     }, { scheduled: false });
 
     jobMap.set('determineJob', determineJob);

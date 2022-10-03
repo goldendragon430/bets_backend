@@ -254,6 +254,7 @@ export const getTransactions = async () => {
             if (transaction && transactionDetails[i]) {
                 const date = new Date((transaction.blockTime || 0) * 1000);
                 const transactionInstructions = transactionDetails[i]?.transaction.message.instructions;
+                console.log(transactionInstructions);
                 console.log(`Transaction No: ${i + 1}`);
                 console.log(`Signature: ${transaction.signature}`);
                 console.log(`Time: ${date}`);
@@ -267,6 +268,6 @@ export const getTransactions = async () => {
             }
         });
     } catch (e) {
-        console.error(e);
+        console.error('getTransactions', e);
     }
 };
