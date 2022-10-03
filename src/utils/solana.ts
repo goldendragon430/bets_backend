@@ -7,8 +7,6 @@ import * as TestIDL from '../abis/solana/testidl.json';
 
 const { Connection, PublicKey, Keypair } = solanaWeb3;
 const { Program, web3, utils, AnchorProvider, BN, Wallet } = anchor;
-const ESCROW_VAULT_SEED = 'alphabets-escrow-vault-new';
-const BET_INFO_SEED = 'alphabets-account-new';
 
 const ADMIN_KEY = process.env.SOLANA_ADMIN_KEY || '';
 const keypair = Keypair.fromSecretKey(bs58.decode(ADMIN_KEY));
@@ -19,6 +17,14 @@ const strTou8Arry = (s: string) => {
     const enc = new TextEncoder();
     return enc.encode(s);
 };
+
+const opts = {
+    preflightCommitment: 'processed',
+};
+const ADMIN_MANAGE_SEED = 'alphabets-admin';
+const ESCROW_VAULT_SEED = 'alphabets-escrow-vault';
+const BATTLE_INFO_SEED = 'alphabets-battle-info';
+const abpMintPubkey = new PublicKey('NxGcGqZ8FLpmDgJ35JK8xDivCo3EP3G5BbpBjE2cUQT');
 
 const network = 'https://api.devnet.solana.com'; // https://api.devnet.solana.com
 const connection = new Connection(network, 'confirmed');
@@ -48,11 +54,13 @@ const getSolanaProvider = () => {
     );
 };
 
-export async function getBattlePDA() {
+
+export async function getAdminPDA() {
     const provider = getProvider();
     const program = new Program(idl as any, programID, provider);
     return await PublicKey.findProgramAddress(
-        [Buffer.from(utils.bytes.utf8.encode(BET_INFO_SEED))],
+        [Buffer.from(utils.bytes.utf8.encode(ADMIN_MANAGE_SEED)),
+            provider.wallet.publicKey.toBuffer()],
         program.programId
     );
 }
@@ -66,14 +74,72 @@ export async function getVaultPDA() {
     );
 }
 
-export async function getBettingPDA(battleId: string) {
+export async function getABPVaultPDA() {
     const provider = getProvider();
     const program = new Program(idl as any, programID, provider);
     return await PublicKey.findProgramAddress(
-        [Buffer.from(utils.bytes.utf8.encode(BET_INFO_SEED)),
-        Buffer.from(strTou8Arry(battleId).buffer)],
+        [Buffer.from(utils.bytes.utf8.encode(BATTLE_INFO_SEED)),
+            abpMintPubkey.toBuffer()],
         program.programId
     );
+}
+
+export async function getBattlePDA(battleId: string) {
+    const provider = getProvider();
+    const program = new Program(idl as any, programID, provider);
+    return await PublicKey.findProgramAddress(
+        [Buffer.from(utils.bytes.utf8.encode(BATTLE_INFO_SEED)),
+            Buffer.from(strTou8Arry(battleId).buffer)],
+        program.programId
+    );
+}
+
+export async function getUserBattlePDA(battleId: string) {
+    const provider = getProvider();
+    const program = new Program(idl as any, programID, provider);
+    return await web3.PublicKey.findProgramAddress(
+        [Buffer.from(utils.bytes.utf8.encode(BATTLE_INFO_SEED)),
+            Buffer.from(strTou8Arry(battleId).buffer),
+            provider.wallet.publicKey.toBuffer()],
+        program.programId
+    );
+}
+
+export async function getUserBetInfo(battleId: string) {
+    const provider = getProvider();
+    const program = new Program(idl as any, programID, provider);
+    if (!provider.wallet.publicKey) return [];
+    const [userBettingPubkey] = await getUserBattlePDA(battleId);
+    try {
+        const userBetInfo = await program.account.userBattleAccount.fetch(userBettingPubkey);
+        return userBetInfo;
+    } catch (err) {
+        return [];
+    }
+}
+
+export async function getBalance() {
+    const connection = new Connection(network, opts.preflightCommitment as any);
+    const wallet = (window as any).solana;
+    return await connection.getBalance(wallet.publicKey);
+}
+
+export async function getVaultBalance() {
+    const provider = getProvider();
+    const [vaultPubkey] = await getVaultPDA();
+    return await provider.connection.getBalance(vaultPubkey);
+}
+
+export async function getBetInfo(battleId: string) {
+    const provider = getProvider();
+    const program = new Program(idl as any, programID, provider);
+    const [battlePubkey] = await getBattlePDA(battleId);
+    try {
+        const betInfo = await program.account.battleAccount.fetch(battlePubkey);
+        return betInfo;
+    } catch (err) {
+        return [];
+    }
 }
 
 export async function startBet(battleId: string, startTime: number, endTime: number, collectionA?: string, collectionB?: string, fee?: number, abp_amount?: number) {
@@ -83,12 +149,10 @@ export async function startBet(battleId: string, startTime: number, endTime: num
     const pabp_amount = abp_amount ? new BN(abp_amount).mul(new BN(1e9)) : new BN(3e12);
     const pColA = collectionA ? new PublicKey(collectionA) : provider.wallet.publicKey;
     const pColB = collectionB ? new PublicKey(collectionB) : provider.wallet.publicKey;
-    const [battlePubKey, battleBump] = await getBattlePDA();
-    const [bettingPubKey, bettingBump] = await getBettingPDA(battleId);
+    const [battlePubkey] = await getBattlePDA(battleId);
+    const [adminPubkey] = await getAdminPDA();
     try {
-        await program.rpc.startBet(
-            battleBump,
-            bettingBump,
+        await program.rpc.startBattle(
             battleId,
             startTime,
             endTime,
@@ -98,11 +162,10 @@ export async function startBet(battleId: string, startTime: number, endTime: num
             pColB,
             {
                 accounts: {
-                    battleAccount: battlePubKey,
-                    bettingAccount: bettingPubKey,
+                    adminAccount: adminPubkey,
+                    battleAccount: battlePubkey,
                     admin: provider.wallet.publicKey,
                     systemProgram: web3.SystemProgram.programId,
-                    rent: web3.SYSVAR_RENT_PUBKEY,
                 }
             }
         );
@@ -116,22 +179,19 @@ export async function startBet(battleId: string, startTime: number, endTime: num
 export const determineBet = async (battleId: string) => {
     const provider = getProvider();
     const program = new Program(idl as any, programID, provider);
-    const [battlePubKey, battleBump] = await getBattlePDA();
-    const [bettingPubKey, bettingBump] = await getBettingPDA(battleId);
-    const [vaultPubKey, vaultBump] = await getVaultPDA();
-    await program.rpc.determineBet(
-        battleBump,
-        bettingBump,
-        vaultBump,
+    const [battlePubkey] = await getBattlePDA(battleId);
+    const [vaultPubkey] = await getVaultPDA();
+    const [adminPubkey] = await getAdminPDA();
+    await program.rpc.determineBattle(
         battleId,
         {
             accounts: {
-                battleAccount: battlePubKey,
-                escrowAccount: vaultPubKey,
-                bettingAccount: bettingPubKey,
+                adminAccount: adminPubkey,
+                escrowAccount: vaultPubkey,
+                battleAccount: battlePubkey,
+                superAdmin: provider.wallet.publicKey,
                 admin: provider.wallet.publicKey,
                 systemProgram: web3.SystemProgram.programId,
-                rent: web3.SYSVAR_RENT_PUBKEY,
             }
         }
     );
@@ -142,7 +202,7 @@ export const getEndTime = async (battleId: string): Promise<number> => {
     const program = new Program(idl as anchor.Idl, programID, provider);
     const [bettingPubKey] =
         await PublicKey.findProgramAddress(
-            [Buffer.from(utils.bytes.utf8.encode(BET_INFO_SEED)),
+            [Buffer.from(utils.bytes.utf8.encode(BATTLE_INFO_SEED)),
             Buffer.from(strTou8Arry(battleId).buffer)],
             program.programId
         );
