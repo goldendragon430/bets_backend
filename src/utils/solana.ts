@@ -2,8 +2,10 @@ import * as solanaWeb3 from '@solana/web3.js';
 import * as anchor from '@project-serum/anchor';
 import * as idl from '../abis/solana/idl.json';
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
-// TODO: should be removed when launching
-import * as TestIDL from '../abis/solana/testidl.json';
+import { ParsedIdlInstruction, SolanaParser } from './solana-parser';
+import { solanaBettedFunc, solanaStakedFunc } from '../services/getEventFunc';
+import { Idl } from '@project-serum/anchor';
+import redisHandle from './redis';
 
 const { Connection, PublicKey, Keypair } = solanaWeb3;
 const { Program, web3, utils, AnchorProvider, BN, Wallet } = anchor;
@@ -17,6 +19,13 @@ const strTou8Arry = (s: string) => {
     const enc = new TextEncoder();
     return enc.encode(s);
 };
+
+const parser = new SolanaParser([
+    {
+        idl: idl as Idl,
+        programId: programID
+    }
+]);
 
 const opts = {
     preflightCommitment: 'processed',
@@ -227,12 +236,6 @@ export const getProgram = () => {
     return new Program(idl as any, programID, provider);
 };
 
-export const getTestProgram = () => {
-    const provider = getSolanaProvider();
-    const programID = new PublicKey(TestIDL.metadata.address);
-    return new Program(TestIDL as any, programID, provider);
-};
-
 export const validateAddress = (address: string) => {
     try {
         new PublicKey(address);
@@ -242,32 +245,59 @@ export const validateAddress = (address: string) => {
     }
 };
 
-export const getTransactions = async () => {
+const getTransactions = async (limitNum: number) => {
     try {
+        const redisClient = redisHandle.getRedisClient();
+        const lastSignature = await redisClient.get('lastSignature') || undefined;
         const pubKey = new PublicKey(idl.metadata.address);
-        const txList = await connection.getSignaturesForAddress(pubKey);
+        let txList = await connection.getSignaturesForAddress(pubKey, { limit: limitNum, until: lastSignature });
 
-        const signatureList = txList.map(transaction => transaction.signature);
-        const transactionDetails = await connection.getParsedTransactions(signatureList);
-
-        txList.forEach((transaction, i) => {
-            if (transaction && transactionDetails[i]) {
-                const date = new Date((transaction.blockTime || 0) * 1000);
-                const transactionInstructions = transactionDetails[i]?.transaction.message.instructions;
-                console.log(transactionInstructions);
-                console.log(`Transaction No: ${i + 1}`);
-                console.log(`Signature: ${transaction.signature}`);
-                console.log(`Time: ${date}`);
-                // @ts-ignore
-                console.log(`Status: ${transaction.confirmationStatus}`);
-                transactionInstructions?.forEach((instruction, n) => {
-                    // @ts-ignore
-                    console.log(`---Program Instructions ${n + 1}: ${instruction?.program ? instruction?.program + ':' : ''} ${instruction.programId.toString()}`);
-                });
-                console.log(('-').repeat(20));
+        for (const transaction of txList) {
+            const signature = transaction.signature;
+            const parsedTx = await getParsedTransaction(signature);
+            if (parsedTx) {
+                if (parsedTx.name === 'userBet') {
+                    await solanaBettedFunc(parsedTx.args.battleId, parsedTx.accounts[0].userAccount, parsedTx.args.betAmount, parsedTx.args.betSide, transaction.signature, transaction.slot);
+                } else if (parsedTx.name === 'stake') {
+                    console.log(parsedTx);
+                }
             }
+        }
+        txList = txList.sort((a, b) => {
+            if (a && b && a.blockTime && b.blockTime) {
+                return b.blockTime - a.blockTime;
+            }
+            return 0;
         });
+        if (txList.length > 0) {
+            await redisClient.set('lastSignature', txList[0].signature);
+        }
     } catch (e) {
         console.error('getTransactions', e);
+    }
+};
+
+export const getParsedTransaction = async (signature: string): Promise<any> => {
+    try {
+        const connection = new Connection(network, 'finalized');
+        const parsedTransactions = await parser.parseTransaction(connection, signature, false);
+        if (parsedTransactions) {
+            return parsedTransactions[0];
+        }
+        return undefined;
+    } catch (e) {
+        console.error(e);
+        return undefined;
+    }
+};
+
+export const subscribeSolanaTransactions = async () => {
+    async function sleep(number: number) {
+        return new Promise( resolve => setTimeout(resolve, number) );
+    }
+
+    while (true) {
+        await getTransactions(50);
+        await sleep(10000);
     }
 };

@@ -1,5 +1,5 @@
 import * as cron from 'node-cron';
-import { determineBet, getTransactions } from '../utils/solana';
+import { determineBet, getParsedTransaction, subscribeSolanaTransactions } from '../utils/solana';
 import BattleRepository from '../repositories/featuredBattle';
 import { BattleStatus, NetworkType } from '../utils/enums';
 
@@ -7,6 +7,7 @@ import { BattleStatus, NetworkType } from '../utils/enums';
 const jobMap: Map<string, cron.ScheduledTask> = new Map();
 
 export const setupSolanaCronJobMap = async (): Promise<void> => {
+    await subscribeSolanaTransactions();
     const determineJob = cron.schedule('* * * * *', async () => {
         try {
             const battleIds = await BattleRepository.getSolanaEndedBattles();
@@ -28,10 +29,5 @@ export const setupSolanaCronJobMap = async (): Promise<void> => {
         }
     }, { scheduled: false }).start();
 
-    const transactionJob = cron.schedule('* * * * *', async () => {
-        // await getTransactions();
-    }, { scheduled: false });
-
     jobMap.set('determineJob', determineJob);
-    // jobMap.set('transactionJob', transactionJob);
 };

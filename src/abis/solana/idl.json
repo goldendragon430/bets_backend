@@ -16,12 +16,32 @@
           "isSigner": false
         },
         {
+          "name": "abpMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "abpVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "admin",
           "isMut": true,
           "isSigner": true
         },
         {
           "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
           "isMut": false,
           "isSigner": false
         }
@@ -266,12 +286,12 @@
       ],
       "args": [
         {
-          "name": "nonceAbpVault",
-          "type": "u8"
-        },
-        {
           "name": "battleId",
           "type": "string"
+        },
+        {
+          "name": "nonceAbpVault",
+          "type": "u8"
         }
       ]
     },
@@ -430,16 +450,16 @@
       ],
       "args": [
         {
+          "name": "battleId",
+          "type": "string"
+        },
+        {
           "name": "amount",
           "type": "u64"
         },
         {
           "name": "side",
           "type": "bool"
-        },
-        {
-          "name": "battleId",
-          "type": "string"
         }
       ]
     },
@@ -1072,7 +1092,7 @@
     {
       "code": 6031,
       "name": "NoEnoughSol",
-      "msg": "User doesn't have enough SOL"
+      "msg": "User doesn\u0027t have enough SOL"
     },
     {
       "code": 6032,
@@ -1117,7 +1137,7 @@
     {
       "code": 6040,
       "name": "MetadataDoesntExist",
-      "msg": "Metadata doesn't exist"
+      "msg": "Metadata doesn\u0027t exist"
     },
     {
       "code": 6041,
@@ -1151,6 +1171,6 @@
     }
   ],
   "metadata": {
-    "address": "56y6AD5eUp4VdH5CcbWeuwtoiffSGKfV1zu7dUdawhKF"
+    "address": "62aZ4fEBPGRgkpmoWGuT5E4r3xXVwkWK56pMDRFDpQUv"
   }
 }

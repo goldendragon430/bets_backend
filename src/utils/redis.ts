@@ -32,7 +32,7 @@ class CRedis {
         });
     }
 
-    getRedisClient()     {
+    getRedisClient() {
         return this.redisClient;
     }
 

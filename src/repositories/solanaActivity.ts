@@ -52,6 +52,11 @@ class SolanaActivityRepository {
         return solanaActivityInstance.save();
     }
 
+    getLastSignature = async () => {
+        const lastActivity = await SolanaActivityModel.findOne().sort({ slot: -1 });
+        return lastActivity?.signature;
+    }
+
     getLiveFeeds = async (battle: any) => {
         const activities = await SolanaActivityModel.aggregate([
             {
