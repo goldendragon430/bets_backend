@@ -8,7 +8,7 @@ export const installSolanaEvents = () => {
         console.log(event, slot, signature);
         const { battleId, side, user, tokenIds } = event;
 
-        await solanaStakedFunc(battleId, side, user, tokenIds, signature, slot);
+        // await solanaStakedFunc(battleId, side, user, tokenIds, signature, slot);
     });
 
     solanaProgram.addEventListener('user_bet', async (event, slot, signature) => {

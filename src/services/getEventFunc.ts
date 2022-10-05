@@ -120,13 +120,11 @@ export const syncProjectFromOpensea = async (slug: string) => {
     }
 };
 
-export const solanaStakedFunc = async (battleId: string, side: boolean, user: string, tokenIds: Array<string>, signature: string, slot: number) => {
+export const solanaStakedFunc = async (battleId: string, side: boolean, user: string, nftPubkey: string, amount: BN, signature: string, slot: number) => {
     try {
         const activity = await SolanaActivityRepository.getSolanaActivity(signature);
         if (!activity) {
-            for (const tokenId of tokenIds) {
-                await SolanaActivityRepository.addStakedActivity(battleId, side, user, tokenId, signature, slot);
-            }
+            await SolanaActivityRepository.addStakedActivity(battleId, side, user, nftPubkey, amount, signature, slot);
         }
     } catch (e) {
         console.error('Solana Staked Event Err: ', e);

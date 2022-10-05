@@ -13,7 +13,8 @@ class SolanaActivityRepository {
         battleId: string,
         side: boolean,
         user: string,
-        tokenId: string,
+        nftPubkey: string,
+        amount: BN,
         signature: string,
         slot: number
     ) => {
@@ -21,7 +22,8 @@ class SolanaActivityRepository {
             battleId,
             side,
             from: user,
-            tokenId,
+            tokenId: nftPubkey,
+            amount: amount.toNumber(),
             signature,
             slot,
             activity: ActivityType.Staked
@@ -52,16 +54,11 @@ class SolanaActivityRepository {
         return solanaActivityInstance.save();
     }
 
-    getLastSignature = async () => {
-        const lastActivity = await SolanaActivityModel.findOne().sort({ slot: -1 });
-        return lastActivity?.signature;
-    }
-
     getLiveFeeds = async (battle: any) => {
         const activities = await SolanaActivityModel.aggregate([
             {
                 $match: {
-                    battleId: battle._id.toString(),
+                    battleId: battle.id.toString(),
                     activity: { $in: [ActivityType.Staked, ActivityType.Betted] },
                 }
             },
@@ -80,7 +77,7 @@ class SolanaActivityRepository {
                     count: { $sum: 1 }
                 }
             },
-            { $sort: { '_id.$slot': 1 } },
+            { $sort: { createdAt: 1 } },
             {
                 $lookup: {
                     from: 'users',
@@ -117,7 +114,11 @@ class SolanaActivityRepository {
                 subTeamName: projectDisplayName, // TODO: Could be removed in the future
                 displayName: projectDisplayName,
                 action: activity.activity,
-                userInfo: activity.userInfo,
+                userInfo: activity.userInfo ? {
+                    username: activity.userInfo.username,
+                    address: activity.userInfo.address,
+                    selectedNFT: activity.userInfo.selectedNFT,
+                } : null,
             };
         });
     }

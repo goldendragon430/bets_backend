@@ -245,8 +245,14 @@ export const validateAddress = (address: string) => {
     }
 };
 
+const getProviderWithAnchor = () => {
+    const provider = new anchor.AnchorProvider(connection, wallet, anchor.AnchorProvider.defaultOptions());
+    return new anchor.Program(idl as any, programID, provider);
+};
+
 const getTransactions = async (limitNum: number) => {
     try {
+        const anchorProgram = getProviderWithAnchor();
         const redisClient = redisHandle.getRedisClient();
         const lastSignature = await redisClient.get('lastSignature') || undefined;
         const pubKey = new PublicKey(idl.metadata.address);
@@ -257,9 +263,11 @@ const getTransactions = async (limitNum: number) => {
             const parsedTx = await getParsedTransaction(signature);
             if (parsedTx) {
                 if (parsedTx.name === 'userBet') {
-                    await solanaBettedFunc(parsedTx.args.battleId, parsedTx.accounts[0].userAccount, parsedTx.args.betAmount, parsedTx.args.betSide, transaction.signature, transaction.slot);
+                    await solanaBettedFunc(parsedTx.args.battleId, parsedTx.accounts[0].pubkey.toString(), parsedTx.args.betAmount, parsedTx.args.betSide, transaction.signature, transaction.slot);
                 } else if (parsedTx.name === 'stake') {
-                    console.log(parsedTx);
+                    const stakeEntryPubkey = parsedTx.accounts[0].pubkey;
+                    const stakeEntry = await anchorProgram.account.stakeEntry.fetchNullable(stakeEntryPubkey);
+                    await solanaStakedFunc(parsedTx.args.battleId, parsedTx.args.side, parsedTx.accounts[2].pubkey.toString(), stakeEntry?.originalMint.toString(), parsedTx.args.amount, transaction.signature, transaction.slot);
                 }
             }
         }
