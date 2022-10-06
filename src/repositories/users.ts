@@ -62,16 +62,19 @@ class UsersRepository {
 
   getSolanaUserProfile = async (address: string) => {
     const user = await this.getUser(address);
+    const onGoingBattleCount = await FeaturedBattle.getProgressBattleCountByAddressAndSol(address);
     if (user) {
       return {
         username: user.username,
         address: address,
+        battlesInProgress: onGoingBattleCount,
       };
     }
     await this.createUser(address);
     return {
       username: address,
-      address: address
+      address: address,
+      battlesInProgress: onGoingBattleCount,
     };
   }
 

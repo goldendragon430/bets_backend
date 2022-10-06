@@ -1,11 +1,11 @@
 import FeaturedBattle from '../models/featuredBattle';
 import { ActivityType, BattleStatus, NetworkType } from '../utils/enums';
 import ProjectRepository from './project';
-import { provider } from '../utils/constants';
 import { setupNFTTransferJob } from '../services/cronManager';
 import NftActivityModel from '../models/nftActivity';
+import SolanaActivityModel from '../models/solanaActivity';
 import { BigNumber } from 'ethers';
-import { getEndTime, getTimeStamp, startBet } from '../utils/solana';
+import { startBet } from '../utils/solana';
 
 class FeaturedBattleRepository {
     constructor() {
@@ -440,10 +440,41 @@ class FeaturedBattleRepository {
 
     getProgressBattleCountByAddress = async (address: string): Promise<number> => {
         const battleIds = await this.getBattleIdsByStatus();
-        return NftActivityModel.count({
-            battleId: {$in: battleIds},
-            from: address
-        });
+        const activity = await NftActivityModel.aggregate([
+            {
+                $match: {
+                    battleId: {$in: battleIds},
+                    from: address
+                }
+            },
+            {
+                '$group' : {
+                    _id: '$battleId',
+                    count: {$sum: 1}
+                }
+            }
+        ]);
+        return activity ? activity.length : 0;
+    }
+
+    getProgressBattleCountByAddressAndSol = async (address: string): Promise<number> => {
+        const battleIds = await this.getBattleIdsByStatus();
+        const solActivity = await SolanaActivityModel.aggregate([
+            {
+                $match: {
+                    battleId: {$in: battleIds},
+                    from: address
+                }
+            },
+            {
+                '$group' : {
+                    _id: '$battleId',
+                    count: {$sum: 1}
+                }
+            }
+        ]);
+
+        return solActivity ? solActivity.length : 0;
     }
 }
 
