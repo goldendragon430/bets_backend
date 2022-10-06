@@ -4,8 +4,10 @@ import * as jwt from 'jsonwebtoken';
 import { apiErrorHandler } from '../handlers/errorHandler';
 import UserRepository from '../repositories/users';
 import { JWT_CONFIG } from '../config';
-import { validateAddress } from '../utils/solana';
+import { getSolanaProvider, validateAddress } from '../utils/solana';
 import { NetworkType } from '../utils/enums';
+import base58 from 'bs58';
+import * as nacl from 'tweetnacl';
 
 export default class UsersController {
     constructor() {
@@ -131,6 +133,65 @@ export default class UsersController {
                     'message': '',
                     'data': {
                         token,
+                        user,
+                    },
+                });
+            }
+
+            return res.status(401).json({
+                'success': false,
+                'message': 'Invalid credentials',
+                'data': undefined,
+            });
+
+        } catch (error) {
+            console.log(error);
+            apiErrorHandler(error, req, res, 'Update Signature failed.');
+        }
+    };
+
+    /**
+     * Validate if user registered
+     * @param req
+     * @param res
+     * @param next
+     */
+    updateSolSignature = async (req: Request, res: Response, next: NextFunction) => {
+        const {address} = req.params;
+        const {signature} = req.body;
+        try {
+            const user = await UserRepository.getUser(address);
+
+            if (!user) {
+                return res.status(400).json({
+                    'success': false,
+                    'message': 'User not found.',
+                    'data': undefined,
+                });
+            }
+
+            if (!user.nonce) {
+                return res.status(400).json({
+                    'success': false,
+                    'message': 'User not registered.',
+                    'data': ''
+                });
+            }
+
+            const signatureUint8 = base58.decode(signature);
+            const nonceUint8 = new TextEncoder().encode(`One-time code ${user.nonce}`);
+            const pubKeyUint8 = base58.decode(address);
+
+            const verified = nacl.sign.detached.verify(nonceUint8, signatureUint8, pubKeyUint8);
+
+            if (verified) {
+                user.nonce = Math.floor(Math.random() * 1000000);
+                await UserRepository.updateUser(user);
+
+                return res.status(200).json({
+                    'success': true,
+                    'message': '',
+                    'data': {
                         user,
                     },
                 });

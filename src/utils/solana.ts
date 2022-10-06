@@ -53,7 +53,7 @@ const getProvider = () => {
     );
 };
 
-const getSolanaProvider = () => {
+export const getSolanaProvider = () => {
     const network = 'https://api.devnet.solana.com';
     const connection = new Connection(network, 'processed');
 

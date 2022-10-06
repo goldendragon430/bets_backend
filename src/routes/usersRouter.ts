@@ -14,6 +14,7 @@ class UsersRouter {
     this.router.route('/register').post(this.usersController.register);
     this.router.route('/get_nonce/:address/nonce').get(this.usersController.getNonce);
     this.router.route('/update_signature/:address/signature').post(this.usersController.updateSignature);
+    this.router.route('/update_sol_signature/:address/signature').post(this.usersController.updateSolSignature);
     this.router.route('/user_info').get(passport.authenticate('jwt', { session: false }), this.usersController.checkAdmin, this.usersController.getUserInfo);
 
     this.router.route('/get_profile/:address').get(this.usersController.getProfile);
