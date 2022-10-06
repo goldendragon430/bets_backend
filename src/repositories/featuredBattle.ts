@@ -431,7 +431,7 @@ class FeaturedBattleRepository {
         const timestamp = (new Date().getTime()) / 1000;
         const battleIds: Array<string> = [];
         for (const battle of battles) {
-            if (battle.endTime < timestamp) {
+            if (battle.endTime < (timestamp + 15000)) {
                 battleIds.push(battle._id.toString());
             }
         }

@@ -7,7 +7,6 @@ import { BattleStatus, NetworkType } from '../utils/enums';
 const jobMap: Map<string, cron.ScheduledTask> = new Map();
 
 export const setupSolanaCronJobMap = async (): Promise<void> => {
-    await subscribeSolanaTransactions();
     const determineJob = cron.schedule('* * * * *', async () => {
         try {
             const battleIds = await BattleRepository.getSolanaEndedBattles();
@@ -30,4 +29,6 @@ export const setupSolanaCronJobMap = async (): Promise<void> => {
     }, { scheduled: false }).start();
 
     jobMap.set('determineJob', determineJob);
+
+    subscribeSolanaTransactions();
 };
