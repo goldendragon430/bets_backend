@@ -63,11 +63,20 @@ class UsersRepository {
   getSolanaUserProfile = async (address: string) => {
     const user = await this.getUser(address);
     const onGoingBattleCount = await FeaturedBattle.getProgressBattleCountByAddressAndSol(address);
+    // TODO: get total solana amount
+    const totalETHAmount = 0;
+    const battleWonCount = 0;
+    const abpRank = 0;
+    const winnerRank = 0;
     if (user) {
       return {
         username: user.username,
         address: address,
         battlesInProgress: onGoingBattleCount,
+        totalEthEarned: totalETHAmount,
+        battlesWon: battleWonCount,
+        abpRank: abpRank,
+        winnerRank: winnerRank,
       };
     }
     await this.createUser(address);
@@ -75,6 +84,10 @@ class UsersRepository {
       username: address,
       address: address,
       battlesInProgress: onGoingBattleCount,
+      totalEthEarned: totalETHAmount,
+      battlesWon: battleWonCount,
+      abpRank: abpRank,
+      winnerRank: winnerRank,
     };
   }
 

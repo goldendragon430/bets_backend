@@ -267,6 +267,8 @@ const getTransactions = async (limitNum: number) => {
                     const stakeEntryPubkey = parsedTx.accounts[0].pubkey;
                     const stakeEntry = await anchorProgram.account.stakeEntry.fetchNullable(stakeEntryPubkey);
                     await solanaStakedFunc(parsedTx.args.battleId, parsedTx.args.side, parsedTx.accounts[2].pubkey.toString(), stakeEntry?.originalMint.toString(), parsedTx.args.amount, transaction.signature, transaction.slot);
+                } else if (parsedTx.name === 'claimReward') {
+                    console.log(parsedTx);
                 }
             }
         }
