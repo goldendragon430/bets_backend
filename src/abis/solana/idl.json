@@ -16,32 +16,12 @@
           "isSigner": false
         },
         {
-          "name": "abpMint",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "abpVault",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "admin",
           "isMut": true,
           "isSigner": true
         },
         {
           "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "tokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rent",
           "isMut": false,
           "isSigner": false
         }
@@ -1092,7 +1072,7 @@
     {
       "code": 6031,
       "name": "NoEnoughSol",
-      "msg": "User doesn\u0027t have enough SOL"
+      "msg": "User doesn't have enough SOL"
     },
     {
       "code": 6032,
@@ -1137,7 +1117,7 @@
     {
       "code": 6040,
       "name": "MetadataDoesntExist",
-      "msg": "Metadata doesn\u0027t exist"
+      "msg": "Metadata doesn't exist"
     },
     {
       "code": 6041,

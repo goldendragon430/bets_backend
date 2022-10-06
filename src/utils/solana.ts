@@ -1,10 +1,10 @@
 import * as solanaWeb3 from '@solana/web3.js';
 import * as anchor from '@project-serum/anchor';
+import { Idl } from '@project-serum/anchor';
 import * as idl from '../abis/solana/idl.json';
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
-import { ParsedIdlInstruction, SolanaParser } from './solana-parser';
+import { SolanaParser } from './solana-parser';
 import { solanaBettedFunc, solanaStakedFunc } from '../services/getEventFunc';
-import { Idl } from '@project-serum/anchor';
 import redisHandle from './redis';
 
 const { Connection, PublicKey, Keypair } = solanaWeb3;
@@ -34,6 +34,7 @@ const ADMIN_MANAGE_SEED = 'alphabets-admin';
 const ESCROW_VAULT_SEED = 'alphabets-escrow-vault';
 const BATTLE_INFO_SEED = 'alphabets-battle-info';
 const abpMintPubkey = new PublicKey('NxGcGqZ8FLpmDgJ35JK8xDivCo3EP3G5BbpBjE2cUQT');
+const SUPER_ADMIN = new PublicKey('52UcVJFGTDXqy4mxQz9FWcN95qT653nBRCwFCevymrQz');
 
 const network = 'https://api.devnet.solana.com'; // https://api.devnet.solana.com
 const connection = new Connection(network, 'confirmed');
@@ -69,7 +70,7 @@ export async function getAdminPDA() {
     const program = new Program(idl as any, programID, provider);
     return await PublicKey.findProgramAddress(
         [Buffer.from(utils.bytes.utf8.encode(ADMIN_MANAGE_SEED)),
-            provider.wallet.publicKey.toBuffer()],
+            SUPER_ADMIN.toBuffer()],
         program.programId
     );
 }
@@ -120,8 +121,7 @@ export async function getUserBetInfo(battleId: string) {
     if (!provider.wallet.publicKey) return [];
     const [userBettingPubkey] = await getUserBattlePDA(battleId);
     try {
-        const userBetInfo = await program.account.userBattleAccount.fetch(userBettingPubkey);
-        return userBetInfo;
+        return await program.account.userBattleAccount.fetch(userBettingPubkey);
     } catch (err) {
         return [];
     }
@@ -144,8 +144,7 @@ export async function getBetInfo(battleId: string) {
     const program = new Program(idl as any, programID, provider);
     const [battlePubkey] = await getBattlePDA(battleId);
     try {
-        const betInfo = await program.account.battleAccount.fetch(battlePubkey);
-        return betInfo;
+        return await program.account.battleAccount.fetch(battlePubkey);
     } catch (err) {
         return [];
     }
@@ -198,7 +197,7 @@ export const determineBet = async (battleId: string) => {
                 adminAccount: adminPubkey,
                 escrowAccount: vaultPubkey,
                 battleAccount: battlePubkey,
-                superAdmin: provider.wallet.publicKey,
+                superAdmin: SUPER_ADMIN,
                 admin: provider.wallet.publicKey,
                 systemProgram: web3.SystemProgram.programId,
             }
