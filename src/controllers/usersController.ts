@@ -262,7 +262,7 @@ export default class UsersController {
         const {username, contract, tokenId, image, signature} = req.body;
 
         try {
-            if (!ethers.utils.isAddress(address)) {
+            if (!ethers.utils.isAddress(address) && !validateAddress(address)) {
                 return res.status(400).json({
                     'success': false,
                     'message': 'Invalid address.',
@@ -278,17 +278,35 @@ export default class UsersController {
                 });
             }
 
-            if (!user.nonce) {
-                return res.status(400).json({
+            const network = validateAddress(address) ? NetworkType.SOL : NetworkType.ETH;
+
+            if (network === NetworkType.ETH) {
+                if (!user.nonce) {
+                    return res.status(400).json({
+                        'success': false,
+                        'message': 'User not registered.',
+                        'data': ''
+                    });
+                }
+                const recoveredAddress = this.recoverAddress(user.nonce, signature);
+                if (recoveredAddress.toLowerCase() === address.toLowerCase()) {
+                    user.nonce = Math.floor(Math.random() * 1000000);
+                    await UserRepository.updateUser(user);
+                    await UserRepository.updateProfile(user, username, contract, tokenId, image);
+
+                    return res.status(200).json({
+                        'success': true,
+                        'message': 'Updated Profile',
+                        'data': user,
+                    });
+                }
+
+                return res.status(401).json({
                     'success': false,
-                    'message': 'User not registered.',
-                    'data': ''
+                    'message': 'Invalid credentials',
+                    'data': undefined,
                 });
-            }
-            const recoveredAddress = this.recoverAddress(user.nonce, signature);
-            if (recoveredAddress.toLowerCase() === address.toLowerCase()) {
-                user.nonce = Math.floor(Math.random() * 1000000);
-                await UserRepository.updateUser(user);
+            } else {
                 await UserRepository.updateProfile(user, username, contract, tokenId, image);
 
                 return res.status(200).json({
@@ -297,12 +315,6 @@ export default class UsersController {
                     'data': user,
                 });
             }
-
-            return res.status(401).json({
-                'success': false,
-                'message': 'Invalid credentials',
-                'data': undefined,
-            });
         } catch (error) {
             apiErrorHandler(error, req, res, 'Update profile failed.');
         }
