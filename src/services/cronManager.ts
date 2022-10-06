@@ -4,7 +4,17 @@ import ProjectRepository from '../repositories/project';
 import { BetContract, adminSigner, getERC721Contract, provider } from '../utils/constants';
 import { ServiceType, BattleStatus, NetworkType, RewardType } from '../utils/enums';
 import redisHandle from '../utils/redis';
-import { rewardClaimedFunc, battleCreateFunc, bettedFunc, finalizedFunc, fulfilledFunc, nftStakedFunc, nftTransferFunc, syncProjectFromOpensea } from './getEventFunc';
+import {
+    rewardClaimedFunc,
+    battleCreateFunc,
+    bettedFunc,
+    finalizedFunc,
+    fulfilledFunc,
+    nftStakedFunc,
+    nftTransferFunc,
+    syncProjectFromOpensea,
+    syncProjectFromMagicEden
+} from './getEventFunc';
 
 // hash map to map keys to jobs
 const jobMap: Map<string, cron.ScheduledTask> = new Map();
@@ -310,6 +320,18 @@ export const setupCronJobMap = async (): Promise<void> => {
                     console.log(`While syncing ${project.slug} got error: ${e}`);
                 }
                 await sleep();
+            }
+        }
+
+        const solProjects = await ProjectRepository.getProjects(NetworkType.SOL);
+        for (const project of solProjects) {
+            if (project.slug) {
+                try {
+                    await syncProjectFromMagicEden(project.slug);
+                    console.log(`Synced ${project.slug}`);
+                } catch (e) {
+                    console.log(`While syncing ${project.slug} got error: ${e}`);
+                }
             }
         }
     }, { scheduled: false }).start();

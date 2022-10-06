@@ -120,6 +120,15 @@ export const syncProjectFromOpensea = async (slug: string) => {
     }
 };
 
+export const syncProjectFromMagicEden = async (slug: string) => {
+    try {
+        const { data } = await axios.get(`https://api-mainnet.magiceden.dev/v2/collections/${slug}/stats`);
+        await ProjectRepository.updateProjectBySlug(slug, (data.floorPrice / 1000000000), data.listedCount);
+    } catch (e) {
+        console.error('While syncing data from MagicEden: ', e);
+    }
+};
+
 export const solanaStakedFunc = async (battleId: string, side: boolean, user: string, nftPubkey: string, amount: BN, signature: string, slot: number) => {
     try {
         const activity = await SolanaActivityRepository.getSolanaActivity(signature);
