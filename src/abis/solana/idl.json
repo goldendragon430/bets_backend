@@ -16,12 +16,32 @@
           "isSigner": false
         },
         {
+          "name": "abpMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "abpVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "admin",
           "isMut": true,
           "isSigner": true
         },
         {
           "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
           "isMut": false,
           "isSigner": false
         }
@@ -276,6 +296,37 @@
       ]
     },
     {
+      "name": "refund",
+      "accounts": [
+        {
+          "name": "adminAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "battleAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "superAdmin",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "admin",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "battleId",
+          "type": "string"
+        }
+      ]
+    },
+    {
       "name": "initIdentifier",
       "accounts": [
         {
@@ -399,6 +450,11 @@
         },
         {
           "name": "originalMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "originalMintMetadata",
           "isMut": false,
           "isSigner": false
         },
@@ -911,6 +967,48 @@
           }
         ]
       }
+    }
+  ],
+  "events": [
+    {
+      "name": "FeedTx",
+      "fields": [
+        {
+          "name": "battleId",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "addr",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "side",
+          "type": "bool",
+          "index": false
+        },
+        {
+          "name": "betAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "stakeCount",
+          "type": "u32",
+          "index": false
+        },
+        {
+          "name": "txType",
+          "type": "bool",
+          "index": false
+        },
+        {
+          "name": "timeStamp",
+          "type": "u32",
+          "index": false
+        }
+      ]
     }
   ],
   "errors": [

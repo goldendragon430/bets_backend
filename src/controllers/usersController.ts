@@ -368,12 +368,26 @@ export default class UsersController {
                     'data': undefined,
                 });
             } else {
-                await UserRepository.updateProfile(user, username, contract, tokenId, image);
+                const signatureUint8 = base58.decode(signature);
+                const nonceUint8 = new TextEncoder().encode(`One-time code ${user.nonce}`);
+                const pubKeyUint8 = base58.decode(address);
 
-                return res.status(200).json({
-                    'success': true,
-                    'message': 'Updated Profile',
-                    'data': user,
+                const verified = nacl.sign.detached.verify(nonceUint8, signatureUint8, pubKeyUint8);
+
+                if (verified) {
+                    await UserRepository.updateProfile(user, username, contract, tokenId, image);
+
+                    return res.status(200).json({
+                        'success': true,
+                        'message': 'Updated Profile',
+                        'data': user,
+                    });
+                }
+
+                return res.status(401).json({
+                    'success': false,
+                    'message': 'Invalid credentials',
+                    'data': undefined,
                 });
             }
         } catch (error) {
