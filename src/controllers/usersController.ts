@@ -6,7 +6,7 @@ import UserRepository from '../repositories/users';
 import { JWT_CONFIG } from '../config';
 import { getSolanaProvider, validateAddress } from '../utils/solana';
 import { NetworkType } from '../utils/enums';
-import base58 from 'bs58';
+import * as base58 from 'bs58';
 import * as nacl from 'tweetnacl';
 
 export default class UsersController {
