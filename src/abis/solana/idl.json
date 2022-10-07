@@ -999,8 +999,23 @@
           "index": false
         },
         {
+          "name": "stakeMint",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "claimAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "abpAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
           "name": "txType",
-          "type": "bool",
+          "type": "u8",
           "index": false
         },
         {

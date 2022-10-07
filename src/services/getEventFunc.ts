@@ -2,6 +2,7 @@ import { BigNumber } from 'ethers';
 import axios from 'axios';
 import NFTActivityRepository from '../repositories/nftActivity';
 import SolanaActivityRepository from '../repositories/solanaActivity';
+import SolanaClaimActivityRepository from '../repositories/solanaClaimActivity';
 import ClaimActivityRepository from '../repositories/claimActivity';
 import FulfillActivityRepository from '../repositories/fulfillActivity';
 import FinalizeActivityRepository from '../repositories/finalizeActivity';
@@ -145,6 +146,17 @@ export const solanaBettedFunc = async (battleId: string, user: string, amount: B
         const activity = await SolanaActivityRepository.getSolanaActivity(signature);
         if (!activity) {
             await SolanaActivityRepository.addBettedActivity(battleId, user, amount, side, signature, slot);
+        }
+    } catch (e) {
+        console.error('Solana Staked Event Err: ', e);
+    }
+};
+
+export const solanaClaimFunc = async (battleId: string, user: string, amount: BN, type: RewardType, signature: string, slot: number) => {
+    try {
+        const activity = await SolanaClaimActivityRepository.getClaimActivity(signature);
+        if (!activity) {
+            await SolanaClaimActivityRepository.addClaimActivity(battleId, user, amount, type, signature, slot);
         }
     } catch (e) {
         console.error('Solana Staked Event Err: ', e);
