@@ -77,6 +77,7 @@ class UsersRepository {
         battlesWon: battleWonCount,
         abpRank: abpRank,
         winnerRank: winnerRank,
+        selectedNFT: user.selectedNFT
       };
     }
     await this.createUser(address);
@@ -88,6 +89,7 @@ class UsersRepository {
       battlesWon: battleWonCount,
       abpRank: abpRank,
       winnerRank: winnerRank,
+      selectedNFT: {}
     };
   }
 
