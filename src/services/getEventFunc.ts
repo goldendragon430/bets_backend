@@ -148,7 +148,7 @@ export const solanaBettedFunc = async (battleId: string, user: string, amount: B
             await SolanaActivityRepository.addBettedActivity(battleId, user, amount, side, signature, slot);
         }
     } catch (e) {
-        console.error('Solana Staked Event Err: ', e);
+        console.error('Solana Betted Event Err: ', e);
     }
 };
 
@@ -159,6 +159,6 @@ export const solanaClaimFunc = async (battleId: string, user: string, amount: BN
             await SolanaClaimActivityRepository.addClaimActivity(battleId, user, amount, type, signature, slot);
         }
     } catch (e) {
-        console.error('Solana Staked Event Err: ', e);
+        console.error('Solana Claimed Event Err: ', e);
     }
 };

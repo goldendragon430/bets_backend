@@ -124,7 +124,7 @@ class SolanaClaimActivityRepository {
             user,
             amount: amount.toString(),
             rewardType,
-            amountInDecimal: parseFloat(ethers.utils.formatUnits(amount, 9)),
+            amountInDecimal: amount.toNumber() / 10 ** 9,
             transactionHash,
             blockNumber,
         });

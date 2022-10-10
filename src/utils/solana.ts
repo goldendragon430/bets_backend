@@ -4,8 +4,9 @@ import { Idl } from '@project-serum/anchor';
 import * as idl from '../abis/solana/idl.json';
 import { bs58 } from '@project-serum/anchor/dist/cjs/utils/bytes';
 import { SolanaParser } from './solana-parser';
-import { solanaBettedFunc, solanaStakedFunc } from '../services/getEventFunc';
+import { solanaBettedFunc, solanaClaimFunc, solanaStakedFunc } from '../services/getEventFunc';
 import redisHandle from './redis';
+import { RewardType } from './enums';
 
 const { Connection, PublicKey, Keypair } = solanaWeb3;
 const { Program, web3, utils, AnchorProvider, BN, Wallet } = anchor;
@@ -268,7 +269,24 @@ const getTransactions = async (limitNum: number) => {
                     const stakeEntry = await anchorProgram.account.stakeEntry.fetchNullable(stakeEntryPubkey);
                     await solanaStakedFunc(parsedTx.args.battleId, parsedTx.args.side, parsedTx.accounts[2].pubkey.toString(), stakeEntry?.originalMint.toString(), parsedTx.args.amount, transaction.signature, transaction.slot);
                 } else if (parsedTx.name === 'claimReward') {
-                    console.log(parsedTx);
+                    const txMeta = await connection.getParsedTransaction(transaction.signature);
+                    const userPubkey = parsedTx.accounts[1].pubkey;
+                    if (txMeta) {
+                        const balanceIndex = txMeta.transaction.message.accountKeys.findIndex((account) => account.pubkey.toString() === userPubkey.toString());
+                        let changeSOLBalance = 0;
+                        let changeTokenBalance = 0;
+                        if (txMeta.meta?.postBalances?.[balanceIndex] && txMeta.meta?.preBalances?.[balanceIndex]) {
+                            changeSOLBalance = (txMeta.meta?.postBalances?.[balanceIndex] || 0) - (txMeta.meta?.preBalances?.[balanceIndex] || 0);
+                        }
+                        if (txMeta.meta?.postTokenBalances?.length === 2) {
+                            changeTokenBalance = (txMeta.meta?.postTokenBalances?.[1]?.uiTokenAmount?.uiAmount || 0) - (txMeta.meta?.preTokenBalances?.[1]?.uiTokenAmount?.uiAmount || 0);
+                        }
+                        if (changeTokenBalance > 0) {
+                            await solanaClaimFunc(parsedTx.args.battleId, userPubkey, new BN(changeTokenBalance).mul(new BN(1e9)), RewardType.ABP, transaction.signature, transaction.slot);
+                        } else {
+                            await solanaClaimFunc(parsedTx.args.battleId, userPubkey, new BN(changeSOLBalance), RewardType.ETH, transaction.signature, transaction.slot);
+                        }
+                    }
                 }
             }
         }
