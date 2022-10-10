@@ -7,6 +7,7 @@ import { SolanaParser } from './solana-parser';
 import { solanaBettedFunc, solanaClaimFunc, solanaStakedFunc } from '../services/getEventFunc';
 import redisHandle from './redis';
 import { RewardType } from './enums';
+import { getSolanaRPC } from '../config';
 
 const { Connection, PublicKey, Keypair } = solanaWeb3;
 const { Program, web3, utils, AnchorProvider, BN, Wallet } = anchor;
@@ -20,7 +21,7 @@ const strTou8Arry = (s: string) => {
     const enc = new TextEncoder();
     return enc.encode(s);
 };
-
+const RPC_URL = getSolanaRPC();
 const parser = new SolanaParser([
     {
         idl: idl as Idl,
@@ -37,14 +38,10 @@ const BATTLE_INFO_SEED = 'alphabets-battle-info';
 const abpMintPubkey = new PublicKey('NxGcGqZ8FLpmDgJ35JK8xDivCo3EP3G5BbpBjE2cUQT');
 const SUPER_ADMIN = new PublicKey('52UcVJFGTDXqy4mxQz9FWcN95qT653nBRCwFCevymrQz');
 
-const network = 'https://api.devnet.solana.com'; // https://api.devnet.solana.com
-const connection = new Connection(network, 'confirmed');
+const network = RPC_URL;
+const connection = new Connection(RPC_URL, 'confirmed');
 
 const getProvider = () => {
-    /* create the provider and return it to the caller */
-    /* network set to local network for now */
-
-    const network = 'https://metaplex.devnet.rpcpool.com'; // https://api.devnet.solana.com
     const connection = new Connection(network, 'processed');
 
     return new AnchorProvider(
@@ -55,7 +52,6 @@ const getProvider = () => {
 };
 
 export const getSolanaProvider = () => {
-    const network = 'https://api.devnet.solana.com';
     const connection = new Connection(network, 'processed');
 
     return new AnchorProvider(
@@ -222,13 +218,6 @@ export const getEndTime = async (battleId: string): Promise<number> => {
         console.log('auto test: ', err);
         return 0;
     }
-};
-
-export const getTimeStamp = async (): Promise<number> => {
-    const connection = new Connection('https://metaplex.devnet.rpcpool.com', 'processed');
-    const slot = await connection.getSlot();
-    const timestamp = await connection.getBlockTime(slot);
-    return timestamp || 0;
 };
 
 export const getProgram = () => {
