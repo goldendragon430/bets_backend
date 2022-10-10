@@ -26,7 +26,7 @@ class FeaturedBattleRouter {
     this.router.route('/get_battle_histories/:network?').get(this.BattleController.getBattleHistories);
     this.router.route('/get_battle_events/:battleId').get(this.BattleController.getBattleEvents);
     this.router.route('/get_unstake_info/:battleId').get(this.BattleController.getUnstakeInfo);
-    this.router.route('/get_leaderboard').get(this.BattleController.getLeaderboard);
+    this.router.route('/get_leaderboard/:network?').get(this.BattleController.getLeaderboard);
   }
 }
 export default new FeaturedBattleRouter().router;

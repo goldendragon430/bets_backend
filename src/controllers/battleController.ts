@@ -5,6 +5,7 @@ import ProjectRepository from '../repositories/project';
 import nftActivityRepository from '../repositories/nftActivity';
 import SolanaActivityRepository from '../repositories/solanaActivity';
 import ClaimActivityRepository from '../repositories/claimActivity';
+import SolanaClaimActivityRepository from '../repositories/solanaClaimActivity';
 import { NetworkType } from '../utils/enums';
 import { provider } from '../utils/constants';
 import { BetContract } from '../utils/constants';
@@ -272,8 +273,19 @@ export default class BattleController {
      * @param next
      */
     getLeaderboard = async (req: Request, res: Response, next: NextFunction) => {
+        const { network } = req.params;
         try {
-            const leaderboard = await ClaimActivityRepository.getLeaderboard();
+            if (network && !(network in NetworkType)) {
+                return res.status(400).json({ 'success': false, 'message': 'Invalid network.' });
+            }
+            let leaderboard;
+            if (network && NetworkType[network] === NetworkType.ETH) {
+                leaderboard = await ClaimActivityRepository.getLeaderboard();
+            } else if (NetworkType[network] === NetworkType.SOL) {
+                leaderboard = await SolanaClaimActivityRepository.getLeaderboard();
+            } else {
+                leaderboard = await ClaimActivityRepository.getLeaderboard();
+            }
 
             res.json({ 'success': true, 'message': '', 'data': leaderboard });
         } catch (error) {
