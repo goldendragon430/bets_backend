@@ -7,15 +7,16 @@ import { SolanaParser } from './solana-parser';
 import { solanaBettedFunc, solanaClaimFunc, solanaStakedFunc } from '../services/getEventFunc';
 import redisHandle from './redis';
 import { RewardType } from './enums';
-import { getSolanaRPC } from '../config';
+import { getSolanaAddress, getSolanaRPC } from '../config';
 
 const { Connection, PublicKey, Keypair } = solanaWeb3;
 const { Program, web3, utils, AnchorProvider, BN, Wallet } = anchor;
 
+const contractAddress = getSolanaAddress();
 const ADMIN_KEY = process.env.SOLANA_ADMIN_KEY || '';
 const keypair = Keypair.fromSecretKey(bs58.decode(ADMIN_KEY));
 const wallet = new Wallet(keypair);
-const programID = new PublicKey(idl.metadata.address);
+const programID = new PublicKey(contractAddress || idl.metadata.address);
 // const abpMintPubkey = new PublicKey('BonB8rnokgtdSe2HRuQZ4ZiZCbtos9sKdYwabgvNcPSp');
 const strTou8Arry = (s: string) => {
     const enc = new TextEncoder();
@@ -60,7 +61,6 @@ export const getSolanaProvider = () => {
         },
     );
 };
-
 
 export async function getAdminPDA() {
     const provider = getProvider();
@@ -244,7 +244,7 @@ const getTransactions = async (limitNum: number) => {
         const anchorProgram = getProviderWithAnchor();
         const redisClient = redisHandle.getRedisClient();
         const lastSignature = await redisClient.get('lastSignature') || undefined;
-        const pubKey = new PublicKey(idl.metadata.address);
+        const pubKey = new PublicKey(contractAddress || idl.metadata.address);
         let txList = await connection.getSignaturesForAddress(pubKey, { limit: limitNum, until: lastSignature });
 
         for (const transaction of txList) {
