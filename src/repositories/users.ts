@@ -2,6 +2,7 @@ import UserModel, { INFTMetadata } from '../models/users';
 import playerWallet from '../models/playerWallet';
 import FeaturedBattle from './featuredBattle';
 import ClaimActivity from './claimActivity';
+import SolanaClaimActivity from './solanaClaimActivity';
 
 class UsersRepository {
   constructor() {}
@@ -63,17 +64,16 @@ class UsersRepository {
   getSolanaUserProfile = async (address: string) => {
     const user = await this.getUser(address);
     const onGoingBattleCount = await FeaturedBattle.getProgressBattleCountByAddressAndSol(address);
-    // TODO: get total solana amount
-    const totalETHAmount = 0;
-    const battleWonCount = 0;
-    const abpRank = 0;
-    const winnerRank = 0;
+    const totalSOLAmount = await SolanaClaimActivity.getTotalETHAmountByAddress(address);
+    const battleWonCount = await SolanaClaimActivity.getBattleWonCountByAddress(address);
+    const abpRank = await SolanaClaimActivity.getABPRankByAddress(address);
+    const winnerRank = await SolanaClaimActivity.getWinnerRankByAddress(address);
     if (user) {
       return {
         username: user.username,
         address: address,
         battlesInProgress: onGoingBattleCount,
-        totalEthEarned: totalETHAmount,
+        totalSolEarned: totalSOLAmount,
         battlesWon: battleWonCount,
         abpRank: abpRank,
         winnerRank: winnerRank,
@@ -85,7 +85,7 @@ class UsersRepository {
       username: address,
       address: address,
       battlesInProgress: onGoingBattleCount,
-      totalEthEarned: totalETHAmount,
+      totalSolEarned: totalSOLAmount,
       battlesWon: battleWonCount,
       abpRank: abpRank,
       winnerRank: winnerRank,
