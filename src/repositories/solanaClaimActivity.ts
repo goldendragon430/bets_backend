@@ -1,12 +1,13 @@
-import { BigNumber, ethers } from 'ethers';
+import { ethers } from 'ethers';
 import { RewardType } from '../utils/enums';
-import ClaimActivity from '../models/claimActivity';
+import SolanaClaimActivity from '../models/solanaClaimActivity';
+import { BN } from '@project-serum/anchor';
 
-class ClaimActivityRepository {
+class SolanaClaimActivityRepository {
     constructor() { }
 
     getLeaderboard = async () => {
-        const abpActivities = await ClaimActivity.aggregate(
+        const abpActivities = await SolanaClaimActivity.aggregate(
             [
                 {
                     $match: {
@@ -47,7 +48,7 @@ class ClaimActivityRepository {
             ]
         );
 
-        const ethActivites = await ClaimActivity.aggregate(
+        const ethActivites = await SolanaClaimActivity.aggregate(
             [
                 {
                     $match: {
@@ -107,23 +108,23 @@ class ClaimActivityRepository {
     }
 
     getClaimActivity = async (txHash: string) => {
-        return ClaimActivity.findOne({ transactionHash: txHash });
+        return SolanaClaimActivity.findOne({ transactionHash: txHash });
     }
 
     addClaimActivity = async (
-        battleId: number,
+        battleId: string,
         user: string,
-        amount: BigNumber,
+        amount: BN,
         rewardType: RewardType,
         transactionHash: string,
         blockNumber: number,
     ) => {
-        const claimActivityInstance = new ClaimActivity({
+        const claimActivityInstance = new SolanaClaimActivity({
             battleId,
             user,
             amount: amount.toString(),
             rewardType,
-            amountInDecimal: parseFloat(ethers.utils.formatEther(amount)),
+            amountInDecimal: amount.toNumber() / 10 ** 9,
             transactionHash,
             blockNumber,
         });
@@ -132,7 +133,7 @@ class ClaimActivityRepository {
     }
 
     getTotalETHAmountByAddress = async (address: string) => {
-        const activities = await ClaimActivity.aggregate(
+        const activities = await SolanaClaimActivity.aggregate(
             [
                 {
                     $match: {
@@ -157,7 +158,7 @@ class ClaimActivityRepository {
     }
 
     getBattleWonCountByAddress = async (address: string) => {
-        const activities = await ClaimActivity.aggregate(
+        const activities = await SolanaClaimActivity.aggregate(
             [
                 {
                     $match: {
@@ -182,7 +183,7 @@ class ClaimActivityRepository {
     }
 
     getABPRankByAddress = async (address: string) => {
-        const activities = await ClaimActivity.aggregate(
+        const activities = await SolanaClaimActivity.aggregate(
             [
                 {
                     $match: {
@@ -210,7 +211,7 @@ class ClaimActivityRepository {
     }
 
     getWinnerRankByAddress = async (address: string) => {
-        const activities = await ClaimActivity.aggregate(
+        const activities = await SolanaClaimActivity.aggregate(
             [
                 {
                     $match: {
@@ -238,4 +239,4 @@ class ClaimActivityRepository {
     }
 }
 
-export default new ClaimActivityRepository();
+export default new SolanaClaimActivityRepository();

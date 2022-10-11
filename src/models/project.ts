@@ -12,6 +12,7 @@ const projectSchema = new Schema({
         type: String,
         required: true,
     },
+    displayName: String,
     network: {
         type: String,
         enum: [NetworkType.ETH, NetworkType.SOL, NetworkType.ADA],
@@ -40,6 +41,7 @@ const projectSchema = new Schema({
     magicEdenLink: String,
     discordLink: String,
     slug: String,
+    mintHashList: String,
 },
 { timestamps: true });
 

@@ -5,7 +5,7 @@ import passport from '../utils/passport';
 
 class FeaturedBattleRouter {
   router = Router();
-  BattleController = new BattleController(); sdf;
+  BattleController = new BattleController();
   userController = new UserController();
 
   constructor() {
@@ -16,6 +16,8 @@ class FeaturedBattleRouter {
     this.router.route('/add').post(passport.authenticate('jwt', { session: false }), this.userController.checkAdmin, this.BattleController.addBattle);
     this.router.route('/solana/add').post(this.BattleController.addSolanaBattle);
     this.router.route('/solana/delete/:id').delete(this.BattleController.deleteSolanaBattle);
+    this.router.route('/solana/stake').post(this.BattleController.stakeForSolana);
+    this.router.route('/solana/get_live_feeds/:battleId').get(this.BattleController.getSolanaLiveFeeds);
     // this.router.route('/solana/add').post(passport.authenticate('jwt', { session: false }), this.userController.checkAdmin, this.BattleController.addSolanaBattle);
     this.router.route('/get_active_battle_ids/:network?').get(this.BattleController.getActiveBattleIds);
     this.router.route('/get_battle_by_id/:battleId').get(this.BattleController.getBattle);
@@ -24,7 +26,7 @@ class FeaturedBattleRouter {
     this.router.route('/get_battle_histories/:network?').get(this.BattleController.getBattleHistories);
     this.router.route('/get_battle_events/:battleId').get(this.BattleController.getBattleEvents);
     this.router.route('/get_unstake_info/:battleId').get(this.BattleController.getUnstakeInfo);
-    this.router.route('/get_leaderboard').get(this.BattleController.getLeaderboard);
+    this.router.route('/get_leaderboard/:network?').get(this.BattleController.getLeaderboard);
   }
 }
 export default new FeaturedBattleRouter().router;

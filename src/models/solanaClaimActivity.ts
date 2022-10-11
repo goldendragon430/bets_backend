@@ -3,9 +3,9 @@ import { RewardType } from '../utils/enums';
 
 const Schema = mongoose.Schema;
 
-const claimActivitySchema = new Schema({
+const solanaClaimActivitySchema = new Schema({
     battleId: {
-        type: Number,
+        type: String,
         required: true,
     },
     user: {
@@ -30,4 +30,4 @@ const claimActivitySchema = new Schema({
 },
     { timestamps: true });
 
-export default mongoose.model('claimActivities', claimActivitySchema);
+export default mongoose.model('solanaClaimActivities', solanaClaimActivitySchema);

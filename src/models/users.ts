@@ -8,6 +8,7 @@ const usersSchema = new Schema({
         type: String,
         required: true,
     },
+    selectedNFT: Schema.Types.Mixed,
     nonce: Number,
     signature: String,
     isAdmin: {
@@ -20,5 +21,11 @@ const usersSchema = new Schema({
     }]
 },
 { timestamps: true });
+
+export interface INFTMetadata {
+    contract: string;
+    tokenId: string;
+    image: string;
+}
 
 export default mongoose.model('users', usersSchema);

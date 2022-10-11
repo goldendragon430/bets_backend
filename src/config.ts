@@ -14,3 +14,11 @@ export const getDBConfig = (): string => {
     }
     return process.env.DB_CONFIG as string;
 };
+
+export const getSolanaRPC = (): string => {
+    const NETWORK = process.env.NETWORK || 'devnet';
+    if (NETWORK === 'mainnet') {
+        return process.env.SOLANA_RPC_MAINNET as string;
+    }
+    return process.env.SOLANA_RPC_DEVNET as string || 'https://api.devnet.solana.com';
+};

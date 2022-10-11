@@ -1,8 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { apiErrorHandler } from '../handlers/errorHandler';
 import BattleRepository from '../repositories/featuredBattle';
+import ProjectRepository from '../repositories/project';
 import nftActivityRepository from '../repositories/nftActivity';
+import SolanaActivityRepository from '../repositories/solanaActivity';
 import ClaimActivityRepository from '../repositories/claimActivity';
+import SolanaClaimActivityRepository from '../repositories/solanaClaimActivity';
 import { NetworkType } from '../utils/enums';
 import { provider } from '../utils/constants';
 import { BetContract } from '../utils/constants';
@@ -11,24 +14,6 @@ import { battleCreateFunc } from '../services/getEventFunc';
 export default class BattleController {
     constructor() {
     }
-
-    /**
-     * @description Get Battles Function
-     * @param req
-     * @param res
-     * @param next
-     */
-    getBattles = async (req: Request, res: Response, next: NextFunction) => {
-        const { } = req.body;
-
-        try {
-            const battles = await BattleRepository.getFeaturedBattles();
-
-            res.json({ 'success': true, 'message': '', 'data': battles });
-        } catch (error) {
-            apiErrorHandler(error, req, res, 'Get Tx failed.');
-        }
-    };
 
     /**
      * @description Get Battles Function
@@ -258,12 +243,12 @@ export default class BattleController {
      */
     deleteSolanaBattle = async (req: Request, res: Response, next: NextFunction) => {
         const {
-            battleId
-        } = req.body;
+            id
+        } = req.params;
 
          try {
             const battle = await BattleRepository.getBattleByQuery({
-                id: battleId,
+                _id: id,
                 network: NetworkType.SOL
             });
             if (!battle) {
@@ -273,7 +258,7 @@ export default class BattleController {
                 });
             }
 
-            const result = await BattleRepository.deleteSolanaBattle(battleId);
+            const result = await BattleRepository.deleteSolanaBattle(id);
 
             res.json({ 'success': true, 'message': '', 'data': result });
         } catch (error) {
@@ -288,12 +273,80 @@ export default class BattleController {
      * @param next
      */
     getLeaderboard = async (req: Request, res: Response, next: NextFunction) => {
+        const { network } = req.params;
         try {
-            const leaderboard = await ClaimActivityRepository.getLeaderboard();
+            if (network && !(network in NetworkType)) {
+                return res.status(400).json({ 'success': false, 'message': 'Invalid network.' });
+            }
+            let leaderboard;
+            if (network && NetworkType[network] === NetworkType.ETH) {
+                leaderboard = await ClaimActivityRepository.getLeaderboard();
+            } else if (NetworkType[network] === NetworkType.SOL) {
+                leaderboard = await SolanaClaimActivityRepository.getLeaderboard();
+            } else {
+                leaderboard = await ClaimActivityRepository.getLeaderboard();
+            }
 
             res.json({ 'success': true, 'message': '', 'data': leaderboard });
         } catch (error) {
-            apiErrorHandler(error, req, res, 'Get Tx failed.');
+            apiErrorHandler(error, req, res, 'getLeaderboard failed.');
+        }
+    };
+
+    /**
+     * @description Staking NFT item on Solana
+     * @param req
+     * @param res
+     * @param next
+     */
+    stakeForSolana = async (req: Request, res: Response, next: NextFunction) => {
+        const { projectId, hash } = req.body;
+
+        try {
+            const project = await ProjectRepository.getProject(projectId);
+
+            if (!project) {
+                return res.status(400).json({
+                    'success': false,
+                    'message': 'No project found.'
+                });
+            }
+
+            if (!project.mintHashList) {
+                return res.json({ 'success': true, 'message': '', 'data': false });
+            }
+            const valid = await ProjectRepository.validateInHashMintList(project.mintHashList, hash);
+
+            res.json({ 'success': true, 'message': '', 'data': valid });
+        } catch (error) {
+            apiErrorHandler(error, req, res, 'stakeForSolana failed.');
+        }
+    };
+
+    /**
+     * @description Get Live feed data for Solana battle
+     * @param req
+     * @param res
+     * @param next
+     */
+    getSolanaLiveFeeds = async (req: Request, res: Response, next: NextFunction) => {
+        const { battleId } = req.params;
+
+        try {
+            const battle = await BattleRepository.getBattle(battleId);
+
+            if (!battle) {
+                return res.status(400).json({
+                    'success': false,
+                    'message': 'No battle found.'
+                });
+            }
+
+            const liveFeeds = await SolanaActivityRepository.getLiveFeeds(battle);
+
+            res.json({ 'success': true, 'message': '', 'data': liveFeeds });
+        } catch (error) {
+            apiErrorHandler(error, req, res, 'getSolanaLiveFeeds failed.');
         }
     };
 }

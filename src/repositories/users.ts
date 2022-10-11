@@ -1,5 +1,8 @@
-import UserModel from '../models/users';
+import UserModel, { INFTMetadata } from '../models/users';
 import playerWallet from '../models/playerWallet';
+import FeaturedBattle from './featuredBattle';
+import ClaimActivity from './claimActivity';
+import SolanaClaimActivity from './solanaClaimActivity';
 
 class UsersRepository {
   constructor() {}
@@ -26,6 +29,70 @@ class UsersRepository {
     }
   }
 
+  getUserProfile = async (address: string) => {
+    const user = await this.getUser(address);
+    const onGoingBattleCount = await FeaturedBattle.getProgressBattleCountByAddress(address);
+    const totalETHAmount = await ClaimActivity.getTotalETHAmountByAddress(address);
+    const battleWonCount = await ClaimActivity.getBattleWonCountByAddress(address);
+    const abpRank = await ClaimActivity.getABPRankByAddress(address);
+    const winnerRank = await ClaimActivity.getWinnerRankByAddress(address);
+    if (user) {
+      return {
+        username: user.username,
+        address: address,
+        battlesInProgress: onGoingBattleCount,
+        totalEthEarned: totalETHAmount,
+        battlesWon: battleWonCount,
+        abpRank: abpRank,
+        winnerRank: winnerRank,
+        selectedNFT: user.selectedNFT
+      };
+    }
+    await this.createUser(address);
+    return {
+      username: address,
+      address: address,
+      battlesInProgress: onGoingBattleCount,
+      totalEthEarned: totalETHAmount,
+      battlesWon: battleWonCount,
+      abpRank: abpRank,
+      winnerRank: winnerRank,
+      selectedNFT: {}
+    };
+  }
+
+  getSolanaUserProfile = async (address: string) => {
+    const user = await this.getUser(address);
+    const onGoingBattleCount = await FeaturedBattle.getProgressBattleCountByAddressAndSol(address);
+    const totalSOLAmount = await SolanaClaimActivity.getTotalETHAmountByAddress(address);
+    const battleWonCount = await SolanaClaimActivity.getBattleWonCountByAddress(address);
+    const abpRank = await SolanaClaimActivity.getABPRankByAddress(address);
+    const winnerRank = await SolanaClaimActivity.getWinnerRankByAddress(address);
+    if (user) {
+      return {
+        username: user.username,
+        address: address,
+        battlesInProgress: onGoingBattleCount,
+        totalSolEarned: totalSOLAmount,
+        battlesWon: battleWonCount,
+        abpRank: abpRank,
+        winnerRank: winnerRank,
+        selectedNFT: user.selectedNFT
+      };
+    }
+    await this.createUser(address);
+    return {
+      username: address,
+      address: address,
+      battlesInProgress: onGoingBattleCount,
+      totalSolEarned: totalSOLAmount,
+      battlesWon: battleWonCount,
+      abpRank: abpRank,
+      winnerRank: winnerRank,
+      selectedNFT: {}
+    };
+  }
+
   createUser = async (address: string) => {
     const nonce = Math.floor(Math.random() * 1000000);
     const user = new UserModel({
@@ -34,15 +101,22 @@ class UsersRepository {
       nonce: nonce,
     });
 
-    const savedUser = await user.save();
-
-    return savedUser;
+    return await user.save();
   }
 
   updateUser = async (user: any) => {
-    const savedUser = await user.save();
+    return await user.save();
+  }
 
-    return savedUser;
+  updateProfile = async (user: any, username: string, contract: string, tokenId: string, image: string) => {
+    const metadata: INFTMetadata = {
+      contract,
+      tokenId,
+      image
+    };
+    user.username = username;
+    user.selectedNFT = metadata;
+    return await user.save();
   }
 
   addUser = async (username: string) => {

@@ -1,19 +1,15 @@
 import FeaturedBattle from '../models/featuredBattle';
 import { ActivityType, BattleStatus, NetworkType } from '../utils/enums';
 import ProjectRepository from './project';
-import { provider } from '../utils/constants';
 import { setupNFTTransferJob } from '../services/cronManager';
 import NftActivityModel from '../models/nftActivity';
+import SolanaActivityModel from '../models/solanaActivity';
 import { BigNumber } from 'ethers';
 import { startBet } from '../utils/solana';
 
 class FeaturedBattleRepository {
     constructor() {
     }
-
-    getFeaturedBattles = async () => {
-        return FeaturedBattle.find({});
-    };
 
     getBattleByQuery = async (where: any) => {
         return FeaturedBattle.findOne(where);
@@ -48,17 +44,32 @@ class FeaturedBattleRepository {
     };
 
     getActiveBattleIds = async (network: NetworkType) => {
-        const blockNumber = await provider.getBlockNumber();
-        const block = await provider.getBlock(blockNumber);
+        const now = new Date().getTime();
+        const currentTimestamp = Math.floor(now / 1000);
 
         const battles = await FeaturedBattle.find({
             network: network,
-            startTime: { $lte: block.timestamp },
-            endTime: { $gte: block.timestamp },
+            startTime: { $lte: currentTimestamp },
+            endTime: { $gte: currentTimestamp },
         });
 
         return battles.map((battle) => {
             return battle.id;
+        });
+    };
+
+    getBattleIdsByStatus = async (network: NetworkType = NetworkType.ETH) => {
+        const now = new Date().getTime();
+        const currentTimestamp = Math.floor(now / 1000);
+
+        const battles = await FeaturedBattle.find({
+            network: network,
+            startTime: { $lte: currentTimestamp },
+            endTime: { $gte: currentTimestamp },
+        });
+
+        return battles.map((battle) => {
+            return battle.battleId;
         });
     };
 
@@ -111,7 +122,21 @@ class FeaturedBattleRepository {
                     count: { $sum: 1 }
                 }
             },
-            { $sort: { '_id.blockNumber': 1 } }
+            { $sort: { '_id.blockNumber': 1 } },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'from',
+                    foreignField: 'address',
+                    as: 'userInfo',
+                }
+            },
+            {
+                $unwind: {
+                    path: '$userInfo',
+                    preserveNullAndEmptyArrays: true
+                }
+            }
         ]);
 
         return activities.map((activity) => {
@@ -134,6 +159,7 @@ class FeaturedBattleRepository {
                 teamName: projectName,
                 subTeamName: projectSubName,
                 action: activity.activity,
+                userInfo: activity.userInfo,
             };
         });
     }
@@ -179,24 +205,31 @@ class FeaturedBattleRepository {
         });
     };
 
-    updateBattleStatus = async (battleId: number, status: BattleStatus) => {
+    updateBattleStatus = async (battleId: number, status: BattleStatus, network: NetworkType = NetworkType.ETH) => {
         return FeaturedBattle.updateOne(
-            {battleId: battleId},
-            {$set: {status: status}},
+            { battleId: battleId, network: network },
+            { $set: { status: status } },
+        );
+    }
+
+    updateBattleStatusById = async (id: string, status: BattleStatus, network: NetworkType = NetworkType.ETH) => {
+        return FeaturedBattle.updateOne(
+            { _id: id, network: network },
+            { $set: { status: status } },
         );
     }
 
     updateBattleFinalizeFailedCount = async (battleId: number) => {
         return FeaturedBattle.updateOne(
-            {battleId: battleId},
-            {$inc: {finalizeFailedCount: 1}},
+            { battleId: battleId, network: NetworkType.ETH },
+            { $inc: { finalizeFailedCount: 1 } },
         );
     }
 
     resetBattleFinalizeFailedCount = async (battleId: number) => {
         return FeaturedBattle.updateOne(
-            {battleId: battleId},
-            {finalizeFailedCount: 0},
+            { battleId: battleId, network: NetworkType.ETH },
+            { finalizeFailedCount: 0 },
         );
     }
 
@@ -249,7 +282,7 @@ class FeaturedBattleRepository {
         }
 
         await FeaturedBattle.updateOne(
-            { battleId: battleId },
+            { battleId: battleId, network: NetworkType.ETH },
             {
                 $set: updateData
             }
@@ -267,7 +300,7 @@ class FeaturedBattleRepository {
             throw new Error('Creator address not found');
         }
 
-        const solBattles: Array<any> = await FeaturedBattle.find({ network: NetworkType.SOL }).limit(1).sort({_id: 1});
+        const solBattles: Array<any> = await FeaturedBattle.find({ network: NetworkType.SOL }).limit(1).sort({ _id: -1 });
         const battle: any = await FeaturedBattle.create({
             startDate: new Date(startTime * 1000),
             battleId: solBattles.length > 0 ? solBattles[0].battleId + 1 : 1,
@@ -282,14 +315,14 @@ class FeaturedBattleRepository {
             twitterAnnounceID: twitterID,
         });
 
-        await startBet(startTime, endTime, projectL?.creator, projectR?.creator, battle.battleId.toString());
+        await startBet(battle.battleId.toString(), startTime, endTime, projectL?.creator, projectR?.creator);
         return battle;
     }
 
     deleteSolanaBattle = async (battleId: string): Promise<any> => {
         return FeaturedBattle.deleteOne({
             network: NetworkType.SOL,
-            id: battleId
+            _id: battleId
         });
     }
 
@@ -384,6 +417,64 @@ class FeaturedBattleRepository {
                 userTokenIdLengths: tokenLengthR
             }
         };
+    }
+
+    getBattlesByStatus = async (status: BattleStatus, network: NetworkType): Promise<Array<any>> => {
+        return FeaturedBattle.find({
+            status: status,
+            network: network
+        });
+    }
+
+    getSolanaEndedBattles = async (): Promise<Array<string>> => {
+        const battles = await this.getBattlesByStatus(BattleStatus.Created, NetworkType.SOL);
+        const timestamp = (new Date().getTime()) / 1000;
+        const battleIds: Array<string> = [];
+        for (const battle of battles) {
+            if (battle.endTime < (timestamp + 15000)) {
+                battleIds.push(battle._id.toString());
+            }
+        }
+        return battleIds;
+    }
+
+    getProgressBattleCountByAddress = async (address: string): Promise<number> => {
+        const battleIds = await this.getBattleIdsByStatus();
+        const activity = await NftActivityModel.aggregate([
+            {
+                $match: {
+                    battleId: {$in: battleIds},
+                    from: address
+                }
+            },
+            {
+                '$group' : {
+                    _id: '$battleId',
+                    count: {$sum: 1}
+                }
+            }
+        ]);
+        return activity ? activity.length : 0;
+    }
+
+    getProgressBattleCountByAddressAndSol = async (address: string): Promise<number> => {
+        const battleIds = await this.getBattleIdsByStatus(NetworkType.SOL);
+        const solActivity = await SolanaActivityModel.aggregate([
+            {
+                $match: {
+                    battleId: {$in: battleIds},
+                    from: address
+                }
+            },
+            {
+                '$group' : {
+                    _id: '$battleId',
+                    count: {$sum: 1}
+                }
+            }
+        ]);
+
+        return solActivity ? solActivity.length : 0;
     }
 }
 

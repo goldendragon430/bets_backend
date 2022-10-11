@@ -153,10 +153,10 @@ mongoose.connect(DB_CONFIG)
         };
 
         // await getNFTStakedEvent();
-        // await getBattleCreateEvents();
+        await getBattleCreateEvents();
         // await getFulfilledEvents();
         // await getFinalizedEvents();
-        await getBettedEvents();
+        // await getBettedEvents();
 
         // const activeBattles = await battle.getActiveBattles();
         // await Promise.all(

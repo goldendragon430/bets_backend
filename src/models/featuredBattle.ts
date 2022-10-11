@@ -27,7 +27,10 @@ const featuredBattleSchema = new Schema({
     battleLength: Number, // # minutes of battle
     status: {
         type: String,
-        enum: [BattleStatus.Created, BattleStatus.RequestRandomWords, BattleStatus.Fulfilled, BattleStatus.Finalized, BattleStatus.RefundSet],
+        enum: [
+            BattleStatus.Created, BattleStatus.RequestRandomWords, BattleStatus.Fulfilled,
+            BattleStatus.Finalized, BattleStatus.RefundSet, BattleStatus.Determine
+        ],
         default: BattleStatus.Created,
     },
     finalizeFailedCount: {

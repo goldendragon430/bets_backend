@@ -1,5 +1,5 @@
-import { nftStakedFunc, battleCreateFunc, abpClaimedFunc, bettedFunc, fulfilledFunc, finalizedFunc, refundFunc } from './getEventFunc';
-import { ServiceType } from '../utils/enums';
+import { nftStakedFunc, battleCreateFunc, bettedFunc, fulfilledFunc, finalizedFunc, refundFunc, rewardClaimedFunc } from './getEventFunc';
+import { RewardType, ServiceType } from '../utils/enums';
 import { BetContract, provider } from '../utils/constants';
 
 export const installBetEvents = () => {
@@ -23,9 +23,9 @@ export const installBetEvents = () => {
         }
     });
 
-    contract.on('NewBattleCreated', async (battleId, startTime, endTime, teamACollectionAddress, teamBCollectionAddress) => {
-        await battleCreateFunc(battleId, startTime, endTime, teamACollectionAddress, teamBCollectionAddress);
-    });
+    // contract.on('NewBattleCreated', async (battleId, startTime, endTime, teamACollectionAddress, teamBCollectionAddress) => {
+    //     await battleCreateFunc(battleId, startTime, endTime, teamACollectionAddress, teamBCollectionAddress);
+    // });
 
     contract.on('ABPClaimed', async (battleId, user, amount) => {
         const blockNumber = await provider.getBlockNumber();
@@ -38,7 +38,24 @@ export const installBetEvents = () => {
                     const user = ev.args.user;
                     const amount = ev.args.amount;
 
-                    await abpClaimedFunc(battleId, user, amount, ev);
+                    await rewardClaimedFunc(battleId, user, amount, RewardType.ABP, ev);
+                }
+            }
+        }
+    });
+
+    contract.on('RewardClaimed', async (battleId, user, amount) => {
+        const blockNumber = await provider.getBlockNumber();
+        const events = await contract.queryFilter(contract.filters.RewardClaimed(), (blockNumber - 10));
+
+        if (events.length > 0) {
+            for (const ev of events) {
+                if (ev.args) {
+                    const battleId = ev.args.battleId;
+                    const user = ev.args.user;
+                    const amount = ev.args.amount;
+
+                    await rewardClaimedFunc(battleId, user, amount, RewardType.ETH, ev);
                 }
             }
         }
