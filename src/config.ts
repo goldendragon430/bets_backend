@@ -22,3 +22,11 @@ export const getSolanaRPC = (): string => {
     }
     return process.env.SOLANA_RPC_DEVNET as string || 'https://api.devnet.solana.com';
 };
+
+export const getSolanaAddress = (): string => {
+    const NETWORK = process.env.NETWORK || 'devnet';
+    if (NETWORK === 'mainnet') {
+        return process.env.SOLANA_MAINNET_ADDRESS as string;
+    }
+    return process.env.SOLANA_DEVNET_ADDRESS as string;
+};

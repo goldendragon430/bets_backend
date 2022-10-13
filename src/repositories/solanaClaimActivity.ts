@@ -107,8 +107,8 @@ class SolanaClaimActivityRepository {
         });
     }
 
-    getClaimActivity = async (txHash: string) => {
-        return SolanaClaimActivity.findOne({ transactionHash: txHash });
+    getClaimActivity = async (txHash: string, type: RewardType) => {
+        return SolanaClaimActivity.findOne({ transactionHash: txHash, rewardType: type });
     }
 
     addClaimActivity = async (
