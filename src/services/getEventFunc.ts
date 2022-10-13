@@ -154,7 +154,7 @@ export const solanaBettedFunc = async (battleId: string, user: string, amount: B
 
 export const solanaClaimFunc = async (battleId: string, user: string, amount: BN, type: RewardType, signature: string, slot: number) => {
     try {
-        const activity = await SolanaClaimActivityRepository.getClaimActivity(signature);
+        const activity = await SolanaClaimActivityRepository.getClaimActivity(signature, type);
         if (!activity) {
             await SolanaClaimActivityRepository.addClaimActivity(battleId, user, amount, type, signature, slot);
         }
