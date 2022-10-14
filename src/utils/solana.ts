@@ -245,7 +245,7 @@ const getTransactions = async (limitNum: number) => {
         const redisClient = redisHandle.getRedisClient();
         const lastSignature = await redisClient.get('lastSignature') || undefined;
         const pubKey = new PublicKey(contractAddress || idl.metadata.address);
-        let txList = await connection.getSignaturesForAddress(pubKey, { limit: limitNum, until: lastSignature });
+        const txList = await connection.getSignaturesForAddress(pubKey, { limit: limitNum });
 
         for (const transaction of txList) {
             const signature = transaction.signature;
@@ -280,12 +280,6 @@ const getTransactions = async (limitNum: number) => {
                 }
             }
         }
-        txList = txList.sort((a, b) => {
-            if (a && b && a.blockTime && b.blockTime) {
-                return b.blockTime - a.blockTime;
-            }
-            return 0;
-        });
         if (txList.length > 0) {
             await redisClient.set('lastSignature', txList[0].signature);
         }
@@ -314,7 +308,7 @@ export const subscribeSolanaTransactions = async () => {
     }
 
     while (true) {
-        await getTransactions(50);
-        await sleep(10000);
+        await getTransactions(200);
+        await sleep(2000);
     }
 };

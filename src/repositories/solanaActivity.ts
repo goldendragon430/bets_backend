@@ -23,7 +23,7 @@ class SolanaActivityRepository {
             side,
             from: user,
             tokenId: nftPubkey,
-            amount: amount.toNumber(),
+            amount: Number(amount.toString()),
             signature,
             slot,
             activity: ActivityType.Staked
