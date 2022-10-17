@@ -226,12 +226,12 @@ class SolanaClaimActivityRepository {
                         user: {
                             $first: '$user'
                         },
-                        count: {
-                            $sum: 1
+                        sumA: {
+                            $sum: '$amountInDecimal'
                         }
                     }
                 },
-                { $sort: { count: - 1 } },
+                { $sort: { sumA: - 1 } },
             ]
         );
 
