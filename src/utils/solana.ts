@@ -273,7 +273,7 @@ const getTransactions = async (limitNum: number) => {
                         if (changeTokenBalance > 0) {
                             await solanaClaimFunc(parsedTx.args.battleId, userPubkey, new BN(changeTokenBalance).mul(new BN(1e9)), RewardType.ABP, transaction.signature, transaction.slot);
                         }
-                        if (changeSOLBalance) {
+                        if (changeSOLBalance > 0) {
                             await solanaClaimFunc(parsedTx.args.battleId, userPubkey, new BN(changeSOLBalance), RewardType.ETH, transaction.signature, transaction.slot);
                         }
                     }
