@@ -19,7 +19,6 @@ class SolanaActivityRepository {
         slot: number,
         timeStamp: number
     ) => {
-        console.error('timeStamp', timeStamp);
         const solanaActivityInstance = new SolanaActivityModel({
             battleId,
             side,
@@ -44,7 +43,6 @@ class SolanaActivityRepository {
         slot: number,
         timeStamp: number
     ) => {
-        console.error('timeStamp', timeStamp);
         return SolanaActivityModel.insertMany([{
             battleId,
             from: user,
@@ -80,10 +78,25 @@ class SolanaActivityRepository {
                 }
             },
             {
+                '$group': {
+                    _id: {
+                        signature: '$signature'
+                    },
+                    slot: { '$first': '$slot' },
+                    blockTime: { '$first': '$blockTime' },
+                    from: { '$first': '$from' },
+                    side: { '$first': '$side' },
+                    activity: { '$first': '$activity' },
+                    createdAt: { '$first': '$createdAt' },
+                    amount: { '$first': '$amount' },
+                    amountInDecimal: { '$first': '$amountInDecimal' },
+                }
+            },
+            {
                 $group: {
                     _id: {
-                        signature: '$signature',
-                        slot: '$slot'
+                        slot: '$slot',
+                        blockTime: '$blockTime'
                     },
                     side: { $first: '$side' },
                     activity: { $first: '$activity' },
