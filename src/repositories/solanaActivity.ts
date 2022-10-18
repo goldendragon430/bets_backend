@@ -55,7 +55,7 @@ class SolanaActivityRepository {
             slot,
             blockTime: timeStamp,
             activity: ActivityType.Betted
-        }])
+        }]);
         // const solanaActivityInstance = new SolanaActivityModel({
         //     battleId,
         //     from: user,

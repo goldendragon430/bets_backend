@@ -8,18 +8,6 @@ export const installSolanaEvents = () => {
     // as you can see in this parameter, we can get the event data, third one is for signature
     solanaProgram.addEventListener('FeedTx', async (event, slot, signature) => {
         const { battleId, addr, side, betAmount, stakeCount, stakeMint, claimAmount, abpAmount, txType, timeStamp } = event;
-        // console.log('battleId', battleId);
-        // console.log('addr', addr);
-        // console.log('side', side);
-        // console.log('betAmount', betAmount);
-        // console.log('stakeCount', stakeCount);
-        // console.log('stakeMint', stakeMint);
-        // console.log('claimAmount', claimAmount);
-        // console.log('abpAmount', abpAmount);
-        // console.log('txType', txType);
-        // console.log('timeStamp', timeStamp);
-        // console.log('signature', signature);
-        // console.log('slot', slot);
         if (txType === 2) {
             await solanaStakedFunc(battleId, side, addr, stakeMint, stakeCount, signature, slot, timeStamp);
         } else if (txType === 1) {
