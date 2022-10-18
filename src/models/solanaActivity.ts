@@ -24,6 +24,7 @@ const solanaActivitySchema = new Schema({
     tokenId: String,
     signature: String,
     slot: Number,
+    blockTime: Number,
 },
     { timestamps: true });
 

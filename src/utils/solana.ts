@@ -250,13 +250,13 @@ const getTransactions = async (limitNum: number) => {
         for (const transaction of txList) {
             const signature = transaction.signature;
             const parsedTx = await getParsedTransaction(signature);
-            if (parsedTx) {
+            if (parsedTx && transaction) {
                 if (parsedTx.name === 'userBet') {
-                    await solanaBettedFunc(parsedTx.args.battleId, parsedTx.accounts[0].pubkey.toString(), parsedTx.args.betAmount, parsedTx.args.betSide, transaction.signature, transaction.slot);
+                    await solanaBettedFunc(parsedTx.args.battleId, parsedTx.accounts[0].pubkey.toString(), parsedTx.args.betAmount, parsedTx.args.betSide, transaction.signature, transaction.slot, (transaction.blockTime || 0));
                 } else if (parsedTx.name === 'stake') {
                     const stakeEntryPubkey = parsedTx.accounts[0].pubkey;
                     const stakeEntry = await anchorProgram.account.stakeEntry.fetchNullable(stakeEntryPubkey);
-                    await solanaStakedFunc(parsedTx.args.battleId, parsedTx.args.side, parsedTx.accounts[2].pubkey.toString(), stakeEntry?.originalMint.toString(), parsedTx.args.amount, transaction.signature, transaction.slot);
+                    await solanaStakedFunc(parsedTx.args.battleId, parsedTx.args.side, parsedTx.accounts[2].pubkey.toString(), stakeEntry?.originalMint.toString(), parsedTx.args.amount, transaction.signature, transaction.slot, (transaction.blockTime || 0));
                 } else if (parsedTx.name === 'claimReward') {
                     const txMeta = await connection.getParsedTransaction(transaction.signature);
                     const userPubkey = parsedTx.accounts[1].pubkey;

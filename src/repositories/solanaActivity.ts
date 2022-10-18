@@ -16,8 +16,10 @@ class SolanaActivityRepository {
         nftPubkey: string,
         amount: BN,
         signature: string,
-        slot: number
+        slot: number,
+        timeStamp: number
     ) => {
+        console.error('timeStamp', timeStamp);
         const solanaActivityInstance = new SolanaActivityModel({
             battleId,
             side,
@@ -26,6 +28,7 @@ class SolanaActivityRepository {
             amount: Number(amount.toString()),
             signature,
             slot,
+            blockTime: timeStamp,
             activity: ActivityType.Staked
         });
 
@@ -39,8 +42,10 @@ class SolanaActivityRepository {
         side: boolean,
         signature: string,
         slot: number,
+        timeStamp: number
     ) => {
-        const solanaActivityInstance = new SolanaActivityModel({
+        console.error('timeStamp', timeStamp);
+        return SolanaActivityModel.insertMany([{
             battleId,
             from: user,
             amount: amount.toString(),
@@ -48,10 +53,22 @@ class SolanaActivityRepository {
             amountInDecimal: amount.toNumber(),
             signature,
             slot,
+            blockTime: timeStamp,
             activity: ActivityType.Betted
-        });
+        }])
+        // const solanaActivityInstance = new SolanaActivityModel({
+        //     battleId,
+        //     from: user,
+        //     amount: amount.toString(),
+        //     side,
+        //     amountInDecimal: amount.toNumber(),
+        //     signature,
+        //     slot,
+        //     blockTime: timeStamp,
+        //     activity: ActivityType.Betted
+        // });
 
-        return solanaActivityInstance.save();
+        // return solanaActivityInstance.save();
     }
 
     getLiveFeeds = async (battle: any) => {

@@ -130,22 +130,22 @@ export const syncProjectFromMagicEden = async (slug: string) => {
     }
 };
 
-export const solanaStakedFunc = async (battleId: string, side: boolean, user: string, nftPubkey: string, amount: BN, signature: string, slot: number) => {
+export const solanaStakedFunc = async (battleId: string, side: boolean, user: string, nftPubkey: string, amount: BN, signature: string, slot: number, timeStamp: number) => {
     try {
         const activity = await SolanaActivityRepository.getSolanaActivity(signature);
         if (!activity) {
-            await SolanaActivityRepository.addStakedActivity(battleId, side, user, nftPubkey, amount, signature, slot);
+            await SolanaActivityRepository.addStakedActivity(battleId, side, user, nftPubkey, amount, signature, slot, timeStamp);
         }
     } catch (e) {
         console.error('Solana Staked Event Err: ', e);
     }
 };
 
-export const solanaBettedFunc = async (battleId: string, user: string, amount: BN, side: boolean, signature: string, slot: number) => {
+export const solanaBettedFunc = async (battleId: string, user: string, amount: BN, side: boolean, signature: string, slot: number, timeStamp: number) => {
     try {
         const activity = await SolanaActivityRepository.getSolanaActivity(signature);
         if (!activity) {
-            await SolanaActivityRepository.addBettedActivity(battleId, user, amount, side, signature, slot);
+            await SolanaActivityRepository.addBettedActivity(battleId, user, amount, side, signature, slot, timeStamp);
         }
     } catch (e) {
         console.error('Solana Betted Event Err: ', e);
