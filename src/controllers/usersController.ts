@@ -4,7 +4,7 @@ import * as jwt from 'jsonwebtoken';
 import { apiErrorHandler } from '../handlers/errorHandler';
 import UserRepository from '../repositories/users';
 import { JWT_CONFIG } from '../config';
-import { getSolanaProvider, validateAddress } from '../utils/solana';
+import { validateAddress } from '../utils/solana';
 import { NetworkType } from '../utils/enums';
 import * as base58 from 'bs58';
 import * as nacl from 'tweetnacl';

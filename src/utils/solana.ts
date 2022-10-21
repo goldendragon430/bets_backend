@@ -245,18 +245,18 @@ const getTransactions = async (limitNum: number) => {
         const redisClient = redisHandle.getRedisClient();
         const lastSignature = await redisClient.get('lastSignature') || undefined;
         const pubKey = new PublicKey(contractAddress || idl.metadata.address);
-        let txList = await connection.getSignaturesForAddress(pubKey, { limit: limitNum, until: lastSignature });
+        const txList = await connection.getSignaturesForAddress(pubKey, { limit: limitNum });
 
         for (const transaction of txList) {
             const signature = transaction.signature;
             const parsedTx = await getParsedTransaction(signature);
-            if (parsedTx) {
+            if (parsedTx && transaction) {
                 if (parsedTx.name === 'userBet') {
-                    await solanaBettedFunc(parsedTx.args.battleId, parsedTx.accounts[0].pubkey.toString(), parsedTx.args.betAmount, parsedTx.args.betSide, transaction.signature, transaction.slot);
+                    await solanaBettedFunc(parsedTx.args.battleId, parsedTx.accounts[0].pubkey.toString(), parsedTx.args.betAmount, parsedTx.args.betSide, transaction.signature, transaction.slot, (transaction.blockTime || 0));
                 } else if (parsedTx.name === 'stake') {
                     const stakeEntryPubkey = parsedTx.accounts[0].pubkey;
                     const stakeEntry = await anchorProgram.account.stakeEntry.fetchNullable(stakeEntryPubkey);
-                    await solanaStakedFunc(parsedTx.args.battleId, parsedTx.args.side, parsedTx.accounts[2].pubkey.toString(), stakeEntry?.originalMint.toString(), parsedTx.args.amount, transaction.signature, transaction.slot);
+                    await solanaStakedFunc(parsedTx.args.battleId, parsedTx.args.side, parsedTx.accounts[2].pubkey.toString(), stakeEntry?.originalMint.toString(), parsedTx.args.amount, transaction.signature, transaction.slot, (transaction.blockTime || 0));
                 } else if (parsedTx.name === 'claimReward') {
                     const txMeta = await connection.getParsedTransaction(transaction.signature);
                     const userPubkey = parsedTx.accounts[1].pubkey;
@@ -273,19 +273,13 @@ const getTransactions = async (limitNum: number) => {
                         if (changeTokenBalance > 0) {
                             await solanaClaimFunc(parsedTx.args.battleId, userPubkey, new BN(changeTokenBalance).mul(new BN(1e9)), RewardType.ABP, transaction.signature, transaction.slot);
                         }
-                        if (changeSOLBalance) {
+                        if (changeSOLBalance > 0) {
                             await solanaClaimFunc(parsedTx.args.battleId, userPubkey, new BN(changeSOLBalance), RewardType.ETH, transaction.signature, transaction.slot);
                         }
                     }
                 }
             }
         }
-        txList = txList.sort((a, b) => {
-            if (a && b && a.blockTime && b.blockTime) {
-                return b.blockTime - a.blockTime;
-            }
-            return 0;
-        });
         if (txList.length > 0) {
             await redisClient.set('lastSignature', txList[0].signature);
         }
@@ -314,7 +308,7 @@ export const subscribeSolanaTransactions = async () => {
     }
 
     while (true) {
-        await getTransactions(50);
-        await sleep(10000);
+        await getTransactions(200);
+        await sleep(2000);
     }
 };

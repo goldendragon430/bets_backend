@@ -73,6 +73,21 @@ class FeaturedBattleRepository {
         });
     };
 
+    getIdsByStatus = async (network: NetworkType = NetworkType.ETH) => {
+        const now = new Date().getTime();
+        const currentTimestamp = Math.floor(now / 1000);
+
+        const battles = await FeaturedBattle.find({
+            network: network,
+            startTime: { $lte: currentTimestamp },
+            endTime: { $gte: currentTimestamp },
+        });
+
+        return battles.map((battle) => {
+            return battle._id.toString();
+        });
+    };
+
     getBattleHistories = async (network: NetworkType) => {
         const battles = await FeaturedBattle.find(
             {
@@ -458,7 +473,7 @@ class FeaturedBattleRepository {
     }
 
     getProgressBattleCountByAddressAndSol = async (address: string): Promise<number> => {
-        const battleIds = await this.getBattleIdsByStatus(NetworkType.SOL);
+        const battleIds = await this.getIdsByStatus(NetworkType.SOL);
         const solActivity = await SolanaActivityModel.aggregate([
             {
                 $match: {

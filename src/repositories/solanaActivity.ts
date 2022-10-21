@@ -16,16 +16,18 @@ class SolanaActivityRepository {
         nftPubkey: string,
         amount: BN,
         signature: string,
-        slot: number
+        slot: number,
+        timeStamp: number
     ) => {
         const solanaActivityInstance = new SolanaActivityModel({
             battleId,
             side,
             from: user,
             tokenId: nftPubkey,
-            amount: amount.toNumber(),
+            amount: Number(amount.toString()),
             signature,
             slot,
+            blockTime: timeStamp,
             activity: ActivityType.Staked
         });
 
@@ -39,8 +41,9 @@ class SolanaActivityRepository {
         side: boolean,
         signature: string,
         slot: number,
+        timeStamp: number
     ) => {
-        const solanaActivityInstance = new SolanaActivityModel({
+        return SolanaActivityModel.insertMany([{
             battleId,
             from: user,
             amount: amount.toString(),
@@ -48,10 +51,22 @@ class SolanaActivityRepository {
             amountInDecimal: amount.toNumber(),
             signature,
             slot,
+            blockTime: timeStamp,
             activity: ActivityType.Betted
-        });
+        }]);
+        // const solanaActivityInstance = new SolanaActivityModel({
+        //     battleId,
+        //     from: user,
+        //     amount: amount.toString(),
+        //     side,
+        //     amountInDecimal: amount.toNumber(),
+        //     signature,
+        //     slot,
+        //     blockTime: timeStamp,
+        //     activity: ActivityType.Betted
+        // });
 
-        return solanaActivityInstance.save();
+        // return solanaActivityInstance.save();
     }
 
     getLiveFeeds = async (battle: any) => {
@@ -63,10 +78,25 @@ class SolanaActivityRepository {
                 }
             },
             {
+                '$group': {
+                    _id: {
+                        signature: '$signature'
+                    },
+                    slot: { '$first': '$slot' },
+                    blockTime: { '$first': '$blockTime' },
+                    from: { '$first': '$from' },
+                    side: { '$first': '$side' },
+                    activity: { '$first': '$activity' },
+                    createdAt: { '$first': '$createdAt' },
+                    amount: { '$first': '$amount' },
+                    amountInDecimal: { '$first': '$amountInDecimal' },
+                }
+            },
+            {
                 $group: {
                     _id: {
-                        signature: '$signature',
-                        slot: '$slot'
+                        slot: '$slot',
+                        blockTime: '$blockTime'
                     },
                     side: { $first: '$side' },
                     activity: { $first: '$activity' },
