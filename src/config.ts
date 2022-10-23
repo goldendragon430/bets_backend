@@ -39,4 +39,4 @@ export const getSolanaConfigs = () => {
         ABP_MINT_PUBKEY: process.env.abpMintPubkey_dev as string,
         SUPER_ADMIN: process.env.SUPER_ADMIN_dev as string,
     };
-}
+};
