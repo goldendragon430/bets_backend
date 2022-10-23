@@ -7,17 +7,16 @@ import { SolanaParser } from './solana-parser';
 import { solanaBettedFunc, solanaClaimFunc, solanaStakedFunc } from '../services/getEventFunc';
 import redisHandle from './redis';
 import { RewardType } from './enums';
-import { getSolanaAddress, getSolanaRPC } from '../config';
+import { getSolanaRPC, getSolanaConfigs } from '../config';
 
 const { Connection, PublicKey, Keypair } = solanaWeb3;
 const { Program, web3, utils, AnchorProvider, BN, Wallet } = anchor;
 
-const contractAddress = getSolanaAddress();
+const config = getSolanaConfigs();
 const ADMIN_KEY = process.env.SOLANA_ADMIN_KEY || '';
 const keypair = Keypair.fromSecretKey(bs58.decode(ADMIN_KEY));
 const wallet = new Wallet(keypair);
-const programID = new PublicKey(contractAddress || idl.metadata.address);
-// const abpMintPubkey = new PublicKey('BonB8rnokgtdSe2HRuQZ4ZiZCbtos9sKdYwabgvNcPSp');
+const programID = new PublicKey(config.PROGRAM_ID || idl.metadata.address);
 const strTou8Arry = (s: string) => {
     const enc = new TextEncoder();
     return enc.encode(s);
@@ -36,8 +35,8 @@ const opts = {
 const ADMIN_MANAGE_SEED = 'alphabets-admin';
 const ESCROW_VAULT_SEED = 'alphabets-escrow-vault';
 const BATTLE_INFO_SEED = 'alphabets-battle-info';
-const abpMintPubkey = new PublicKey('NxGcGqZ8FLpmDgJ35JK8xDivCo3EP3G5BbpBjE2cUQT');
-const SUPER_ADMIN = new PublicKey('52UcVJFGTDXqy4mxQz9FWcN95qT653nBRCwFCevymrQz');
+const abpMintPubkey = new PublicKey(config.ABP_MINT_PUBKEY);
+const SUPER_ADMIN = new PublicKey(config.SUPER_ADMIN);
 
 const network = RPC_URL;
 const connection = new Connection(RPC_URL, 'confirmed');
@@ -244,7 +243,7 @@ const getTransactions = async (limitNum: number) => {
         const anchorProgram = getProviderWithAnchor();
         const redisClient = redisHandle.getRedisClient();
         const lastSignature = await redisClient.get('lastSignature') || undefined;
-        const pubKey = new PublicKey(contractAddress || idl.metadata.address);
+        const pubKey = new PublicKey(config.PROGRAM_ID || idl.metadata.address);
         const txList = await connection.getSignaturesForAddress(pubKey, { limit: limitNum });
 
         for (const transaction of txList) {

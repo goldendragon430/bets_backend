@@ -18,15 +18,25 @@ export const getDBConfig = (): string => {
 export const getSolanaRPC = (): string => {
     const NETWORK = process.env.NETWORK || 'devnet';
     if (NETWORK === 'mainnet') {
-        return process.env.SOLANA_RPC_MAINNET as string;
+        return process.env.SOLANA_RPC_MAINNET as string || 'https://solana-api.projectserum.com';
     }
     return process.env.SOLANA_RPC_DEVNET as string || 'https://api.devnet.solana.com';
 };
 
-export const getSolanaAddress = (): string => {
+export const getSolanaConfigs = () => {
     const NETWORK = process.env.NETWORK || 'devnet';
     if (NETWORK === 'mainnet') {
-        return process.env.SOLANA_MAINNET_ADDRESS as string;
+        return {
+            PROGRAM_ID: process.env.programId_main as string,
+            STAKE_POOL_ID: process.env.stakePoolId_main as string,
+            ABP_MINT_PUBKEY: process.env.abpMintPubkey_main as string,
+            SUPER_ADMIN: process.env.SUPER_ADMIN_main as string,
+        };
     }
-    return process.env.SOLANA_DEVNET_ADDRESS as string;
+    return {
+        PROGRAM_ID: process.env.programId_dev as string,
+        STAKE_POOL_ID: process.env.stakePoolId_dev as string,
+        ABP_MINT_PUBKEY: process.env.abpMintPubkey_dev as string,
+        SUPER_ADMIN: process.env.SUPER_ADMIN_dev as string,
+    };
 };
