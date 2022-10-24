@@ -17,7 +17,7 @@ export const setupSolanaCronJobMap = async (): Promise<void> => {
                     await determineBet(battleId);
                     await BattleRepository.updateBattleStatusById(battleId, BattleStatus.Determine, NetworkType.SOL);
                 } catch (error: any) {
-                    console.error('determineBet error', battleId, error.error.errorCode);
+                    console.error('While determineBet error:', battleId, error);
                     if (error.error.errorCode.code === 'AlreadyEnd') {
                         await BattleRepository.updateBattleStatusById(battleId, BattleStatus.Determine, NetworkType.SOL);
                     }
