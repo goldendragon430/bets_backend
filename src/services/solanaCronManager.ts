@@ -1,5 +1,5 @@
 import * as cron from 'node-cron';
-import { determineBet, getParsedTransaction, subscribeSolanaTransactions } from '../utils/solana';
+import { determineBet, getBetInfo, subscribeSolanaTransactions } from '../utils/solana';
 import BattleRepository from '../repositories/featuredBattle';
 import { BattleStatus, NetworkType } from '../utils/enums';
 
@@ -28,7 +28,28 @@ export const setupSolanaCronJobMap = async (): Promise<void> => {
         }
     }, { scheduled: false }).start();
 
+    const refundStatusUpdateJob = cron.schedule('* * * * *', async () => {
+        try {
+            const battleIds = await BattleRepository.getSolanaEndedBattles();
+
+            for (const battleId of battleIds) {
+                try {
+                    const info = await getBetInfo(battleId);
+                    const result = info.winnerResult;
+                    if (result === 3) {
+                        await BattleRepository.updateBattleStatusById(battleId, BattleStatus.RefundSet, NetworkType.SOL);
+                    }
+                } catch (error: any) {
+                    console.error('While getBetInfo error:', battleId, error);
+                }
+            }
+        } catch (e) {
+            console.error('refundStatusUpdateJob Error: ', e);
+        }
+    }, { scheduled: false }).start();
+
     jobMap.set('determineJob', determineJob);
+    jobMap.set('refundStatusUpdateJob', refundStatusUpdateJob);
 
     subscribeSolanaTransactions();
 };
