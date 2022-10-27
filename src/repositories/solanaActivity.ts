@@ -123,7 +123,7 @@ class SolanaActivityRepository {
                 }
             }
         ]);
-        return activities.map((activity) => {
+        const sortedActivities = activities.map((activity) => {
             const projectName = activity.side === false ? battle.projectL?.name : battle.projectR?.name;
             const projectDisplayName = activity.side === false ? battle.projectL?.displayName : battle.projectR?.displayName;
             let amount = 0;
@@ -137,6 +137,7 @@ class SolanaActivityRepository {
             return {
                 signature: activity._id.signature,
                 user: activity.from,
+                blockTime: activity._id.blockTime,
                 side: activity.side, // false -> ProjectL, true -> ProjectR
                 timestamp: new Date(activity.createdAt).getTime(),
                 amount: amount,
@@ -151,6 +152,26 @@ class SolanaActivityRepository {
                 } : null,
             };
         });
+
+        let result = sortedActivities
+            .reduce((a: any[], v) => {
+                let index = a.findIndex(el => (
+                    el.user === v.user &&
+                    el.side === v.side &&
+                    Math.abs(el.blockTime - v.blockTime) < 10
+                ));
+                if (index !== -1) {
+                    a[index].amount += v.amount;
+                    return a;
+                }
+                a.push({
+                    ...v,
+                    amount: v.amount
+                });
+                return a;
+            }, [])
+
+        return result
     }
 }
 
