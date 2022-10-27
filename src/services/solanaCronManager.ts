@@ -35,7 +35,7 @@ export const setupSolanaCronJobMap = async (): Promise<void> => {
             for (const battleId of battleIds) {
                 try {
                     const info = await getBetInfo(battleId);
-                    const result = info.winnerResult
+                    const result = info.winnerResult;
                     if (result === 3) {
                         await BattleRepository.updateBattleStatusById(battleId, BattleStatus.RefundSet, NetworkType.SOL);
                     }

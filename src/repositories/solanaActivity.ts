@@ -153,9 +153,9 @@ class SolanaActivityRepository {
             };
         });
 
-        let result = sortedActivities
+        const result = sortedActivities
             .reduce((a: any[], v) => {
-                let index = a.findIndex(el => (
+                const index = a.findIndex(el => (
                     el.user === v.user &&
                     el.side === v.side &&
                     Math.abs(el.blockTime - v.blockTime) < 10
@@ -169,9 +169,9 @@ class SolanaActivityRepository {
                     amount: v.amount
                 });
                 return a;
-            }, [])
+            }, []);
 
-        return result
+        return result;
     }
 }
 
