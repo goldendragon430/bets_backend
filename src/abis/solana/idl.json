@@ -166,7 +166,7 @@
         {
           "name": "superAdmin",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "admin",
@@ -311,7 +311,7 @@
         {
           "name": "superAdmin",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
           "name": "admin",
@@ -1261,6 +1261,11 @@
       "code": 6046,
       "name": "NoExist",
       "msg": "This admin is not exist."
+    },
+    {
+      "code": 6047,
+      "name": "AlreadyStaked",
+      "msg": "This nft is already staked."
     }
   ],
   "metadata": {
