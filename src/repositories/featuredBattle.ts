@@ -452,7 +452,8 @@ class FeaturedBattleRepository {
     getBattlesByStatus = async (status: BattleStatus, network: NetworkType): Promise<Array<any>> => {
         return FeaturedBattle.find({
             status: status,
-            network: network
+            network: network,
+            active: true
         });
     }
 
