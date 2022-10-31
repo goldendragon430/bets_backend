@@ -88,12 +88,14 @@ class FeaturedBattleRepository {
         });
     };
 
-    getBattleHistories = async (network: NetworkType) => {
+    getBattleHistories = async (network: NetworkType, active?: boolean) => {
+        // To remove undefined attribute from query, used JSON.parse(JSON.stringify())
         const battles = await FeaturedBattle.find(
-            {
+            JSON.parse(JSON.stringify({
                 finalizeFailedCount: { $lt: 3 },
-                network: network
-            },
+                network: network,
+                active: active,
+            }))
         );
 
         return await Promise.all(
@@ -219,6 +221,19 @@ class FeaturedBattleRepository {
             return battle.battleId;
         });
     };
+
+    updateBattleActiveStatus = async (id: string, status: boolean) => {
+        const battle = await FeaturedBattle.findById(id);
+        if (!battle) {
+            throw new Error('Battle not found');
+        }
+
+        // TODO: would be remove once it's executed
+        await FeaturedBattle.updateMany({ active: { $exists: false }}, { active: true }, { multi: true });
+
+        battle.active = status;
+        await battle.save();
+    }
 
     updateBattleStatus = async (battleId: number, status: BattleStatus, network: NetworkType = NetworkType.ETH) => {
         return FeaturedBattle.updateOne(
@@ -437,7 +452,8 @@ class FeaturedBattleRepository {
     getBattlesByStatus = async (status: BattleStatus, network: NetworkType): Promise<Array<any>> => {
         return FeaturedBattle.find({
             status: status,
-            network: network
+            network: network,
+            active: true
         });
     }
 
