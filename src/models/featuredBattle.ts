@@ -39,7 +39,7 @@ const featuredBattleSchema = new Schema({
     },
     network: {
         type: String,
-        enum: [NetworkType.ETH, NetworkType.SOL, NetworkType.ADA],
+        enum: [NetworkType.ETH, NetworkType.POLYGON, NetworkType.SOL, NetworkType.ADA],
         default: NetworkType.ETH,
     },
     winner: {
@@ -47,6 +47,10 @@ const featuredBattleSchema = new Schema({
         ref: 'project'
     },
     twitterAnnounceID: String,
+    active: {
+        type: Boolean,
+        default: true
+    }
 },
 { timestamps: true });
 

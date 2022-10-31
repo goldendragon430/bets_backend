@@ -42,12 +42,18 @@ export default class BattleController {
      * @param next
      */
     getBattleHistories = async (req: Request, res: Response, next: NextFunction) => {
-        const { network } = req.params;
+        const { network, active } = req.params;
         try {
             if (network && !(network in NetworkType)) {
                 return res.status(400).json({ 'success': false, 'message': 'Invalid network.' });
             }
-            const battles = await BattleRepository.getBattleHistories(NetworkType[network] || NetworkType.ETH);
+
+            let battles: any[] = [];
+            if (active) {
+                battles = await BattleRepository.getBattleHistories(NetworkType[network] || NetworkType.ETH);
+            } else {
+                battles = await BattleRepository.getBattleHistories(NetworkType[network] || NetworkType.ETH, true);
+            }
 
             res.json({ 'success': true, 'message': '', 'data': battles });
         } catch (error) {
@@ -145,7 +151,6 @@ export default class BattleController {
         const { tokenIds, side, battleId } = req.body;
 
         try {
-
             const battle = await BattleRepository.getBattle(battleId);
 
             if (!battle) {
@@ -194,7 +199,7 @@ export default class BattleController {
                     'message': 'Block number is required.'
                 });
             }
-            const events = await BetContract.queryFilter(BetContract.filters.NewBattleCreated(), blockNumber, blockNumber + 1);
+            const events = await BetContract.queryFilter(BetContract.filters.NewBattleCreated(), blockNumber);
             if (!events || events.length === 0) {
                 return res.status(400).json({
                     'success': false,
@@ -288,6 +293,32 @@ export default class BattleController {
             }
 
             res.json({ 'success': true, 'message': '', 'data': leaderboard });
+        } catch (error) {
+            apiErrorHandler(error, req, res, 'getLeaderboard failed.');
+        }
+    };
+
+    /**
+     * @description Get Leaderboard Data
+     * @param req
+     * @param res
+     * @param next
+     */
+     updateBattleActiveStatus = async (req: Request, res: Response, next: NextFunction) => {
+        const { battleId, activeStatus } = req.body;
+        try {
+            const battle = await BattleRepository.getBattle(battleId);
+
+            if (!battle) {
+                return res.status(400).json({ 'success': false, 'message': 'No battle found.' });
+            }
+
+            await BattleRepository.updateBattleActiveStatus(battleId, activeStatus);
+            res.json({
+                'success': true,
+                'message': '',
+                'data': `Battle ${activeStatus ? 'is shown from list' : 'is hidden from list'} successfully.`
+            });
         } catch (error) {
             apiErrorHandler(error, req, res, 'getLeaderboard failed.');
         }

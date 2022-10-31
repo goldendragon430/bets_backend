@@ -34,6 +34,8 @@ export default class Server {
         mongoose.connect(this.DB_CONFIG)
             .then(() => {
                 console.log('Connected to Database');
+                const LOCAL_ENV = process.env.LOCAL;
+                if (LOCAL_ENV) return;
                 setupCronJobMap()
                     .then(() => {
                         console.log('setupCronJobMap done');

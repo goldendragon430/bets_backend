@@ -28,4 +28,28 @@ passport.use(
     })
 );
 
+passport.use(
+    'guest',
+    new JWTStrategy(opts, (jwt_payload: any, done: any) => {
+        UserModel.findById(jwt_payload._id)
+            .then((user) => {
+                if (user) {
+                    if (user.isAdmin === true) {
+                        return done(null, user);
+                    }
+                    return done(null, {
+                        isAdmin: false,
+                        address: '0x0',
+                        username: 'guest'
+                    });
+                }
+                return done(null, {
+                    isAdmin: false,
+                    address: '0x0',
+                    username: 'guest'
+                });
+            }).catch(err => console.error(err));
+    })
+);
+
 export default passport;
