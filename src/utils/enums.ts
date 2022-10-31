@@ -9,6 +9,7 @@ export enum NetworkType {
     ETH = 'Ethereum',
     SOL = 'Solana',
     ADA = 'Cardano',
+    POLYGON = 'Polygon',
 }
 
 export enum ServiceType {
