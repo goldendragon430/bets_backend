@@ -5,6 +5,7 @@ import ProjectRepository from '../repositories/project';
 import { NetworkType } from '../utils/enums';
 import axios from 'axios';
 import Project from '../models/project';
+import { ethers } from 'ethers';
 
 export default class ProjectController {
     constructor() { }
@@ -263,7 +264,7 @@ export default class ProjectController {
                     subName: subName,
                     displayName: displayName,
                     network: network === 'ETH' ? NetworkType.ETH : NetworkType.SOL,
-                    contract: contract,
+                    contract: ethers.utils.isAddress(contract) ? ethers.utils.getAddress(contract) : contract,
                     collectionSize: collectionSize,
                     creator: creator,
                     twitterID: twitterLink,
