@@ -211,6 +211,7 @@ export default class BattleController {
 
             res.json({ 'success': true, 'message': '', 'data': 'Battle created' });
         } catch (error) {
+            console.log(error)
             apiErrorHandler(error, req, res, 'Add Battle failed.');
         }
     };
