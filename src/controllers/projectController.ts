@@ -264,7 +264,7 @@ export default class ProjectController {
                     subName: subName,
                     displayName: displayName,
                     network: network === 'ETH' ? NetworkType.ETH : NetworkType.SOL,
-                    contract: ethers.utils.getAddress(contract),
+                    contract: ethers.utils.isAddress(contract) ? ethers.utils.getAddress(contract) : contract,
                     collectionSize: collectionSize,
                     creator: creator,
                     twitterID: twitterLink,
